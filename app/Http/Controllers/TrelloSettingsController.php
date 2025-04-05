@@ -66,15 +66,41 @@ class TrelloSettingsController extends Controller
                         'boards' => array_slice($user['boards'] ?? [], 0, 5)
                     ];
                 } else {
+                    // Parse response body for more details
+                    $errorBody = $response->body();
+                    $errorJson = json_decode($errorBody, true);
+                    $errorMessage = $errorJson && isset($errorJson['message']) ? $errorJson['message'] : $errorBody;
+                    
+                    // Log the error
+                    \Log::warning('Trello API connection test failed on settings page', [
+                        'status' => $response->status(),
+                        'body' => $errorBody,
+                        'key_length' => strlen($apiKey),
+                        'token_length' => strlen($apiToken)
+                    ]);
+                    
                     $connectionStatus = [
                         'success' => false,
-                        'message' => 'Failed to connect to Trello API. Please check your credentials.'
+                        'message' => 'Failed to connect to Trello API: ' . $errorMessage,
+                        'details' => [
+                            'status' => $response->status(),
+                            'response' => $errorJson ?? $errorBody
+                        ]
                     ];
                 }
             } catch (\Exception $e) {
+                \Log::error('Exception connecting to Trello API', [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
                 $connectionStatus = [
                     'success' => false,
-                    'message' => 'Error connecting to Trello API: ' . $e->getMessage()
+                    'message' => 'Error connecting to Trello API: ' . $e->getMessage(),
+                    'details' => [
+                        'exception' => get_class($e),
+                        'message' => $e->getMessage()
+                    ]
                 ];
             }
         }
@@ -129,9 +155,11 @@ class TrelloSettingsController extends Controller
                 return response()->json(['success' => false, 'message' => 'API credentials are not configured.']);
             }
 
-            // Log the test connection attempt
+            // Log the test connection attempt with more details
             \Log::info('Testing Trello API connection', [
-                'endpoint' => 'https://api.trello.com/1/members/me'
+                'endpoint' => 'https://api.trello.com/1/members/me',
+                'key_length' => strlen($apiKey),
+                'token_length' => strlen($apiToken)
             ]);
 
             $response = Http::withOptions([
@@ -158,16 +186,23 @@ class TrelloSettingsController extends Controller
                 ]);
             }
 
-            // Log failure details
+            // Log failure details with more information
             \Log::warning('Trello API connection test failed', [
                 'status' => $response->status(),
-                'body' => $response->body()
+                'body' => $response->body(),
+                'headers' => $response->headers()
             ]);
+
+            // Provide more detailed error message
+            $errorBody = $response->body();
+            $errorJson = json_decode($errorBody, true);
+            $errorMessage = $errorJson && isset($errorJson['message']) ? $errorJson['message'] : $errorBody;
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to connect to Trello API. Status code: ' . $response->status(),
-                'details' => app()->environment('local') ? $response->body() : null
+                'message' => 'Failed to connect to Trello API. Status code: ' . $response->status() . 
+                             '. Error: ' . $errorMessage,
+                'details' => $errorJson ?? $errorBody
             ]);
         } catch (\Exception $e) {
             \Log::error('Error testing Trello API connection', [
@@ -178,7 +213,7 @@ class TrelloSettingsController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error connecting to Trello API: ' . $e->getMessage(),
-                'details' => app()->environment('local') ? $e->getTraceAsString() : null
+                'details' => $e->getMessage()
             ]);
         }
     }

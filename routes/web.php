@@ -12,10 +12,12 @@ use App\Http\Controllers\SprintSettingsController;
 use App\Http\Controllers\TrelloController;
 use App\Http\Controllers\SprintReportController;
 use App\Http\Controllers\BacklogController;
+use App\Http\Controllers\ConfirmController;
+use App\Http\Controllers\CompleteController;
 
 Route::get('/', function () {
-    return view('welcome');
-})->middleware('cache.headers:public;max_age=3600;etag');
+    return redirect()->route('login');
+})->name('home');
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
@@ -53,6 +55,9 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     Route::resource('/saved-reports', SavedReportController::class);
     Route::post('/save-report', [SavedReportController::class, 'store'])->name('report.save');
 
+    Route::get('/minorcases', function () {
+        return view('minorcases');
+    })->name('minorcases');
     // Admin Only Routes
     Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
         // Admin User Management Routes
@@ -79,7 +84,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
                 return redirect('dashboard');
             })->name('home');
         });
-        
+
         // Sprint Settings
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('sprint', [SprintSettingsController::class, 'index'])->name('sprint');
@@ -116,16 +121,16 @@ if (app()->environment('local')) {
             'count' => \App\Models\User::count()
         ]);
     });
-    
+
     // Test route for sprint logic
     Route::get('/debug/sprint-info', function () {
         $nextSprintNumber = \App\Models\Sprint::getNextSprintNumber();
         $currentSprint = \App\Models\Sprint::getCurrentSprint();
-        
+
         // Get current sprint settings
         $sprintSettingsController = new \App\Http\Controllers\SprintSettingsController();
         $currentSprintNumber = $sprintSettingsController->getCurrentSprintNumber();
-        
+
         return response()->json([
             'next_sprint_number' => $nextSprintNumber,
             'current_sprint' => $currentSprint,
@@ -140,3 +145,13 @@ Route::get('story-points-report', [TrelloController::class, 'storyPointsReport']
 Route::get('trello/data', [TrelloController::class, 'fetchTrelloData']);
 Route::get('trello/bug-cards', [TrelloController::class, 'fetchBugCards']);
 Route::get('trello/sprint-info', [TrelloController::class, 'getSprintInfo']);
+
+Route::get('/sendemail', function () {
+    return view('sendEmail');
+});
+
+// routes/web.php
+Route::get('/confirm', [ConfirmController::class, 'index'])->name('confirm');
+
+// routes/web.php
+Route::get('/complete', [CompleteController::class, 'index'])->name('complete');
