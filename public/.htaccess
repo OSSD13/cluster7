@@ -4,6 +4,9 @@
     </IfModule>
 
     RewriteEngine On
+    
+    # Set the base to match your deployment path if needed
+    RewriteBase /cluster7
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .

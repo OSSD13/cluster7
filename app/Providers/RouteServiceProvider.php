@@ -20,6 +20,13 @@ class RouteServiceProvider extends ServiceProvider
     public const HOME = '/dashboard';
 
     /**
+     * The path to use as the application's base URL.
+     *
+     * @var string
+     */
+    protected $basePath;
+
+    /**
      * Define your route model bindings, pattern filters, etc.
      *
      * @return void
@@ -27,6 +34,18 @@ class RouteServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->configureRateLimiting();
+        
+        // Set the base path from environment variable or empty string
+        $this->basePath = env('URL_PATH', '');
+        
+        // Set the URL generator's root URL
+        $url = $this->app['url'];
+        $url->forceRootUrl(config('app.url'));
+        
+        // If a base path is set, configure the URL generator to use it
+        if ($this->basePath) {
+            $url->forceScheme('https');
+        }
 
         $this->routes(function () {
             Route::prefix('api')

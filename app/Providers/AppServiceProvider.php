@@ -28,6 +28,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Configure URL generation for subdirectory installation
+        if (env('URL_PATH')) {
+            $this->app['url']->setRootControllerNamespace('App\Http\Controllers');
+            $this->app['url']->forceRootUrl(config('app.url'));
+        }
+        
         // Add a custom Blade directive for formatting dates
         Blade::directive('formatDate', function ($expression) {
             return "<?php echo \App\Helpers\DateHelper::formatDate($expression); ?>";
