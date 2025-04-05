@@ -56,7 +56,16 @@ class TrelloService
      */
     public function hasValidCredentials()
     {
-        return !empty($this->apiKey) && !empty($this->apiToken);
+        $keyExists = !empty($this->apiKey);
+        $tokenExists = !empty($this->apiToken);
+        
+        // Log the status of credentials
+        \Log::info('Trello credentials status', [
+            'keyExists' => $keyExists,
+            'tokenExists' => $tokenExists
+        ]);
+        
+        return $keyExists && $tokenExists;
     }
 
     /**
@@ -388,98 +397,58 @@ class TrelloService
     }
 
     /**
-     * Test the Trello API connection.
+     * Test the API connection with current credentials
      *
-     * @param string $apiKey
-     * @param string $apiToken
-     * @return array
+     * @return array with success status and message
      */
-    public function testConnection($apiKey, $apiToken)
+    public function testConnection()
     {
         try {
-            // Clean the API key and token
-            $apiKey = trim($apiKey);
-            $apiToken = trim($apiToken);
-
-            $baseUrl = $this->baseUrl;
-            $params = [
-                'key' => $apiKey,
-                'token' => $apiToken
-            ];
-
-            // Get member basic info
-            $memberResponse = Http::get($baseUrl . "members/me", $params);
-
-            if ($memberResponse->successful()) {
-                $memberData = $memberResponse->json();
-                $username = $memberData['username'] ?? 'Unknown';
-                $fullName = $memberData['fullName'] ?? 'Unknown';
-                $avatarHash = $memberData['avatarHash'] ?? null;
-                $avatarUrl = null;
-
-                // If we have an avatar hash, get the avatar image
-                if ($avatarHash) {
-                    $avatarUrl = "https://trello-members.s3.amazonaws.com/{$memberData['id']}/{$avatarHash}/170.png";
-                }
-
-                // Try to get the user's boards to further verify API access
-                $boardsResponse = Http::get($baseUrl . "members/me/boards", array_merge($params, [
-                    'fields' => 'name,url',
-                    'lists' => 'open',
-                    'limit' => 3
-                ]));
-
-                $boards = [];
-                if ($boardsResponse->successful()) {
-                    $boardsData = $boardsResponse->json();
-                    foreach ($boardsData as $board) {
-                        $boards[] = [
-                            'name' => $board['name'] ?? 'Unnamed Board',
-                            'url' => $board['url'] ?? '#',
-                        ];
-                    }
-                }
-
-                return [
-                    'success' => true,
-                    'message' => 'Connected successfully to Trello API',
-                    'username' => $username,
-                    'fullName' => $fullName,
-                    'avatarUrl' => $avatarUrl,
-                    'boards' => $boards
-                ];
-            } else {
-                $statusCode = $memberResponse->status();
-                $body = $memberResponse->body();
-
-                // Attempt to decode the JSON response for more details
-                $errorDetails = json_decode($body, true);
-                $errorMessage = isset($errorDetails['message']) ? $errorDetails['message'] : $body;
-
+            if (!$this->hasValidCredentials()) {
                 return [
                     'success' => false,
-                    'message' => "Failed to connect to Trello API: {$statusCode} - {$errorMessage}",
-                    'debug_info' => [
-                        'status' => $statusCode,
-                        'body' => $body,
-                    ]
+                    'message' => 'API credentials are not configured.'
                 ];
             }
+
+            \Log::info('Testing Trello API connection', [
+                'endpoint' => 'https://api.trello.com/1/members/me',
+                'key_length' => strlen($this->apiKey),
+                'token_length' => strlen($this->apiToken)
+            ]);
+
+            $response = Http::withOptions([
+                'verify' => false,  // Try disabling SSL verification
+                'timeout' => 15,
+            ])->get('https://api.trello.com/1/members/me', $this->getDefaultParams());
+
+            if ($response->successful()) {
+                $user = $response->json();
+                return [
+                    'success' => true,
+                    'message' => 'Connection successful',
+                    'user' => $user
+                ];
+            }
+
+            \Log::warning('Trello API connection test failed', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to connect: ' . $response->status() . ' ' . $response->body()
+            ];
         } catch (\Exception $e) {
-            \Log::error('Error connecting to Trello API', [
-                'exception' => $e->getMessage(),
+            \Log::error('Exception testing Trello API connection', [
+                'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
             return [
                 'success' => false,
-                'message' => 'Error connecting to Trello API: ' . $e->getMessage(),
-                'debug_info' => [
-                    'exception' => get_class($e),
-                    'message' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                ]
+                'message' => 'Connection error: ' . $e->getMessage()
             ];
         }
     }

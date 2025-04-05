@@ -4,6 +4,7 @@
 @section('page-title', 'User Management')
 
 @section('content')
+<div class="rounded-[2vw] h-full w-full bg-gray-100 px-5 py-2">
 <div class="max-w-7xl mx-auto">
     <div class="mb-6 flex justify-between items-center">
         <h2 class="text-2xl font-semibold text-gray-900">User Management</h2>
@@ -266,6 +267,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <script>
