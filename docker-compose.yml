@@ -1,0 +1,17 @@
+services:
+    ossd-apache-php:
+        build:
+            context: .
+            dockerfile: dockerfile
+        container_name: ttt-devpref-cluster7
+        restart: unless-stopped
+        ports:
+            - "1307:80"
+        environment:
+            - APP_DEBUG=true
+            - LOG_LEVEL=debug
+        networks:
+            - laravel-net
+networks:
+    laravel-net:
+        driver: bridge

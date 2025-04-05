@@ -28,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (config('app.env') === 'production') {
+            URL::forceRootUrl(config('app.url'));
+            URL::forceScheme('https');
+        }
         // Configure URL generation for subdirectory installation
         if (env('URL_PATH')) {
             $this->app['url']->setRootControllerNamespace('App\Http\Controllers');
