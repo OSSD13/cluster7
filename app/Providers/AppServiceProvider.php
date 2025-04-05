@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\TrelloService;
 use App\Helpers\DateHelper;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -28,7 +29,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (config('app.env') === 'production') {
+        // Only force HTTPS on the production domain
+        if (config('app.env') === 'production' && !str_contains(request()->getHost(), 'localhost')) {
             URL::forceRootUrl(config('app.url'));
             URL::forceScheme('https');
         }

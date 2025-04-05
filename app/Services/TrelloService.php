@@ -37,8 +37,16 @@ class TrelloService
      */
     public function __construct()
     {
-        $this->apiKey = Setting::get('trello_api_key', '');
-        $this->apiToken = Setting::get('trello_api_token', '');
+        try {
+            // Try to get from settings table first
+            $this->apiKey = Setting::get('trello_api_key', env('TRELLO_API_KEY', ''));
+            $this->apiToken = Setting::get('trello_api_token', env('TRELLO_API_TOKEN', ''));
+        } catch (\Exception $e) {
+            // Fallback to env if settings table doesn't exist yet or there's any other error
+            Log::info('Falling back to environment variables for Trello credentials: ' . $e->getMessage());
+            $this->apiKey = env('TRELLO_API_KEY', '');
+            $this->apiToken = env('TRELLO_API_TOKEN', '');
+        }
     }
 
     /**
