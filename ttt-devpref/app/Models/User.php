@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'is_approved',
     ];
 
     /**
@@ -43,6 +45,37 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_approved' => 'boolean',
         ];
+    }
+
+    /**
+     * Check if the user is an admin
+     *
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if the user is a tester
+     *
+     * @return bool
+     */
+    public function isTester(): bool
+    {
+        return $this->role === 'tester';
+    }
+
+    /**
+     * Check if the user is a developer
+     *
+     * @return bool
+     */
+    public function isDeveloper(): bool
+    {
+        return $this->role === 'dev';
     }
 }

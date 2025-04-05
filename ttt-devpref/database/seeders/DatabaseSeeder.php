@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+// use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,11 +13,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            AdminUserSeeder::class,
+            // Using the optimized report seeder that combines sprint and report creation
+            // with a more realistic data structure including backlog items
+            OptimizedReportSeeder::class,
+            // Removed SprintSeeder as OptimizedReportSeeder handles both sprints and reports
         ]);
     }
 }
