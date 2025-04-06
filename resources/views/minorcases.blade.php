@@ -132,6 +132,30 @@
                     return `${startDateStr} - ${endDateStr} ${SPRINT_YEAR}`;
                 }
 
+                function updateDisplayedDate() {
+                    const selectedYear = document.getElementById('selectedYear').textContent;
+
+                    // Convert selectedYear to a number for proper comparison
+                    const yearValue = parseInt(selectedYear);
+
+                    // Hide or show sprint blocks based on the selected year
+                    document.querySelectorAll('.sprint-block').forEach(sprintBlock => {
+                        // The sprint date contains the year at the end, so we can extract it
+                        const sprintDateElement = sprintBlock.querySelector('.sprint-date');
+                        if (sprintDateElement) {
+                            const dateText = sprintDateElement.textContent;
+                            const sprintYear = parseInt(dateText.match(/(\d{4})$/)[1]);
+
+                            // Show the sprint if its year matches the selected year, otherwise hide it
+                            if (sprintYear === yearValue) {
+                                sprintBlock.style.display = 'block';
+                            } else {
+                                sprintBlock.style.display = 'none';
+                            }
+                        }
+                    });
+                }
+
                 // Function to toggle dropdown menu visibility
                 function setupDropdown(buttonId, menuId, selectedId) {
                     document.getElementById(buttonId).addEventListener("click", function() {
@@ -162,6 +186,15 @@
                 // Setup both dropdowns
                 setupDropdown("yearDropdownButton", "yearDropdownMenu", "selectedYear");
                 setupDropdown("sprintDropdownButton", "sprintDropdownMenu", "selectedSprint");
+
+                // This to make the function work when the year is changed
+                document.querySelectorAll('#yearDropdownMenu a').forEach(item => {
+                    item.addEventListener("click", function() {
+                        document.getElementById('selectedYear').textContent = this.textContent;
+                        document.getElementById('yearDropdownMenu').classList.add("hidden");
+                        updateDisplayedDate(); // Call the function when year changes
+                    });
+                });
 
                 // Function to load report data
                 function loadReportData() {
@@ -237,7 +270,7 @@
             <div class="sprint-content mt-2 bg-white p-3 rounded-lg shadow-md style="display: block;" ${dataClass}">
                 <table class="w-full border-collapse border border-gray-300">
                     <thead>
-                        <tr class="bg-blue-200">
+                        <tr class="bg-blue-300">
                             <th class="border border-gray-300 px-4 py-2">Number</th>
                             <th class="border border-gray-300 px-4 py-2">Card Detail</th>
                             <th class="border border-gray-300 px-4 py-2">Description</th>
@@ -483,6 +516,7 @@
                         });
                     });
                 }
+
 
                 // Update displayed sprints based on filters
                 function updateDisplayedSprints() {
