@@ -53,12 +53,7 @@
                 onclick="showTab('by-sprint')">
                 By Sprint
             </button>
-            <button
-                id="tab-by-team"
-                class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                onclick="showTab('by-team')">
-                By Team
-            </button>
+        
         </nav>
     </div>
 

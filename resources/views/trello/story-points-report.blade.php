@@ -222,7 +222,8 @@
                     No Trello boards available. Please configure your Trello API settings first.
                 </div>
             @endif
-        @elseif($singleTeam)
+            <!--in on team-->
+        @elseif($singleBoard)
             <h2 class="text-lg font-semibold mb-4">Your Team</h2>
             <div class="mb-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -239,7 +240,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                You are a member of multiple teams. Data will be loaded automatically for the selected team.
+                You are a member of multiple. Data will be loaded automatically for the selected team.
             </div>
             
             <div class="mb-4">

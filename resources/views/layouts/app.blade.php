@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.2/dist/alpine.min.js" defer></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body class="bg-gray-50">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
@@ -46,19 +48,18 @@
                             </p>
                             <div class="mt-1">
                                 @php
-                                    $roleBgColor = 'bg-gray-100';
-                                    $roleTextColor = 'text-gray-800';
-
-                                    if (auth()->user()->isAdmin()) {
-                                        $roleBgColor = 'bg-red-100';
-                                        $roleTextColor = 'text-red-800';
-                                    } elseif (auth()->user()->isTester()) {
-                                        $roleBgColor = 'bg-blue-100';
-                                        $roleTextColor = 'text-blue-800';
-                                    } elseif (auth()->user()->isDeveloper()) {
-                                        $roleBgColor = 'bg-green-100';
-                                        $roleTextColor = 'text-green-800';
-                                    }
+                                $roleBgColor = 'bg-gray-100';
+                                $roleTextColor = 'text-gray-800';
+                                if (auth()->user()->isAdmin()) {
+                                $roleBgColor = 'bg-red-100';
+                                $roleTextColor = 'text-red-800';
+                                } elseif (auth()->user()->isTester()) {
+                                $roleBgColor = 'bg-blue-100';
+                                $roleTextColor = 'text-blue-800';
+                                } elseif (auth()->user()->isDeveloper()) {
+                                $roleBgColor = 'bg-green-100';
+                                $roleTextColor = 'text-green-800';
+                                }
                                 @endphp
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $roleBgColor }} {{ $roleTextColor }}">
                                     {{ ucfirst(auth()->user()->role) }}
@@ -90,17 +91,33 @@
                         Dashboard
                     </div>
                 </a>
-
-                @if(!auth()->user()->isAdmin())
-                <a href="{{ route('my-teams.index') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('my-teams.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                <!-- Trello Teams - Available for all users -->
+                <a href="{{ route('trello.teams.index') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('trello.teams.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        My Teams
+                        Trello teams
                     </div>
                 </a>
-                @endif
+                <a href="{{ route('minorcases') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('minorcases') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" width="16" height="16" fill="currentColor" class="bi bi-hash" viewBox="0 0 16 16">
+                            <path d="M8.39 12.648a1 1 0 0 0-.015.18c0 .305.21.508.5.508.266 0 .492-.172.555-.477l.554-2.703h1.204c.421 0 .617-.234.617-.547 0-.312-.188-.53-.617-.53h-.985l.516-2.524h1.265c.43 0 .618-.227.618-.547 0-.313-.188-.524-.618-.524h-1.046l.476-2.304a1 1 0 0 0 .016-.164.51.51 0 0 0-.516-.516.54.54 0 0 0-.539.43l-.523 2.554H7.617l.477-2.304c.008-.04.015-.118.015-.164a.51.51 0 0 0-.523-.516.54.54 0 0 0-.531.43L6.53 5.484H5.414c-.43 0-.617.22-.617.532s.187.539.617.539h.906l-.515 2.523H4.609c-.421 0-.609.219-.609.531s.188.547.61.547h.976l-.516 2.492c-.008.04-.015.125-.015.18 0 .305.21.508.5.508.265 0 .492-.172.554-.477l.555-2.703h2.242zm-1-6.109h2.266l-.515 2.563H6.859l.532-2.563z" />
+                        </svg>
+                        Minor Cases
+                    </div>
+                </a>
+                <!-- Bug Backlog - Available for all users not admin z-->
+                <a href="{{ route('backlog.index') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('backlog.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Bug Backlog
+                    </div>
+                </a>
+            
 
                 <div class="px-4 py-2 mt-4 mb-2">
                     <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Reports</p>
@@ -115,14 +132,8 @@
                     </div>
                 </a>
 
-                <a href="{{ route('minorcases') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('minorcases') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
-                    <div class="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" width="16" height="16" fill="currentColor" class="bi bi-hash" viewBox="0 0 16 16">
-                        <path d="M8.39 12.648a1 1 0 0 0-.015.18c0 .305.21.508.5.508.266 0 .492-.172.555-.477l.554-2.703h1.204c.421 0 .617-.234.617-.547 0-.312-.188-.53-.617-.53h-.985l.516-2.524h1.265c.43 0 .618-.227.618-.547 0-.313-.188-.524-.618-.524h-1.046l.476-2.304a1 1 0 0 0 .016-.164.51.51 0 0 0-.516-.516.54.54 0 0 0-.539.43l-.523 2.554H7.617l.477-2.304c.008-.04.015-.118.015-.164a.51.51 0 0 0-.523-.516.54.54 0 0 0-.531.43L6.53 5.484H5.414c-.43 0-.617.22-.617.532s.187.539.617.539h.906l-.515 2.523H4.609c-.421 0-.609.219-.609.531s.188.547.61.547h.976l-.516 2.492c-.008.04-.015.125-.015.18 0 .305.21.508.5.508.265 0 .492-.172.554-.477l.555-2.703h2.242zm-1-6.109h2.266l-.515 2.563H6.859l.532-2.563z"/>
-                    </svg>
-                        Minor Cases
-                    </div>
-                </a>
+                
+
 
                 @if(auth()->user()->isAdmin())
                 <div class="px-4 py-2 mt-6 mb-4">
@@ -144,14 +155,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         Trello API Settings
-                    </div>
-                </a>
-                <a href="{{ route('trello.teams.index') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('trello.teams.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        Trello Teams
                     </div>
                 </a>
 
@@ -182,14 +185,6 @@
                     </div>
                 </a>
 
-                <a href="{{ route('backlog.index') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('backlog.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Bug Backlog
-                    </div>
-                </a>
                 @endif
             </div>
 
@@ -203,15 +198,15 @@
         <div class="flex-1 flex flex-col">
             <main class="flex-1 py-6 px-4 sm:px-6 lg:px-8 overflow-auto">
                 @if(session('success'))
-                    <div class="max-w-7xl mx-auto mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded" role="alert">
-                        <p>{{ session('success') }}</p>
-                    </div>
+                <div class="max-w-7xl mx-auto mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded" role="alert">
+                    <p>{{ session('success') }}</p>
+                </div>
                 @endif
 
                 @if(session('error'))
-                    <div class="max-w-7xl mx-auto mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded" role="alert">
-                        <p>{{ session('error') }}</p>
-                    </div>
+                <div class="max-w-7xl mx-auto mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded" role="alert">
+                    <p>{{ session('error') }}</p>
+                </div>
                 @endif
 
                 @yield('content')
@@ -238,4 +233,5 @@
         }
     </script>
 </body>
+
 </html>

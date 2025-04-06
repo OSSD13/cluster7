@@ -24,7 +24,10 @@ class TrelloTeamController extends Controller
      */
     public function __construct(TrelloService $trelloService)
     {
-        $this->middleware(['auth', \App\Http\Middleware\AdminMiddleware::class]);
+        // Only require authentication, not admin privileges
+        $this->middleware('auth');
+        // Apply admin middleware only for refresh method
+        $this->middleware(\App\Http\Middleware\AdminMiddleware::class)->only(['refresh']);
         $this->trelloService = $trelloService;
     }
     
@@ -119,6 +122,25 @@ class TrelloTeamController extends Controller
                 }
             }
             
+            // For non-admin users, filter the teams to show only the ones they are a member of
+            if (!auth()->user()->isAdmin()) {
+                $currentUserName = auth()->user()->name;
+                $teams = array_filter($teams, function($team) use ($currentUserName) {
+                    // Check if the current user is a member of this team
+                    foreach ($team['members'] as $member) {
+                        if ($member['fullName'] === $currentUserName) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+                
+                // For regular users, only show their primary team (first matching team)
+                // This prevents multiple teams being shown even if user is a member of multiple teams
+                if (count($teams) > 1) {
+                    $teams = array_slice($teams, 0, 1);
+                }
+            }
             return view('trello.teams.index', compact('teams', 'organizations'));
             
         } catch (\Exception $e) {
@@ -287,7 +309,6 @@ class TrelloTeamController extends Controller
             return redirect()->route('trello.settings.index')
                 ->with('error', 'Trello API credentials are not configured. Please set them up first.');
         }
-        
         try {
             // Fetch all boards with organization data and proper caching
             $boards = $this->trelloService->getBoards(
@@ -300,7 +321,6 @@ class TrelloTeamController extends Controller
             );
             
             return view('trello.teams.boards', compact('boards'));
-            
         } catch (\Exception $e) {
             Log::error('Error connecting to Trello API: ' . $e->getMessage());
             return redirect()->route('trello.settings.index')

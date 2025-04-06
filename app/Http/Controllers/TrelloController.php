@@ -521,7 +521,8 @@ class TrelloController extends Controller
             $currentDate = Carbon::now()->format('F d, Y');
             
             // Get backlog data from BacklogController
-            $backlogController = new \App\Http\Controllers\BacklogController();
+            $trelloService = app()->make(\App\Services\TrelloService::class); // Resolve TrelloService from the container
+            $backlogController = new \App\Http\Controllers\BacklogController($trelloService);
             $backlogData = $backlogController->getBacklogData();
 
             return view('trello.story-points-report', array_merge([

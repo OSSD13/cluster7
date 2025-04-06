@@ -8,17 +8,27 @@ use App\Models\Sprint;
 use App\Helpers\DateHelper;
 use Illuminate\Support\Facades\DB;
 use App\Models\SavedReport;
+use App\Services\TrelloService;
 
 class BacklogController extends Controller
 {
     /**
+     * The Trello service instance.
+     *
+     * @var \App\Services\TrelloService
+     */
+    protected $trelloService;
+
+    /**
      * Create a new controller instance.
      *
+     * @param \App\Services\TrelloService $trelloService
      * @return void
      */
-    public function __construct()
+    public function __construct(TrelloService $trelloService)
     {
         $this->middleware('auth');
+        $this->trelloService = $trelloService;
     }
 
     /**
@@ -71,18 +81,22 @@ class BacklogController extends Controller
                 }
             }
         }
+
+        // If user is not admin, filter to show only their team's bugs
+        if (!auth()->user()->isAdmin()) {
+            $userTeams = $this->getUserTeams();
+            $allBacklogBugs = $allBacklogBugs->filter(function ($bug) use ($userTeams) {
+                return in_array($bug['team'], $userTeams);
+            });
+        }
         
         // Second pass: organize bugs by team and sprint
         foreach ($allBacklogBugs as $bug) {
             $teamName = $bug['team'];
             $sprintNumber = $bug['sprint_number'];
             
-            // Organize by team
-            if (!isset($backlogByTeam[$teamName])) {
-                $backlogByTeam[$teamName] = collect();
-            }
-            $backlogByTeam[$teamName]->push($bug);
-            
+            // Organize by team i delete by team from user
+                       
             // Organize by sprint
             if (!isset($backlogBySprint[$sprintNumber])) {
                 $backlogBySprint[$sprintNumber] = collect();
@@ -157,6 +171,14 @@ class BacklogController extends Controller
             }
         }
         
+        // If user is not admin, filter to show only their team's bugs
+        if (!auth()->user()->isAdmin()) {
+            $userTeams = $this->getUserTeams();
+            $allBacklogBugs = $allBacklogBugs->filter(function ($bug) use ($userTeams) {
+                return in_array($bug['team'], $userTeams);
+            });
+        }
+        
         // Second pass: organize bugs by team and sprint
         foreach ($allBacklogBugs as $bug) {
             $teamName = $bug['team'];
@@ -191,6 +213,48 @@ class BacklogController extends Controller
             'bugCount' => $sortedBacklogBugs->count() . ' ' . \Illuminate\Support\Str::plural('bug', $sortedBacklogBugs->count()),
             'totalBugPoints' => $sortedBacklogBugs->sum('points')
         ];
+    }
+
+    /**
+     * Get the teams the current user belongs to
+     *
+     * @return array Array of team names the user is a member of
+     */
+    protected function getUserTeams()
+    {
+        $userTeams = [];
+
+        if ($this->trelloService->hasValidCredentials()) {
+            try {
+                // Get current user's name
+                $userName = auth()->user()->name;
+                
+                // Get all boards with members
+                $options = [
+                    'members' => true,
+                    'member_fields' => 'fullName'
+                ];
+                
+                $boards = $this->trelloService->getBoards(['id', 'name'], $options);
+                
+                // Filter for boards where user is a member
+                foreach ($boards as $board) {
+                    if (isset($board['members'])) {
+                        foreach ($board['members'] as $member) {
+                            if (isset($member['fullName']) && $member['fullName'] === $userName) {
+                                $userTeams[] = $board['name'];
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Log error but don't fail - empty team list will result
+                \Log::error('Error fetching user teams: ' . $e->getMessage());
+            }
+        }
+        
+        return $userTeams;
     }
 
     private function getBugPriority($bug)
