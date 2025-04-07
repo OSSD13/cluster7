@@ -108,11 +108,11 @@
 
                     <!-- Bug Name/Description/buttom -->
                     <div class="p-4 grid grid-cols-9">
-                        
+
                             <div class="col-span-8">โค้ดที่คุณให้มาคือการใช้ Tailwind CSS เพื่อจัดการเลย์เอาต์ของหน้าเว็บแบบ Grid ซึ่งเป็นเทคนิคในการจัดเรียงองค์ประกอบต่างๆ ให้มีลักษณะเป็นตาราง โดยที่มีความยืดหยุ่นในการปรับขนาดตามอุปกรณ์หรือหน้าจอที่ใช้งาน
                             </div>
-                            
-                        
+
+
 
                         <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center ms-3 h-8 w-8 col-start-9">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-pencil-square" viewBox="0 0 16 16 ">
@@ -196,9 +196,9 @@
                                     @if(isset($bug['labels']) && is_array($bug['labels']))
                                     @foreach($bug['labels'] as $label)
                                     @if($label !== 'Backlog')
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full 
-                                                                {{ $label === 'High' ? 'bg-red-100 text-red-800' : 
-                                                                  ($label === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full
+                                                                {{ $label === 'High' ? 'bg-red-100 text-red-800' :
+                                                                  ($label === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
                                                                    'bg-green-100 text-green-800') }}">
                                         {{ $label }}
                                     </span>
@@ -275,9 +275,9 @@
                                     @if(isset($bug['labels']) && is_array($bug['labels']))
                                     @foreach($bug['labels'] as $label)
                                     @if($label !== 'Backlog')
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full 
-                                                                {{ $label === 'High' ? 'bg-red-100 text-red-800' : 
-                                                                  ($label === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full
+                                                                {{ $label === 'High' ? 'bg-red-100 text-red-800' :
+                                                                  ($label === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
                                                                    'bg-green-100 text-green-800') }}">
                                         {{ $label }}
                                     </span>
@@ -342,4 +342,5 @@
         document.getElementById('tab-' + tabId).classList.add('border-primary-500', 'text-primary-600');
     }
 </script>
+
 @endsection

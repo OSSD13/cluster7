@@ -99,7 +99,11 @@
 
             .sprint-date {
                 display: block;
-                width: 100%;
+                width: 16%;
+                text-align: center;
+            }
+            .sprint-icon {
+                width: 3%;
                 text-align: center;
             }
         </style>
@@ -264,8 +268,9 @@
 
                     sprintDiv.innerHTML = `
             <div class="sprint-header flex justify-between items-center cursor-pointer text-blue-700 font-bold text-lg" >
-                <span>Sprint #${sprintNumber} <span class="sprint-date text-sm text-center font-normal">${dateRange}</span></span>
-                <span class="collapse-icon">▲</span>
+                <span style="width: 80%;">Sprint #${sprintNumber}</span>
+                <span class="sprint-date text-sm px-1 font-normal bg-white rounded-lg" >${dateRange}</span>
+                <span class="collapse-icon sprint-icon">▲</span>
             </div>
             <div class="sprint-content mt-2 bg-white p-3 rounded-lg shadow-md style="display: block;" ${dataClass}">
                 <table class="w-full border-collapse border border-gray-300">
@@ -383,7 +388,7 @@
                                                     .split(' ');
                                                 const member = memberParts.join(' ');
                                                 cell.innerHTML =
-                                                    `<span class="bg-green-50 text-green-600 text-xs px-2 py-1 rounded mr-2">${team}</span>${member}`;
+                                                    `<span class="bg-green-50 text-green-600 text-xs px-2 py-1 rounded mr-2">${team} </span>${member}`;
                                             } else {
                                                 cell.textContent = input.value;
                                             }
