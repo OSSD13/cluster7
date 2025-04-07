@@ -5,6 +5,7 @@
 @section('page-title', 'Trello Teams')
 
 @section('content')
+<div class="rounded-[2vw] h-full w-full bg-gray-100 px-5 py-2">
 <!-- คอนเทนเนอร์หลักพร้อมความกว้างสูงสุด -->
 <div class="max-w-7xl mx-auto">
     <!-- ส่วนหัวพร้อมไอคอนและปุ่มต่างๆ -->
@@ -14,55 +15,84 @@
            
           
                 <!-- ไอคอนข้อมูลและป๊อปอัพ -->
-                <div class="relative">
+              
                     <!-- ไอคอนที่คลิกได้เพื่อแสดงป๊อปอัพ -->
-                    <div class="mb-6 pt-6 flex items-center">
-                    <div class="w-20 h-20 rounded-full bg-sky-100 flex justify-center items-center ">
-                    <svg xmlns="http://www.w3.org/2000/svg" width = "35" height = "35" fill="none" viewBox="0 0 24 24" stroke="#13A7FD">
+                    <div class="mb-4 pt-6 flex items-center">
+                    <div class="ml-7 w-20 h-20 rounded-full bg-sky-100 flex justify-center items-center ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width = "33" height = "33" fill="none" viewBox="0 0 24 24" stroke="#13A7FD">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                     </div>
-                    <h2 class="pt-1 ml-4 text-[#13A7FD] text-6xl font-bold italic">Trello Teams</h2>
+                    <div>
+                         <h2 class="ml-4 pt-1 text-[#13A7FD] text-5xl font-bold italic">Trello Teams</h2>
+                         
+                    </div>
+                    <!-- ไอคอนข้อมูลและป๊อปอัพ -->
+                     <div class="flex items-center" x-data="{ showInfo: false }">
+                <div class="relative">
+                    <!-- ไอคอนที่คลิกได้เพื่อแสดงป๊อปอัพ -->
+                    <svg @click="showInfo = !showInfo"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        fill="#0096D6"
+                        class="bi bi-exclamation-circle ml-2 mt-1 cursor-pointer hover:opacity-100"
+                        viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
+                    </svg>
+                   
                 </div>
-                         <!-- คอนเทนเนอร์สำหรับการแสดงป๊อปอัพโดยใช้ Alpine.js -->
-                    <div class="flex items-center" x-data="{ showInfo: false }">
+                       
+                 
                     <!-- เนื้อหาป๊อปอัพ -->
 
-                    <div x-show="showInfo"
-                        @click.away="showInfo = false"
-                        class="absolute left-0 mt-2 w-100 rounded-ld shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-4 z-50">
-                        <!-- ข้อความอธิบายและคำแนะนำ -->
-                        <div class="text-sm text-gray-1500">
-                            <p class="font-bold text-xl">About </p>
-                            <!-- ป้ายชื่อ Trello Teams พร้อมสีพื้นหลัง -->
+                    <div class="relative inline-block">
+    <!-- ไอคอนหรือปุ่ม -->
+    <button @click="showInfo = !showInfo">
+        <i class="fas fa-info-circle text-blue-500 text-xl"></i>
+    </button>
 
-                            <p class="text-[#13A7FD] text-6xl font-bold italic"> Trello Teams</p>
-                            <!-- คำอธิบายการทำงาน -->
-                            <p class="font-normal mb-2">This section displays all your Trello teams and their members.</p>
-                            <!-- คำแนะนำการปิดป๊อปอัพ -->
-                            <div class="flex items-center bg-yellow-100 rounded-md px-2 py-1 text-xs">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="#0096D6" viewBox="0 0 16 16">
-                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                    <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
-                                </svg>
-                                <span class="font-thin">Click the info icon to close this popup</span>
-                            </div>
-                        </div>
-                    </div>
+    <!-- ป๊อปอัพ -->
+    <div class="relative inline-block">
+    <!-- ไอคอนหรือปุ่ม -->
+    <button @click="showInfo = !showInfo">
+        <i class="fas fa-info-circle text-blue-500 text-xl"></i>
+    </button>
+
+            <!-- ป๊อปอัพ -->
+            <div class="relative inline-block">
+            <button @click="showInfo = !showInfo">
+                <i class="fas fa-info-circle text-blue-500 text-xl"></i>
+            </button>
+
+            <div x-show="showInfo" 
+                @click.away="showInfo = false"
+                class="absolute top-full left-[-20px] mt-3 w-80 shadow-lg bg-white rounded-xl ring-1 ring-black ring-opacity-5 p-4 z-50">
+                
+                <p class="text-base font-semibold">About</p>
+                <p class="bg-blue-200 text-sm text-[#13A7FD] rounded-full px-2 py-1 my-2 inline-block font-semibold">Trello Teams</p>
+                <p class="text-sm font-normal mb-2">This section displays all your Trello teams and their members.</p>
+                <div class="flex items-center bg-yellow-100 rounded-md px-2 py-1 text-xs">
+                    <span class="font-thin">Click the info icon to close this popup</span>
+                </div>
+            </div>
+        </div>
+
                 </div>
         </h2>
 
         <!-- ปุ่มดำเนินการต่างๆ -->
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-4 mr-8 mt-5">
             <!-- ปุ่มรีเฟรชข้อมูล -->
-            <a href="{{ route('trello.teams.refresh') }}" class="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-full flex items-center">
+            <a href="{{ route('trello.teams.refresh') }}" class="bg-[#13A7FD] hover:bg-[#13A7FD] text-white py-2 px-4 rounded-full flex items-center ">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 Refresh Data
             </a>
             <!-- ปุ่มตั้งค่า API -->
-            <a href="{{ route('trello.settings.index') }}" class="text-primary-600 hover:text-primary-800 flex items-center">
+            <a href="{{ route('trello.settings.index') }}" class="text-[#13A7FD] hover:text-[#13A7FD] flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -75,50 +105,47 @@
     <!-- ส่วนแสดงรายการทีม -->
     @if(count($teams) > 0)
     <!-- แท็บแสดงทีมต่างๆ -->
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6" x-data="{ activeTab: '{{ $teams[0]['id'] }}' }">
+    <div class="bg-white shadow overflow-hidden sm:rounded-xl ml-8 pt-1  mb-10 mr-8" x-data="{ activeTab: '{{ $teams[0]['id'] }}' }">
         <!-- เมนูแท็บ -->
         <div class="border-b border-gray-200 overflow-x-auto">
             <nav class="flex -mb-px whitespace-nowrap">
                 @foreach($teams as $index => $team)
                 <button
                     @click="activeTab = '{{ $team['id'] }}'"
-                    :class="{ 'border-primary-500 text-primary-600': activeTab === '{{ $team['id'] }}', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== '{{ $team['id'] }}' }"
-                    class="py-4 px-6 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200">
+                    :class="{ 'border-[#13A7FD] text-[#13A7FD]': activeTab === '{{ $team['id'] }}', 'border-transparent text-gray-500 hover:text-[#13A7FD] hover:border-gray-300': activeTab !== '{{ $team['id'] }}' }"
+                    class="py-4 px-6 border-b-2 font-medium text-lg focus:outline-none transition-colors duration-200">
                     <div class="flex items-center">
                         <span>{{ $team['name'] }}</span>
-                        <span class="ml-2 px-2 py-0.5 bg-cyan-100 text-xs text-blue-800 rounded-full">{{ count($team['members']) }}</span>
+                        <span class="ml-2 px-2 py-0.5 bg-cyan-100 text-xs text-[#13A7FD] rounded-full">{{ count($team['members']) }}</span>
                     </div>
                 </button>
                 @endforeach
-            </nav>
+                <div class="flex items-start justify-betweenflex flex justify-end ">
+                   
+                   @if(isset($team['url']))
+                   <a href="{{ $team['url'] }}" target="_blank" class="text-sm text-[#13A7FD] hover:underline flex items-center ">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                       </svg>
+                       Open in Trello
+                   </a>
+                   @endif
+               </div>
         </div>
+            </nav>
+          
 
         <!-- เนื้อหาของแต่ละทีม -->
         <div>
             @foreach($teams as $team)
             <!-- ตารางแสดงสมาชิก -->
             <div x-show="activeTab === '{{ $team['id'] }}'" class="p-4">
+                
                 <!-- ส่วนหัวของทีม -->
-                <div class="mb-4 flex items-start justify-between">
-                    <div>
-                        <h3 class="text-lg font-medium text-primary-600">{{ $team['name'] }}</h3>
-                        @if(isset($team['desc']) && !empty($team['desc']))
-                        <p class="mt-1 text-sm text-gray-500">{{ $team['desc'] }}</p>
-                        @endif
-                    </div>
-                    @if(isset($team['url']))
-                    <a href="{{ $team['url'] }}" target="_blank" class="text-sm text-primary-600 hover:underline flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                        Open in Trello
-                    </a>
-                    @endif
-                </div>
 
                 <!-- ตารางแสดงรายชื่อสมาชิก -->
-                <div class="mt-6 bg-gray-50 rounded-md p-4">
-                    <h4 class="text-base font-medium text-gray-900 mb-3">Team Members</h4>
+                <div class="mt-4  rounded-xl p-4">
+                    <h4 class="text-base font-medium text-[#13A7FD] mb- ">Team Members</h4>
                     <div class="overflow-hidden">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
