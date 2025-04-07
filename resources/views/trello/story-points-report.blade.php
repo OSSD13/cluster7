@@ -1042,7 +1042,7 @@
             const customParam = this.getAttribute('data-custom-param');
             const forceRefreshParam = customParam !== null ? customParam : '&force_refresh=true';
 
-            fetch(`/trello/data?board_id=${boardId}&_nocache=${timestamp}-${randomStr}${forceRefreshParam}`, {
+            fetch(`{{ url('/trello/data') }}?board_id=${boardId}&_nocache=${timestamp}-${randomStr}${forceRefreshParam}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1894,7 +1894,7 @@
             const role = document.getElementById('role').dataset.role;
             
             // Make API request
-            fetch('/trello/data?board_id=' + boardSelector.value)
+            fetch('{{ url('/trello/data') }}?board_id=' + boardSelector.value)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Failed to fetch board data');
@@ -1927,7 +1927,7 @@
             document.getElementById('cards-by-list-container').classList.remove('hidden');
             
             // Make API request
-            fetch('/trello/bug-cards?board_id=' + boardSelector.value)
+            fetch('{{ url('/trello/bug-cards') }}?board_id=' + boardSelector.value)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Failed to fetch bug cards');
@@ -1957,7 +1957,7 @@
 
         // Function to fetch sprint information
         function fetchSprintInfo() {
-            fetch('/trello/sprint-info')
+            fetch('{{ url('/trello/sprint-info') }}')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Failed to fetch sprint information');
@@ -2216,7 +2216,7 @@
                 });
                 
                 // Store board selection in session
-                fetch('/save-board-selection', {
+                fetch('{{ route("save.board.selection") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

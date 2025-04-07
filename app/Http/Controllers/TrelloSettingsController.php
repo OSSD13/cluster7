@@ -48,7 +48,7 @@ class TrelloSettingsController extends Controller
                 $response = Http::withOptions([
                     'verify' => false,
                     'timeout' => 15,
-                ])->get('https://api.trello.com/1/members/me', [
+                ])->get($this->getTrelloApiBaseUrl() . 'members/me', [
                     'key' => $apiKey,
                     'token' => $apiToken,
                     'boards' => 'open',
@@ -174,7 +174,7 @@ class TrelloSettingsController extends Controller
 
             // Log the test connection attempt with more details
             \Log::info('Testing Trello API connection', [
-                'endpoint' => 'https://api.trello.com/1/members/me',
+                'endpoint' => $this->getTrelloApiBaseUrl() . 'members/me',
                 'key_length' => strlen($apiKey),
                 'token_length' => strlen($apiToken)
             ]);
@@ -182,7 +182,7 @@ class TrelloSettingsController extends Controller
             $response = Http::withOptions([
                 'verify' => false,  // Try disabling SSL verification if needed
                 'timeout' => 15,    // Set a reasonable timeout
-            ])->get('https://api.trello.com/1/members/me', [
+            ])->get($this->getTrelloApiBaseUrl() . 'members/me', [
                 'key' => $apiKey,
                 'token' => $apiToken,
                 'boards' => 'open',
@@ -233,6 +233,16 @@ class TrelloSettingsController extends Controller
                 'details' => $e->getMessage()
             ]);
         }
+    }
+
+    /**
+     * Get the Trello API base URL.
+     *
+     * @return string
+     */
+    private function getTrelloApiBaseUrl()
+    {
+        return $this->trelloService->getBaseUrl();
     }
 
     private function getSetting($key)

@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
         openModal();
 
         // Send the API request to test the connection
-        fetch('{{ route('trello.test-connection') }}', {
+        fetch('{{ url(route('trello.test-connection')) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
