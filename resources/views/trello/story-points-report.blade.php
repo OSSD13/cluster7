@@ -2519,7 +2519,7 @@
                     console.log('Saving report with data:', reportData);
                     
                     // Submit directly to savedReports.store endpoint
-                    fetch('{{ route("saved-reports.store") }}', {
+                    fetch('{{ route("report.save") }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
