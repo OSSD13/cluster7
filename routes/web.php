@@ -16,15 +16,19 @@ use App\Http\Controllers\ConfirmController;
 use App\Http\Controllers\CompleteController;
 use App\Http\Controllers\MinorCasesController;
 
-Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
 
-// Authentication Routes
-Route::middleware('guest')->group(function () {
-    Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('login', [LoginController::class, 'login']);
-    Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-    Route::post('register', [RegisterController::class, 'register']);
-});
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+// //Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
+
+// // Authentication Routes
+// Route::middleware('guest')->group(function () {
+//     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
+//     Route::post('login', [LoginController::class, 'login']);
+//     Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+//     Route::post('register', [RegisterController::class, 'register']);
+// });
 
 // // Authenticated routes
 // Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(function () {
