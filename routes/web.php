@@ -102,6 +102,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     });
 
     // Non-admin routes
+    Route::get('sprint', [SprintSettingsController::class, 'index'])->name('sprint');
     Route::middleware([\App\Http\Middleware\NonAdminMiddleware::class])->group(function () {
         Route::get('my-teams', [TrelloTeamController::class, 'myTeams'])->name('my-teams.index');
         Route::get('my-teams/{id}/profile', [TrelloTeamController::class, 'generateTeamProfile'])->name('my-teams.profile');
@@ -114,6 +115,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     Route::get('/sprints/{sprint}', [\App\Http\Controllers\SprintReportController::class, 'showSprint'])->name('sprints.show');
     Route::get('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'showReport'])->name('sprint-reports.show');
     Route::delete('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'delete'])->name('sprint-reports.delete');
+    Route::get('reports', [\App\Http\Controllers\SprintReportController::class, 'getUserReports'])->name('reports');
 
     // Backlog Routes
     Route::get('/backlog', [\App\Http\Controllers\BacklogController::class, 'index'])->name('backlog.index');

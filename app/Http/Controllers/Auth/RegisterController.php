@@ -57,7 +57,6 @@ class RegisterController extends Controller
         ]);
 
         Auth::login($user);
-
         return redirect('/dashboard')->with('status', 'Your account is pending approval. You will be notified once an administrator approves your account.');
     }
 } 

@@ -7,9 +7,18 @@ use App\Models\Sprint;
 use App\Models\SprintReport;
 use App\Helpers\DateHelper;
 use Illuminate\Support\Facades\Auth;
+use App\Services\TrelloService;
 
 class SprintReportController extends Controller
 {
+    private $trelloService;
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->trelloService = app(\App\Services\TrelloService::class);
+    }
+
     /**
      * Display a listing of saved sprint reports.
      *
@@ -17,12 +26,39 @@ class SprintReportController extends Controller
      */
     public function index()
     {
-        // Get all sprints with their reports, ordered by latest sprint first
-        $sprints = Sprint::with(['reports' => function($query) {
-            $query->orderBy('created_at', 'desc');
-        }])
-            ->orderBy('sprint_number', 'desc')
-            ->get();
+        // If user is admin, show all sprints and reports
+        if (auth()->user()->isAdmin()) {
+            // Get all sprints with their reports, ordered by latest sprint first
+            $sprints = Sprint::with(['reports' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            }])
+                ->orderBy('sprint_number', 'desc')
+                ->get();
+        } else {
+            // For non-admin users, filter reports based on their team membership
+            $userTeams = $this->getUserTeams();
+
+            // Get all sprints
+            $sprints = Sprint::with(['reports' => function($query) use ($userTeams) {
+                // Only include reports for teams the user belongs to
+                if (!empty($userTeams)) {
+                    $query->whereIn('board_name', $userTeams);
+                }
+                $query->orderBy('created_at', 'desc');
+            }])
+                ->orderBy('sprint_number', 'desc')
+                ->get();
+                
+            // Remove sprints that don't have any reports for user's teams
+            $sprints = $sprints->filter(function($sprint) {
+                return $sprint->reports->count() > 0;
+            });
+            
+            \Log::info('Filtered sprint reports for user: ' . auth()->user()->name, [
+                'user_teams' => $userTeams,
+                'sprint_count' => $sprints->count()
+            ]);
+        }
             
         return view('reports.sprints.index', compact('sprints'));
     }
@@ -38,6 +74,27 @@ class SprintReportController extends Controller
         $sprint = Sprint::with(['reports' => function($query) {
             $query->orderBy('created_at', 'desc');
         }])->findOrFail($sprintId);
+        
+        // For non-admin users, filter reports based on their team membership
+        if (!auth()->user()->isAdmin()) {
+            $userTeams = $this->getUserTeams();
+            
+            // Filter the reports collection to only include user's teams
+            if (!empty($userTeams)) {
+                $sprint->reports = $sprint->reports->filter(function($report) use ($userTeams) {
+                    return in_array($report->board_name, $userTeams);
+                });
+            } else {
+                // If user doesn't belong to any teams, they shouldn't see any reports
+                $sprint->reports = collect([]);
+            }
+            
+            // If no reports for this user's teams, redirect to my-team-reports
+            if ($sprint->reports->isEmpty()) {
+                return redirect()->route('my-team-reports')
+                    ->with('warning', 'No reports found for your teams in Sprint #' . $sprint->sprint_number);
+            }
+        }
         
         // Group reports by board_name (team)
         $reportsByTeam = [];
@@ -280,6 +337,14 @@ class SprintReportController extends Controller
                 }
             }
             
+            // If user is not admin, filter to show only their team's bugs
+            if (!auth()->user()->isAdmin()) {
+                $userTeams = $this->getUserTeams();
+                $allBacklogBugs = $allBacklogBugs->filter(function ($bug) use ($userTeams) {
+                    return in_array($bug['team'], $userTeams);
+                });
+            }
+            
             // Filter to only show bugs for this team if we have team information
             if (!empty($boardName)) {
                 $allBacklogBugs = $allBacklogBugs->filter(function ($bug) use ($boardName) {
@@ -398,5 +463,111 @@ class SprintReportController extends Controller
             return redirect()->route('sprints.index')
                 ->with('error', 'Error deleting report: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Get the teams the current user belongs to
+     *
+     * @return array Array of team names the user is a member of
+     */
+    protected function getUserTeams()
+    {
+        $userTeams = [];
+
+        if ($this->trelloService->hasValidCredentials()) {
+            try {
+                // Get current user's name
+                $userName = auth()->user()->name;
+                
+                // Get all boards with members
+                $options = [
+                    'members' => true,
+                    'member_fields' => 'fullName'
+                ];
+                
+                $boards = $this->trelloService->getBoards(['id', 'name'], $options);
+                
+                // Filter for boards where user is a direct member
+                foreach ($boards as $board) {
+                    if (isset($board['members']) && is_array($board['members'])) {
+                        foreach ($board['members'] as $member) {
+                            if (isset($member['fullName']) && $member['fullName'] === $userName) {
+                                $userTeams[] = $board['name'];
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // Allow users to see data from all teams they belong to
+                // Removed the limitation to only see the first team
+            } catch (\Exception $e) {
+                // Log error but don't fail - empty team list will result
+                \Log::error('Error fetching user teams: ' . $e->getMessage());
+            }
+        }
+        
+        return $userTeams;
+    }
+
+    /**
+     * Get all reports for the teams the current user belongs to
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getUserReports()
+    {
+        // Get user teams and ensure no duplicates
+        $userTeams =$this->getUserTeams();
+        
+        // Get all reports
+        $allReports = SprintReport::with(['sprint', 'user'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Filter reports by user teams
+        $teamReports = [];
+        
+        foreach ($allReports as $report) {
+            if (in_array($report->board_name, $userTeams)) {
+                if (!isset($teamReports[$report->board_name])) {
+                    $teamReports[$report->board_name] = [];
+                }
+                $teamReports[$report->board_name][] = $report;
+            }
+        }
+        
+        // Group reports by sprint
+        $reportsBySprint = [];
+        
+        foreach ($teamReports as $teamName => $reports) {
+            foreach ($reports as $report) {
+                $sprintId = $report->sprint->id;
+                $sprintNumber = $report->sprint->sprint_number;
+                
+                if (!isset($reportsBySprint[$sprintId])) {
+                    $reportsBySprint[$sprintId] = [
+                        'sprint' => $report->sprint,
+                        'teams' => []
+                    ];
+                }
+                
+                if (!isset($reportsBySprint[$sprintId]['teams'][$teamName])) {
+                    $reportsBySprint[$sprintId]['teams'][$teamName] = [];
+                }
+                
+                $reportsBySprint[$sprintId]['teams'][$teamName][] = $report;
+            }
+        }
+        
+        // Sort sprints by number (descending)
+        uasort($reportsBySprint, function($a, $b) {
+            return $b['sprint']->sprint_number <=> $a['sprint']->sprint_number;
+        });
+        
+        return view('reports.user-reports', [
+            'reportsBySprint' => $reportsBySprint,
+            'userTeams' => $userTeams
+        ]);
     }
 } 

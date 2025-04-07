@@ -7,11 +7,12 @@
 @section('content')
 <div class="max-w-7xl mx-auto">
     <div class="mb-6">
-        <a href="{{ route('sprints.index') }}" class="text-primary-600 hover:text-primary-900 flex items-center">
+        <!--ask if is admin go to route sprint index if not go to user report-->
+        <a href="{{ auth()->user()->isAdmin() ? route('sprints.index') : route('reports') }}" class="text-primary-600 hover:text-primary-900 flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Back to all sprints
+            Back to {{ auth()->user()->isAdmin() ? 'all sprints' : 'All Reports' }}
         </a>
     </div>
 

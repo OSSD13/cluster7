@@ -17,7 +17,8 @@
             </h1>
 
             <div class="flex items-center space-x-2">
-                <a href="{{ route('sprints.index') }}" class="text-primary-600 hover:text-primary-900 flex items-center">
+                <!--ask if is admin go to route sprint index if not go to user report-->
+                <a href="{{ auth()->user()->isAdmin() ? route('sprints.index') : route('reports') }}" class="text-primary-600 hover:text-primary-900 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
@@ -53,7 +54,12 @@
                 onclick="showTab('by-sprint')">
                 By Sprint
             </button>
-        
+            <button
+                id="tab-by-team"
+                class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                onclick="showTab('by-team')">
+                By Team
+            </button>
         </nav>
     </div>
 

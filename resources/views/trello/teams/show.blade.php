@@ -32,6 +32,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                 @endif
+                
             </div>
             <div>
                 <h2 class="text-2xl font-semibold text-gray-900">{{ $organization['displayName'] ?? $organization['name'] ?? 'Trello Team' }}</h2>
@@ -60,7 +61,7 @@
             <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">{{ count($boards) }} Board{{ count($boards) != 1 ? 's' : '' }}</span>
         </div>
         
-        <div class="border-t border-gray-200">
+        <div class="border-t border-gray-200">+-
             <ul role="list" class="divide-y divide-gray-200">
                 @foreach($boards as $board)
                     <li>
@@ -143,6 +144,7 @@
                                         @endif
                                     </div>
                                 </td>
+                                <!-- สถานะการลงทะเบียน -->
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if(isset($member['isRegistered']) && $member['isRegistered'])
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
