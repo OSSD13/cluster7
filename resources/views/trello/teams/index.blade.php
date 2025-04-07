@@ -11,24 +11,23 @@
     <div class="mb-6 flex justify-between items-">
         <!-- หัวข้อหลักและไอคอนข้อมูล -->
         <h2 class="text-2xl font-bold text-gray-900">
-            <!-- คอนเทนเนอร์สำหรับการแสดงป๊อปอัพโดยใช้ Alpine.js -->
-            <div class="flex items-center" x-data="{ showInfo: false }">
-                Trello Teams
+           
+          
                 <!-- ไอคอนข้อมูลและป๊อปอัพ -->
                 <div class="relative">
                     <!-- ไอคอนที่คลิกได้เพื่อแสดงป๊อปอัพ -->
-                    <svg @click="showInfo = !showInfo"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="#0096D6"
-                        class="bi bi-exclamation-circle ml-2 cursor-pointer hover:opacity-80"
-                        viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
-                    </svg>
-
+                    <div class="mb-6 pt-6 flex items-center">
+                    <div class="w-20 h-20 rounded-full bg-sky-100 flex justify-center items-center ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width = "35" height = "35" fill="none" viewBox="0 0 24 24" stroke="#13A7FD">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <h2 class="pt-1 ml-4 text-[#13A7FD] text-6xl font-bold italic">Trello Teams</h2>
+                </div>
+                         <!-- คอนเทนเนอร์สำหรับการแสดงป๊อปอัพโดยใช้ Alpine.js -->
+                    <div class="flex items-center" x-data="{ showInfo: false }">
                     <!-- เนื้อหาป๊อปอัพ -->
+
                     <div x-show="showInfo"
                         @click.away="showInfo = false"
                         class="absolute left-0 mt-2 w-100 rounded-ld shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-4 z-50">
@@ -36,7 +35,8 @@
                         <div class="text-sm text-gray-1500">
                             <p class="font-bold text-xl">About </p>
                             <!-- ป้ายชื่อ Trello Teams พร้อมสีพื้นหลัง -->
-                            <p class="font-semibold text-l mb-2 text-sky-400 bg-cyan-100 rounded-full px-2 py-1 inline-block"> Trello Teams</p>
+
+                            <p class="text-[#13A7FD] text-6xl font-bold italic"> Trello Teams</p>
                             <!-- คำอธิบายการทำงาน -->
                             <p class="font-normal mb-2">This section displays all your Trello teams and their members.</p>
                             <!-- คำแนะนำการปิดป๊อปอัพ -->
@@ -55,7 +55,7 @@
         <!-- ปุ่มดำเนินการต่างๆ -->
         <div class="flex items-center space-x-4">
             <!-- ปุ่มรีเฟรชข้อมูล -->
-            <a href="{{ route('trello.teams.refresh') }}" class="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-md flex items-center">
+            <a href="{{ route('trello.teams.refresh') }}" class="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-full flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>

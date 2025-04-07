@@ -23,38 +23,94 @@
             background-color: #13A7FD;
             color: white;
         }
+
+        /* Sidebar transition animation */
+        .sidebar-transition {
+            transition: width 0.3s ease-in-out;
+        }
+
+        /* Text fade in/out animation */
+        .text-fade {
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        /* Tooltip for collapsed sidebar */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+         .sidebar-button span {
+    overflow:auto;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+} 
     </style>
 </head>
 
 <body class="bg-gray-50">
-    <div class="min-h-screen flex">
+<div class="min-h-screen flex" x-data="{ sidebarOpen: localStorage.getItem('sidebarOpen') === 'false' ? false : true }" 
+x-init="$watch('sidebarOpen', val => localStorage.setItem('sidebarOpen', val))">
         <!-- Sidebar -->
-        <div class="w-64 bg-white shadow-md flex flex-col">
+        <div 
+            class="bg-white shadow-md flex flex-col sidebar-transition overflow-hidden" 
+            :class="sidebarOpen ? 'w-64' : 'w-16'"
+        >
             <!-- Logo and App Name -->
-            <div class="py-4 px-4  border-gray-200">
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center ">
-                    <img src="{{ asset('Frame 25.png') }}" >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                        </svg>
-                    </div>
-                    
-                </div>
-               
-            </div>
+            <div class="py-4 px-4 border-gray-200 flex items-center justify-between">
+    <div class="flex items-center">
+        <!-- Logo -->
+        <div class="flex items-center justify-center" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'" x-transition:enter="transition ease-out duration-300" x-transition:leave="transition ease-in duration-200">
+            <img src="{{ asset('Frame 25.png') }}" class="h-15 w-15">
+        </div>
+        <!-- App Name -->
+        <span class="ml-2 font-medium text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'" x-transition:enter="transition ease-out duration-300" x-transition:leave="transition ease-in duration-200">
+            {{ config( 'Laravel') }}
+        </span>
+    </div>
+        <!-- Sidebar Toggle Button -->
+        <button 
+            @click="sidebarOpen = !sidebarOpen" 
+            class="p-1 rounded-full hover:bg-gray-200 focus:outline-none"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+            </svg>
+        </button>
+    </div>
 
-            <!-- User Profile Card -->
-            <div class="px-4 py-4 border-b border-gray-200">
+            <!-- User Profile Card - Only Show When Expanded -->
+            <div class="px-4 py-4 border-b border-gray-200" x-show="sidebarOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                 <div class="bg-gray-50 rounded-lg p-3 shadow-sm">
                     <div class="flex items-center">
+                        <div class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
+                            <span class="text-primary-700 font-bold text-lg">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                        </div>
                         
-                            <div class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
-                                <span class="text-primary-700 font-bold text-lg">{{ substr(auth()->user()->name, 0, 1) }}</span>
-                            </div>
-                       
                         <div class="ml-3 flex-1 min-w-0">
-                        <div class="mt-1">
+                            <div class="mt-1">
                                 @php
                                 $roleBgColor = 'bg-gray-100';
                                 $roleTextColor = 'text-gray-800';
@@ -79,7 +135,6 @@
                             <p class="text-xs text-gray-500 truncate">
                                 {{ auth()->user()->email }}
                             </p>
-                    
                         </div>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -109,10 +164,11 @@
                 <!-- Trello Teams - Available for all users -->
                 <a href="{{ route('trello.teams.index') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('trello.teams.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
                     <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        Trello teams
+                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">My Teams</span>
+                        <span class="tooltip-text" x-show="!sidebarOpen">My Teams</span>
                     </div>
                 </a>
                 <a href="{{ route('minorcases') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('minorcases') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
@@ -134,14 +190,10 @@
                 </a>
             
 
-                <div class="px-4 py-2 mt-4 mb-2">
+                <!-- Reports Section -->
+                <div class="px-4 py-2 mt-4 mb-2" x-show="sidebarOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                     <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Reports</p>
                 </div>
-
-                <a href="{{ route('story.points.report') }}" class="block px-4 py-2 sidebar-button mb-1 {{ request()->routeIs('story.points.report') ? 'active' : '' }}">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                         @php
                             $currentSprint = \App\Models\Sprint::getCurrentSprint();
@@ -177,38 +229,41 @@
                     </div>
                 </a>
 
-                <a href="{{ route('settings.sprint') }}" class="block px-4 py-2 sidebar-button mb-1 {{ request()->routeIs('settings.sprint') ? 'active' : '' }}">
+                <a href="{{ route('settings.sprint') }}" class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('settings.sprint') ? 'active' : '' }}" :class="sidebarOpen ? '' : 'flex justify-center'">
                     <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        Sprint Settings
+                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Sprint Settings</span>
+                        <span class="tooltip-text" x-show="!sidebarOpen">Sprint Settings</span>
                     </div>
                 </a>
 
-                <a href="{{ route('saved-reports.index') }}" class="block px-4 py-2 sidebar-button mb-1 {{ request()->routeIs('saved-reports.*') ? 'active' : '' }}">
+                <a href="{{ route('saved-reports.index') }}" class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('saved-reports.*') ? 'active' : '' }}" :class="sidebarOpen ? '' : 'flex justify-center'">
                     <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                         </svg>
-                        Saved Reports
+                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Saved Reports</span>
+                        <span class="tooltip-text" x-show="!sidebarOpen">Saved Reports</span>
                     </div>
                 </a>
 
-                <a href="{{ route('sprints.index') }}" class="block px-4 py-2 sidebar-button mb-1 {{ request()->routeIs('sprints.*') || request()->routeIs('sprint-reports.*') ? 'active' : '' }}">
+                <a href="{{ route('sprints.index') }}" class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('sprints.*') || request()->routeIs('sprint-reports.*') ? 'active' : '' }}" :class="sidebarOpen ? '' : 'flex justify-center'">
                     <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        Sprint Reports
+                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Sprint Reports</span>
+                        <span class="tooltip-text" x-show="!sidebarOpen">Sprint Reports</span>
                     </div>
                 </a>
 
                 @endif
             </div>
 
-            <!-- App Version -->
-            <div class="border-t border-gray-200 py-3 px-4">
+            <!-- App Version - Only Show When Expanded -->
+            <div class="border-t border-gray-200 py-3 px-4" x-show="sidebarOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                 <p class="text-xs text-gray-500 text-center">v{{ config('app.version', '1.0') }}</p>
             </div>
         </div>
