@@ -97,7 +97,7 @@
     }
 </style>
 
-<div class="max-w-7xl mx-auto">
+<div class="max-w-6xl mx-auto">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Story Points Report</h1>
         
@@ -264,20 +264,13 @@
         </div>
     </div>
 
-    <div id="main-loading" class="hidden">
-        <div class="flex justify-center items-center bg-white shadow rounded-lg p-6 mb-6">
-            <div class="spinner mr-3"></div>
-            <span>Loading data from Trello...</span>
-        </div>
-    </div>
+ 
 
     <div id="main-data-container" class="hidden">
         <div id="story-points-summary" class="hidden">
             <div class="bg-white shadow rounded-lg p-6 mb-6">
                 <h2 class="text-lg font-semibold mb-4">
                     Sprint Statistics
-                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Using Agile Tools Plugin (59d4ef8cfea15a55b0086614)</span>
-                </h2>
                 
                 <!-- Date Display -->
                 <div class="mb-3 text-sm text-gray-500 flex items-center">
