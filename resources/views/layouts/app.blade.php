@@ -9,6 +9,21 @@
     <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.2/dist/alpine.min.js" defer></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- Add custom styles for sidebar buttons -->
+    <style>
+        .sidebar-button {
+            max-width: 90%; /* Adjust this percentage to control button width */
+            margin-right: auto;
+            border-top-right-radius: 9999px;
+            border-bottom-right-radius: 9999px;
+        }
+        
+        .sidebar-button:hover, .sidebar-button.active {
+            background-color: #13A7FD;
+            color: white;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
@@ -16,37 +31,30 @@
         <!-- Sidebar -->
         <div class="w-64 bg-white shadow-md flex flex-col">
             <!-- Logo and App Name -->
-            <div class="py-4 px-4 border-b border-gray-200">
+            <div class="py-4 px-4  border-gray-200">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center shadow-sm mr-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="flex items-center justify-center ">
+                    <img src="{{ asset('Frame 25.png') }}" >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                         </svg>
                     </div>
-                    <h1 class="text-xl font-bold text-primary-600">{{ config('app.name', 'DevPerf') }}</h1>
+                    
                 </div>
-                <div class="mt-2 px-1 py-1 bg-gray-100 rounded-full text-sm font-medium text-gray-700 text-center">
-                    @yield('page-title', 'Dashboard')
-                </div>
+               
             </div>
 
             <!-- User Profile Card -->
             <div class="px-4 py-4 border-b border-gray-200">
                 <div class="bg-gray-50 rounded-lg p-3 shadow-sm">
                     <div class="flex items-center">
-                        <div class="flex-shrink-0">
+                        
                             <div class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
                                 <span class="text-primary-700 font-bold text-lg">{{ substr(auth()->user()->name, 0, 1) }}</span>
                             </div>
-                        </div>
+                       
                         <div class="ml-3 flex-1 min-w-0">
-                            <p class="text-sm font-medium text-gray-900 truncate">
-                                {{ auth()->user()->name }}
-                            </p>
-                            <p class="text-xs text-gray-500 truncate">
-                                {{ auth()->user()->email }}
-                            </p>
-                            <div class="mt-1">
+                        <div class="mt-1">
                                 @php
                                 $roleBgColor = 'bg-gray-100';
                                 $roleTextColor = 'text-gray-800';
@@ -65,6 +73,13 @@
                                     {{ ucfirst(auth()->user()->role) }}
                                 </span>
                             </div>
+                            <p class="text-sm font-medium text-gray-900 truncate">
+                                {{ auth()->user()->name }}
+                            </p>
+                            <p class="text-xs text-gray-500 truncate">
+                                {{ auth()->user()->email }}
+                            </p>
+                    
                         </div>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -123,7 +138,7 @@
                     <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Reports</p>
                 </div>
 
-                <a href="{{ route('story.points.report') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('story.points.report') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                <a href="{{ route('story.points.report') }}" class="block px-4 py-2 sidebar-button mb-1 {{ request()->routeIs('story.points.report') ? 'active' : '' }}">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -162,7 +177,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('settings.sprint') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('settings.sprint') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                <a href="{{ route('settings.sprint') }}" class="block px-4 py-2 sidebar-button mb-1 {{ request()->routeIs('settings.sprint') ? 'active' : '' }}">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -171,7 +186,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('saved-reports.index') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('saved-reports.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                <a href="{{ route('saved-reports.index') }}" class="block px-4 py-2 sidebar-button mb-1 {{ request()->routeIs('saved-reports.*') ? 'active' : '' }}">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
@@ -180,7 +195,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('sprints.index') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('sprints.*') || request()->routeIs('sprint-reports.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                <a href="{{ route('sprints.index') }}" class="block px-4 py-2 sidebar-button mb-1 {{ request()->routeIs('sprints.*') || request()->routeIs('sprint-reports.*') ? 'active' : '' }}">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -237,5 +252,4 @@
         }
     </script>
 </body>
-
 </html>
