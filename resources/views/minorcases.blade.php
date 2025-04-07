@@ -101,7 +101,11 @@
 
             .sprint-date {
                 display: block;
-                width: 100%;
+                width: 16%;
+                text-align: center;
+            }
+            .sprint-icon {
+                width: 3%;
                 text-align: center;
             }
         </style>
@@ -181,6 +185,38 @@
                         });
                 }
 
+
+                function updateDisplayedDate() {
+                    const selectedYear = document.getElementById('selectedYear').textContent;
+
+                    // Convert selectedYear to a number for proper comparison
+                    const yearValue = parseInt(selectedYear);
+
+                    // Hide or show sprint blocks based on the selected year
+                    document.querySelectorAll('.sprint-block').forEach(sprintBlock => {
+                        // The sprint date contains the year at the end, so we can extract it
+                        const sprintDateElement = sprintBlock.querySelector('.sprint-date');
+                        if (sprintDateElement) {
+                            const dateText = sprintDateElement.textContent;
+                            const sprintYear = parseInt(dateText.match(/(\d{4})$/)[1]);
+
+                            // Show the sprint if its year matches the selected year, otherwise hide it
+                            if (sprintYear === yearValue) {
+                                sprintBlock.style.display = 'block';
+                            } else {
+                                sprintBlock.style.display = 'none';
+                            }
+                        }
+                    });
+                }
+                document.querySelectorAll('#yearDropdownMenu a').forEach(item => {
+                    item.addEventListener("click", function() {
+                        document.getElementById('selectedYear').textContent = this.textContent;
+                        document.getElementById('yearDropdownMenu').classList.add("hidden");
+                        updateDisplayedDate(); // Call the function when year changes
+                    });
+                });
+
                 // เติมข้อมูลสปรินต์ด้วยข้อมูลจากรายงาน
                 function populateSprintsFromReport(reportData) {
                     const sprintContainer = document.getElementById("sprintContainer");
@@ -221,7 +257,7 @@
                 // สร้าง div สปรินต์ด้วยข้อมูล
                 function createSprintDiv(sprintNumber, sprintItems) {
                     const sprintDiv = document.createElement("div");
-                    sprintDiv.className = "bg-white rounded-3xl p-3 mb-5 sprint-block w-49  ";
+                    sprintDiv.className = "bg-white rounded-3xl p-0 mb-5 sprint-block w-49  ";
                     sprintDiv.dataset.sprintNumber = sprintNumber;
 
                     // ตรวจสอบว่าสปรินต์นี้มีข้อมูลหรือไม่
@@ -232,14 +268,16 @@
                     const dateRange = getSprintDateRange(parseInt(sprintNumber));
 
                     sprintDiv.innerHTML = `
-            <div class="flex items-center justify-between px-8 py-3 text-lg font-bold text-blue-700 cursor-pointer rounded-3xl sprint-header bg-sky-100"  >
-                <span class="text-[#13A7FD] text-2xl">Sprint #${sprintNumber} <span class="text-sm font-normal text-center sprint-date text-[#13A7FD]">${dateRange}</span></span>
-                <span class="collapse-icon text-[#13A7FD] ">▲</span>
+            <div class="flex items-center justify-between px-10 py-3 text-lg font-bold text-blue-700 cursor-pointer rounded-3xl sprint-header bg-sky-100"  >
+                <span class="mr-8 text-[#13A7FD] text-2xl" style="width: 80%;">Sprint #${sprintNumber} </span>
+                    <span class="text-sm font-normal mb-2 lace-items-end sprint-date text-[#13A7FD] mt-3  bg-white rounded-3xl px-2 py-1">${dateRange}</span>
+       <span class="collapse-icon text-[#13A7FD] sprint-icon">▲</span>
             </div>
+
             <div class="sprint-content mt-2 bg-white p-4 rounded-3xl  style="display: block;" ${dataClass}">
                 <table class="w-full border border-collapse bg gray-200 ">
-                    <thead>
-                        <tr class="bg gray-200">
+                    <thead class="bg gray-700">
+                        <tr>
                             <th class="px-4 py-2 border border-white "><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Number</span></th>
                             <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Card_Detail</span></th>
                             <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Description</span></th>
@@ -265,17 +303,17 @@
                 <td class="px-4 py-2 text-center border border-white"><span class="px-14 py-1 mr-2 bg-white border border-[#13A7FD] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">#${item.number || ''}</span></td>
                 <td class="px-4 py-2 text-center border border-white">${item.card_detail || ''}</td>
                 <td class="px-4 py-2 text-center border border-white" style="width: 40%;">${item.description || ''}</td>
-                <td class="px-4 py-2 text-center border border-white"><span class="px-2 py-1 mr-2 text-xs text-green-600 rounded-3xl bg-green-50">${item.teamName || ''}</span>${item.member || ''}</td>
+                <td class="px-4 py-2 text-center border border-white"><span class="px-2 py-1 mr-2 text-sm font-bold text-[#65BC23] rounded-3xl bg-[#DDFFEC]">${item.teamName || ''}</span>${item.member || ''}</td>
                 <td class="px-4 py-2 text-center border border-white "><span class="px-14 py-1 mr-2 bg-[#BAF3FF] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">${item.point || ''}</span></td>
                 <td class="px-4 py-2 text-center border border-white">
-                    <button class="px-2 py-1 mr-1 text-white bg-yellow-500 rounded edit-btn hover:bg-yellow-600">
-                        <svg class="w-5 h-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button class="px-2 py-2 mr-1 text-white bg-[#FFC7B2] rounded-full edit-btn hover:bg-yellow-600">
+                        <svg class="w-5 h-5 text-[#985E00]  hover:text-white " width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                         </svg>
                     </button>
-                    <button class="px-2 py-1 text-white bg-red-500 rounded delete-btn hover:bg-red-600">
-                        <svg class="w-5 h-5 text-red-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button class="px-2 py-2 text-[#FF0004] bg-[#FFACAE] rounded-full delete-btn hover:bg-red-600 ">
+                        <svg class="w-5 h-5 text-2xl text-[#FF0004] hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
                     </button>
