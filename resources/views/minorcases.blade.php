@@ -4,16 +4,18 @@
 @section('page-title', 'Dashboard')
 
 @section('content')
-    <div class="rounded-[2vw] h-full w-full bg-gray-100 p-5">
+    <div class="rounded-[2vw] h-full w-full bg-gray-100 p-5 ">
+
+        <!-- Title Content -->
         <div class="flex items-center space-x-4">
-            <div class="w-20 h-20 rounded-full bg-sky-100 flex justify-center items-center">
+            <div class="flex items-center justify-center w-20 h-20 rounded-full bg-sky-100">
                 <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="#13A7FD" class="bi bi-hash"
                     viewBox="0 0 16 16">
                     <path
                         d="M8.39 12.648a1 1 0 0 0-.015.18c0 .305.21.508.5.508.266 0 .492-.172.555-.477l.554-2.703h1.204c.421 0 .617-.234.617-.547 0-.312-.188-.53-.617-.53h-.985l.516-2.524h1.265c.43 0 .618-.227.618-.547 0-.313-.188-.524-.618-.524h-1.046l.476-2.304a1 1 0 0 0 .016-.164.51.51 0 0 0-.516-.516.54.54 0 0 0-.539.43l-.523 2.554H7.617l.477-2.304c.008-.04.015-.118.015-.164a.51.51 0 0 0-.523-.516.54.54 0 0 0-.531.43L6.53 5.484H5.414c-.43 0-.617.22-.617.532s.187.539.617.539h.906l-.515 2.523H4.609c-.421 0-.609.219-.609.531s.188.547.61.547h.976l-.516 2.492c-.008.04-.015.125-.015.18 0 .305.21.508.5.508.265 0 .492-.172.554-.477l.555-2.703h2.242zm-1-6.109h2.266l-.515 2.563H6.859l.532-2.563z" />
                 </svg>
             </div>
-            <p class="text-[#13A7FD] text-6xl font-bold italic">Minor Cases</p>
+            <p class="text-[#13A7FD] text-6xl font-bold italic font-sans">Minor Cases</p>
         </div>
 
         <!-- Container for all Sprints -->
@@ -22,7 +24,7 @@
         </div>
 
         <!-- Container for both Dropdowns and add button -->
-        <div class="absolute top-14 right-10 flex space-x-4">
+        <div class="absolute flex space-x-4 top-14 right-10 ">
 
             <!-- Year Dropdown -->
             <div class="relative inline-block text-left py-3.5">
@@ -41,12 +43,12 @@
                 <div id="yearDropdownMenu"
                     class="hidden absolute right-0 mt-2 w-32 bg-white border rounded-[15px] shadow-lg overflow-hidden">
                     <ul class="text-gray-700">
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2025</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2024</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2023</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2022</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2021</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">2020</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2025</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2024</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2023</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2022</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2021</a></li>
+                        <li><a href="#" class="block py-2 px-11 hover:bg-gray-200">2020</a></li>
                     </ul>
                 </div>
             </div>
@@ -54,7 +56,7 @@
             <!-- Sprint Dropdown -->
             <div class="relative inline-block text-left py-3.5">
                 <button id="sprintDropdownButton"
-                    class="flex items-center px-4 py-2 bg-white border rounded-[100px] shadow-md w-49 justify-between">
+                    class="flex items-center justify-between px-4 py-2 bg-white border rounded-full shadow-md w-49 ">
                     <span id="selectedSprint" class="block px-6">Sprint 1 ~ 10</span>
                     <svg class="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                         fill="currentColor">
@@ -68,12 +70,12 @@
                 <div id="sprintDropdownMenu"
                     class="hidden absolute right-0 mt-2 w-48 bg-white border rounded-[15px] shadow-lg overflow-hidden">
                     <ul class="text-gray-700">
-                        <li><a href="#" class="block px-12 py-2 hover:bg-gray-200 border-b">Sprint 1 ~ 10</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 11 ~ 20</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 21 ~ 30</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 31 ~ 40</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 41 ~ 50</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">Sprint 51 ~ 52</a></li>
+                        <li><a href="#" class="block px-12 py-2 border-b hover:bg-gray-200">Sprint 1 ~ 10</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 11 ~ 20</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 21 ~ 30</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 31 ~ 40</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 41 ~ 50</a></li>
+                        <li><a href="#" class="block py-2 px-11 hover:bg-gray-200">Sprint 51 ~ 52</a></li>
                     </ul>
                 </div>
             </div>
@@ -110,18 +112,18 @@
 
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                // Fixed year for sprint date ranges
+                // ปีที่คงที่สำหรับช่วงวันที่สปรินต์
                 const SPRINT_YEAR = 2025;
 
-                // Function to get date range for a sprint
+                // ฟังก์ชั่นในการรับช่วงวันที่สำหรับสปรินต์
                 function getSprintDateRange(sprintNumber) {
                     const sprintStartDate = new Date(SPRINT_YEAR, 0, 1); // Jan 1 of fixed year
 
-                    // Calculate the start date (each sprint is 1 week, starting from Jan 1)
+                    // คำนวณวันที่เริ่มต้น (แต่ละสปรินต์มีระยะเวลา 1 สัปดาห์ เริ่มตั้งแต่วันที่ 1 มกราคม)
                     const startDay = (sprintNumber - 1) * 7 + 1;
                     sprintStartDate.setDate(startDay);
 
-                    // Calculate the end date (5 days later for a work week)
+                    // คำนวณวันสิ้นสุด (5 วันถัดมาสำหรับสัปดาห์การทำงาน)
                     const sprintEndDate = new Date(sprintStartDate);
                     sprintEndDate.setDate(sprintStartDate.getDate() + 4);
 
@@ -135,6 +137,54 @@
 
                     return `${startDateStr} - ${endDateStr} ${SPRINT_YEAR}`;
                 }
+
+                // ฟังก์ชั่นในการสลับการแสดงเมนูแบบดรอปดาวน์
+                function setupDropdown(buttonId, menuId, selectedId) {
+                    document.getElementById(buttonId).addEventListener("click", function() {
+                        document.getElementById(menuId).classList.toggle("hidden");
+                    });
+
+                    document.querySelectorAll(`#${menuId} a`).forEach(item => {
+                        item.addEventListener("click", function() {
+                            document.getElementById(selectedId).textContent = this.textContent;
+                            document.getElementById(menuId).classList.add("hidden");
+
+                            // อัปเดตเฉพาะสปรินต์ที่แสดงเมื่อช่วงสปรินต์มีการเปลี่ยนแปลง
+                            if (menuId === "sprintDropdownMenu") {
+                                updateDisplayedSprints();
+                            }
+                        });
+                    });
+
+                    document.addEventListener("click", function(event) {
+                        const dropdown = document.getElementById(menuId);
+                        const button = document.getElementById(buttonId);
+                        if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                            dropdown.classList.add("hidden");
+                        }
+                    });
+                }
+
+                // Setup both dropdowns ตั้งค่าทั้ง 2 ดร็อปดาวน์
+                setupDropdown("yearDropdownButton", "yearDropdownMenu", "selectedYear");
+                setupDropdown("sprintDropdownButton", "sprintDropdownMenu", "selectedSprint");
+
+                // Function to load report data
+                function loadReportData() {
+                    // คำขอ AJAX เพื่อรับข้อมูลจาก report.blade.php
+                    fetch('/report-data')
+                        .then(response => response.json())
+                        .then(data => {
+                            // Process the report data
+                            populateSprintsFromReport(data);
+                        })
+                        .catch(error => {
+                            console.error('Error loading report data:', error);
+                            // Still load some demo data even if report data fails
+                            loadDemoData();
+                        });
+                }
+
 
                 function updateDisplayedDate() {
                     const selectedYear = document.getElementById('selectedYear').textContent;
@@ -159,39 +209,6 @@
                         }
                     });
                 }
-
-                // Function to toggle dropdown menu visibility
-                function setupDropdown(buttonId, menuId, selectedId) {
-                    document.getElementById(buttonId).addEventListener("click", function() {
-                        document.getElementById(menuId).classList.toggle("hidden");
-                    });
-
-                    document.querySelectorAll(`#${menuId} a`).forEach(item => {
-                        item.addEventListener("click", function() {
-                            document.getElementById(selectedId).textContent = this.textContent;
-                            document.getElementById(menuId).classList.add("hidden");
-
-                            // Only update displayed sprints when sprint range changes
-                            if (menuId === "sprintDropdownMenu") {
-                                updateDisplayedSprints();
-                            }
-                        });
-                    });
-
-                    document.addEventListener("click", function(event) {
-                        const dropdown = document.getElementById(menuId);
-                        const button = document.getElementById(buttonId);
-                        if (!button.contains(event.target) && !dropdown.contains(event.target)) {
-                            dropdown.classList.add("hidden");
-                        }
-                    });
-                }
-
-                // Setup both dropdowns
-                setupDropdown("yearDropdownButton", "yearDropdownMenu", "selectedYear");
-                setupDropdown("sprintDropdownButton", "sprintDropdownMenu", "selectedSprint");
-
-                // This to make the function work when the year is changed
                 document.querySelectorAll('#yearDropdownMenu a').forEach(item => {
                     item.addEventListener("click", function() {
                         document.getElementById('selectedYear').textContent = this.textContent;
@@ -200,23 +217,7 @@
                     });
                 });
 
-                // Function to load report data
-                function loadReportData() {
-                    // AJAX request to get data from report.blade.php
-                    fetch('/report-data')
-                        .then(response => response.json())
-                        .then(data => {
-                            // Process the report data
-                            populateSprintsFromReport(data);
-                        })
-                        .catch(error => {
-                            console.error('Error loading report data:', error);
-                            // Still load some demo data even if report data fails
-                            loadDemoData();
-                        });
-                }
-
-                // Populate sprints with data from report
+                // เติมข้อมูลสปรินต์ด้วยข้อมูลจากรายงาน
                 function populateSprintsFromReport(reportData) {
                     const sprintContainer = document.getElementById("sprintContainer");
                     sprintContainer.innerHTML = '';
@@ -231,7 +232,7 @@
                         sprintGroups[item.sprint_number].push(item);
                     });
 
-                    // Sort sprint numbers in descending order (highest first)
+                    // เรียงลำดับหมายเลขสปรินต์จากมากไปน้อย (จากมากไปน้อยก่อน)
                     const sortedSprintNumbers = Object.keys(sprintGroups).sort((a, b) => b - a);
 
                     // Create sprint sections for each group in descending order
@@ -241,7 +242,7 @@
                         sprintContainer.appendChild(sprintDiv);
                     });
 
-                    // Set up event listeners for the newly created elements
+                    // ตั้งค่าตัวรับฟังเหตุการณ์สำหรับองค์ประกอบที่เพิ่งสร้างใหม่
                     setupSprintEventListeners();
 
                     // Set report-linked sprints to always be visible
@@ -253,39 +254,40 @@
                     updateDisplayedSprints();
                 }
 
-                // Create a sprint div with data
+                // สร้าง div สปรินต์ด้วยข้อมูล
                 function createSprintDiv(sprintNumber, sprintItems) {
                     const sprintDiv = document.createElement("div");
-                    sprintDiv.className = "bg-blue-100 rounded-lg p-3 mb-3 sprint-block";
+                    sprintDiv.className = "bg-white rounded-3xl p-0 mb-5 sprint-block w-49  ";
                     sprintDiv.dataset.sprintNumber = sprintNumber;
 
-                    // Determine if this sprint has data
+                    // ตรวจสอบว่าสปรินต์นี้มีข้อมูลหรือไม่
                     const hasData = sprintItems && sprintItems.length > 0;
                     const dataClass = hasData ? "sprint-from-report" : "";
 
-                    // Get the date range for this sprint (always using fixed year)
+                    // รับช่วงวันที่สำหรับสปรินต์นี้ (ใช้ปีคงที่เสมอ)
                     const dateRange = getSprintDateRange(parseInt(sprintNumber));
 
                     sprintDiv.innerHTML = `
-            <div class="sprint-header flex justify-between items-center cursor-pointer text-blue-700 font-bold text-lg" >
-                <span style="width: 80%;">Sprint #${sprintNumber}</span>
-                <span class="sprint-date text-sm px-1 font-normal bg-white rounded-lg" >${dateRange}</span>
-                <span class="collapse-icon sprint-icon">▲</span>
+            <div class="flex items-center justify-between px-10 py-3 text-lg font-bold text-blue-700 cursor-pointer rounded-3xl sprint-header bg-sky-100"  >
+                <span class="mr-8 text-[#13A7FD] text-2xl" style="width: 80%;">Sprint #${sprintNumber} </span>
+                    <span class="text-sm font-normal mb-2 lace-items-end sprint-date text-[#13A7FD] mt-3  bg-white rounded-3xl px-2 py-1">${dateRange}</span>
+       <span class="collapse-icon text-[#13A7FD] sprint-icon">▲</span>
             </div>
-            <div class="sprint-content mt-2 bg-white p-3 rounded-lg shadow-md style="display: block;" ${dataClass}">
-                <table class="w-full border-collapse border border-gray-300">
-                    <thead>
-                        <tr class="bg-blue-300">
-                            <th class="border border-gray-300 px-4 py-2">Number</th>
-                            <th class="border border-gray-300 px-4 py-2">Card Detail</th>
-                            <th class="border border-gray-300 px-4 py-2">Description</th>
-                            <th class="border border-gray-300 px-4 py-2">Member</th>
-                            <th class="border border-gray-300 px-4 py-2">Point</th>
-                            <th class="border border-gray-300 px-4 py-2 w-54">Actions</th>
+
+            <div class="sprint-content mt-2 bg-white p-4 rounded-3xl  style="display: block;" ${dataClass}">
+                <table class="w-full border border-collapse bg gray-200 ">
+                    <thead class="bg gray-700">
+                        <tr>
+                            <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Number</span></th>
+                            <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Card_Detail</span></th>
+                            <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Description</span></th>
+                            <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Member</span></th>
+                            <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Point</span></th>
+                            <th class="px-4 py-2 border border-white w-54 text-[#13A7FD"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Actions</span></th>
                         </tr>
                     </thead>
                     <tbody class="card-list">
-                        ${hasData ? renderCardRows(sprintItems) : '<tr class="text-gray-500 italic no-data"><td colspan="6" class="text-center py-2">No data available</td></tr>'}
+                        ${hasData ? renderCardRows(sprintItems) : '<tr class="italic text-gray-500 no-data"><td colspan="6" class="py-2 text-center">No data available</td></tr>'}
                     </tbody>
                 </table>
             </div>
@@ -294,24 +296,24 @@
                     return sprintDiv;
                 }
 
-                // Render card rows from sprint items
+                // เรนเดอร์แถวการ์ดจากไอเทมสปรินต์
                 function renderCardRows(items) {
                     return items.map(item => `
             <tr>
-                <td class="border border-gray-300 px-4 py-2 text-center">#${item.number || ''}</td>
-                <td class="border border-gray-300 px-4 py-2 text-center">${item.card_detail || ''}</td>
-                <td class="border border-gray-300 px-4 py-2 text-center" style="width: 40%;">${item.description || ''}</td>
-                <td class="border border-gray-300 px-4 py-2 text-center"><span class="bg-green-50 text-green-600 text-xs px-2 py-1 rounded mr-2">${item.teamName || ''}</span>${item.member || ''}</td>
-                <td class="border border-gray-300 px-4 py-2 text-center">${item.point || ''}</td>
-                <td class="border border-gray-300 px-4 py-2 text-center">
-                    <button class="edit-btn bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded mr-1">
-                        <svg class="h-5 w-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <td class="px-4 py-2 text-center border border-white"><span class="px-14 py-1 mr-2 bg-white border border-[#13A7FD] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">#${item.number || ''}</span></td>
+                <td class="px-4 py-2 text-center border border-white">${item.card_detail || ''}</td>
+                <td class="px-4 py-2 text-center border border-white" style="width: 40%;">${item.description || ''}</td>
+                <td class="px-4 py-2 text-center border border-white"><span class="px-2 py-1 mr-2 text-sm font-bold text-[#65BC23] rounded-3xl bg-[#DDFFEC]">${item.teamName || ''}</span>${item.member || ''}</td>
+                <td class="px-4 py-2 text-center border border-white "><span class="px-14 py-1 mr-2 bg-[#BAF3FF] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">${item.point || ''}</span></td>
+                <td class="px-4 py-2 text-center border border-white">
+                    <button class="px-2 py-2 mr-1 text-white bg-[#FFC7B2] rounded-full edit-btn hover:bg-yellow-600">
+                        <svg class="w-5 h-5 text-[#985E00]  hover:text-white " width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                         </svg>
                     </button>
-                    <button class="delete-btn bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
-                        <svg class="h-5 w-5 text-red-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button class="px-2 py-2 text-[#FF0004] bg-[#FFACAE] rounded-full delete-btn hover:bg-red-600 ">
+                        <svg class="w-5 h-5 text-2xl text-[#FF0004] hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
                     </button>
@@ -320,17 +322,17 @@
         `).join('');
                 }
 
-                // Set up event listeners for sprint elements
+                // ตั้งค่าตัวรับฟังเหตุการณ์สำหรับองค์ประกอบสปรินต์
                 function setupSprintEventListeners() {
-                    // Toggle collapse/expand
+                    // Toggle collapse/expand // สลับการยุบ/ขยาย
                     document.querySelectorAll('.sprint-header').forEach(header => {
                         header.addEventListener('click', () => {
                             const content = header.nextElementSibling;
                             const icon = header.querySelector('.collapse-icon');
 
-                            // Don't hide if it has the class for having data from report
+                            // อย่าซ่อนหากมีคลาสสำหรับรับข้อมูลจากรายงาน
                             if (content.classList.contains('sprint-from-report')) {
-                                // Only allow toggling the icon
+                                // อนุญาตให้สลับไอคอนเท่านั้น
                                 icon.textContent = icon.textContent === '▲' ? '▼' : '▲';
                                 return;
                             }
@@ -351,27 +353,27 @@
                             let row = this.closest("tr");
                             let cells = row.querySelectorAll("td:not(:last-child)");
 
-                            // Store original SVG content
-                            const originalSvgContent = `<svg class="h-5 w-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24"
+                            // จัดเก็บเนื้อหา SVG ต้นฉบับ
+                            const originalSvgContent = `<svg class="w-5 h-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24"
          xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>`;
 
-                            // Check if we're in edit mode by looking for inputs
+                            // ตรวจสอบว่าอยู่ในโหมดแก้ไขหรือไม่โดยค้นหาอินพุต
                             const isEditing = row.querySelector("input") !== null;
 
                             if (!isEditing) {
                                 // Switch to edit mode
                                 cells.forEach(cell => {
                                     let value = cell.textContent.trim();
-                                    // For the first cell, remove the # symbol if present
+                                    // สำหรับเซลล์แรก ให้ลบสัญลักษณ์ # ออกหากมี
                                     if (cell === cells[0] && value.startsWith('#')) {
                                         value = value.substring(1);
                                     }
                                     cell.innerHTML =
-                                        `<input type="text" value="${value}" class="border p-1 w-full">`;
+                                        `<input type="text" value="${value}" class="w-full p-1 border">`;
                                 });
                                 this.innerHTML = "Save";
                             } else {
@@ -379,7 +381,7 @@
                                 cells.forEach((cell, index) => {
                                     let input = cell.querySelector("input");
                                     if (input) {
-                                        // For the first cell, add the # symbol back
+                                        // For the first cell, add the # symbol back / สำหรับเซลล์แรก เพิ่มสัญลักษณ์ # กลับ
                                         if (index === 0) {
                                             cell.textContent = `#${input.value}`;
                                         } else {
@@ -388,14 +390,14 @@
                                                     .split(' ');
                                                 const member = memberParts.join(' ');
                                                 cell.innerHTML =
-                                                    `<span class="bg-green-50 text-green-600 text-xs px-2 py-1 rounded mr-2">${team} </span>${member}`;
+                                                    `<span class="px-2 py-1 mr-2 text-xs text-green-600 rounded bg-green-50">${team}</span>${member}`;
                                             } else {
                                                 cell.textContent = input.value;
                                             }
                                         }
                                     }
                                 });
-                                // Restore original SVG icon
+                                // กู้คืนไอคอน SVG ดั้งเดิม
                                 this.innerHTML = originalSvgContent;
                             }
                         });
@@ -408,11 +410,11 @@
                             if (confirm("Are you sure you want to delete this row?")) {
                                 row.remove();
 
-                                // Check if this was the last row and update "no data" message if needed
+                                // ตรวจสอบว่านี่คือแถวสุดท้ายหรือไม่ และอัปเดตข้อความ "ไม่มีข้อมูล" หากจำเป็น
                                 const tbody = this.closest("tbody");
                                 if (tbody.querySelectorAll("tr").length === 0) {
                                     tbody.innerHTML =
-                                        '<tr class="text-gray-500 italic no-data"><td colspan="6" class="text-center py-2">No data available</td></tr>';
+                                        '<tr class="italic text-gray-500 no-data"><td colspan="6" class="py-2 text-center">No data available</td></tr>';
                                 }
                             }
                         });
@@ -448,14 +450,14 @@
                             const actionCell = document.createElement('td');
                             actionCell.className = "border border-gray-300 px-4 py-2 text-center";
                             actionCell.innerHTML = `
-                    <button class="edit-btn bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded mr-1">
-                        <svg class="h-5 w-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button class="px-2 py-1 mr-1 text-white bg-yellow-500 rounded edit-btn hover:bg-yellow-600">
+                        <svg class="w-5 h-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                         </svg>
                     </button>
-                    <button class="delete-btn bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
-                        <svg class="h-5 w-5 text-red-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button class="px-2 py-1 text-white bg-red-500 rounded delete-btn hover:bg-red-600">
+                        <svg class="w-5 h-5 text-red-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
                     </button>
@@ -487,7 +489,7 @@
                                             value = value.substring(1);
                                         }
                                         cell.innerHTML =
-                                            `<input type="text" value="${value}" class="border p-1 w-full">`;
+                                            `<input type="text" value="${value}" class="w-full p-1 border">`;
                                     });
                                     this.innerHTML = "Save";
                                 } else {
@@ -505,7 +507,7 @@
                                                     const member = memberParts.join(
                                                         ' ');
                                                     cell.innerHTML =
-                                                        `<span class="bg-green-50 text-green-600 text-xs px-2 py-1 rounded mr-2">${team}</span>${member}`;
+                                                        `<span class="px-2 py-1 mr-2 text-xs text-green-600 rounded bg-green-50">${team}</span>${member}`;
                                                 } else {
                                                     cell.textContent = input.value;
                                                 }
@@ -521,7 +523,6 @@
                         });
                     });
                 }
-
 
                 // Update displayed sprints based on filters
                 function updateDisplayedSprints() {
