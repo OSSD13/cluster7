@@ -4,8 +4,9 @@
 @section('page-title', 'Trello API Settings')
 
 @section('content')
-<div class="ml-5 pt-8 mx-right">
-    <div class="mb-6 flex justify-between items-center">
+<div class="rounded-[2vw] h-full w-full bg-gray-100 px-5 py-2">
+<div class="ml-3 pt-4 mx-right">
+    <div class="mb-1 flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <div class="w-20 h-20 rounded-full bg-sky-100 flex justify-center items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="#13A7FD" class="bi bi-gear" viewBox="0 0 16 16">
@@ -28,6 +29,7 @@
             </div>
         @endif
     </div>
+
     <!-- Connection Status information -->
     @if($connectionStatus)
         <div x-data="{ show: true }"
@@ -79,7 +81,7 @@
                     name="trello_api_key"
                     id="trello_api_key"
                     value="{{ old('trello_api_key', $trelloApiKey) }}"
-                    class="shadow appearance-none border rounded-lg rounded w-full py-3 px-3 text-gray-500 leading-tight focus:outline-none focus:shadow-outline @error('trello_api_key') border-red-500 @enderror"
+                    class="shadow appearance-none border  rounded-lg rounded w-full py-3 px-3 text-gray-500 leading-tight focus:outline-none focus:shadow-outline @error('trello_api_key') border-red-500 @enderror"
                     required
                 >
                 @error('trello_api_key')
@@ -108,7 +110,7 @@
                 <button
                     type="button"
                     id="test-connection-btn"
-                    class="bg-primary-400 hover:bg-sky-500 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline"
+                    class="px-3 py-1.5 border border-primary-300  hover:bg-primary-400 hover:text-white text-sky-400 font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline"
                 >
                     Test Connection
                 </button>
@@ -254,6 +256,9 @@
         </div>
     </div>
 </div>
+
+</div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
