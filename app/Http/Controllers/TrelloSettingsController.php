@@ -117,7 +117,7 @@ class TrelloSettingsController extends Controller
      * Update the Trello API settings.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\View\View
      */
     public function update(Request $request)
     {
@@ -136,7 +136,24 @@ class TrelloSettingsController extends Controller
             $this->saveSetting('trello_board_id', $request->board_id);
         }
 
-        return redirect()->route('trello.settings.index')->with('success', 'Trello API settings updated successfully.');
+        // Use direct routing instead of redirect
+        $apiKey = $this->getSetting('trello_api_key');
+        $apiToken = $this->getSetting('trello_api_token');
+        $boardId = $this->getSetting('trello_board_id');
+        
+        $connectionStatus = [
+            'success' => false,
+            'message' => 'Not tested',
+            'details' => []
+        ];
+        
+        return view('trello.settings', [
+            'trelloApiKey' => $apiKey,
+            'trelloApiToken' => $apiToken,
+            'boardId' => $boardId,
+            'connectionStatus' => $connectionStatus,
+            'success' => 'Trello API settings updated successfully.'
+        ]);
     }
 
     /**

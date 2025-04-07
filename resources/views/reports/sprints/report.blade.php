@@ -168,6 +168,7 @@
                             <th class="py-3 px-4 border-b text-center">Pass</th>
                             <th class="py-3 px-4 border-b text-center">Bug</th>
                             <th class="py-3 px-4 border-b text-center">Cancel</th>
+                            <th class="py-3 px-4 border-b text-center">Extra</th>
                             <th class="py-3 px-4 border-b text-center">Final</th>
                             <th class="py-3 px-4 border-b text-center">Pass %</th>
                         </tr>
@@ -180,12 +181,13 @@
                                 <td class="py-3 px-4 border-b text-center">{{ $member['pass'] ?? 0 }}</td>
                                 <td class="py-3 px-4 border-b text-center">{{ $member['bug'] ?? 0 }}</td>
                                 <td class="py-3 px-4 border-b text-center">{{ $member['cancel'] ?? 0 }}</td>
+                                <td class="py-3 px-4 border-b text-center">{{ $member['extra'] ?? 0 }}</td>
                                 <td class="py-3 px-4 border-b text-center">{{ $member['final'] ?? 0 }}</td>
                                 <td class="py-3 px-4 border-b text-center">{{ $member['passPercent'] ?? '0%' }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-4 px-4 text-center text-gray-500">No team members data available</td>
+                                <td colspan="8" class="py-4 px-4 text-center text-gray-500">No team members data available</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -196,6 +198,7 @@
                             <td class="py-3 px-4 border-t text-center">{{ $totals['totalPass'] ?? 0 }}</td>
                             <td class="py-3 px-4 border-t text-center">{{ $totals['totalBug'] ?? 0 }}</td>
                             <td class="py-3 px-4 border-t text-center">{{ $totals['totalCancel'] ?? 0 }}</td>
+                            <td class="py-3 px-4 border-t text-center">{{ $totals['totalExtra'] ?? 0 }}</td>
                             <td class="py-3 px-4 border-t text-center">{{ $totals['totalFinal'] ?? 0 }}</td>
                             <td class="py-3 px-4 border-t text-center">-</td>
                         </tr>
@@ -218,51 +221,65 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bug</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">List</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($bugCards as $bug)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <a href="{{ $bug['url'] ?? '#' }}" class="text-primary-600 hover:text-primary-900" target="_blank">{{ $bug['id'] }}</a>
-                                    </td>
+                                <tr class="{{ $bug['priorityClass'] ?? 'priority-none' }}">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {{ $bug['name'] }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        @if(isset($bug['labels']) && count($bug['labels']) > 1)
-                                            @foreach($bug['labels'] as $label)
-                                                @if($label !== 'Bug')
-                                                    <span class="px-2 py-1 text-xs font-medium rounded-full 
-                                                        {{ $label === 'High' ? 'bg-red-100 text-red-800' : 
-                                                          ($label === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 
-                                                           'bg-green-100 text-green-800') }}">
-                                                        {{ $label }}
-                                                    </span>
-                                                @endif
-                                            @endforeach
-                                        @else
-                                            <span class="text-gray-400">-</span>
+                                        @if(!empty($bug['description']))
+                                            <p class="text-xs text-gray-500 mt-1 truncate max-w-md">{{ \Illuminate\Support\Str::limit($bug['description'], 100) }}</p>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $bug['assigned'] ?? 'Unassigned' }}
+                                        @php
+                                            $priorityClass = $bug['priorityClass'] ?? 'priority-none';
+                                            $priorityText = 'None';
+                                            $bgColor = 'bg-gray-100 text-gray-800';
+                                            
+                                            if ($priorityClass === 'priority-high') {
+                                                $priorityText = 'High';
+                                                $bgColor = 'bg-red-100 text-red-800';
+                                            } elseif ($priorityClass === 'priority-medium') {
+                                                $priorityText = 'Medium';
+                                                $bgColor = 'bg-yellow-100 text-yellow-800';
+                                            } elseif ($priorityClass === 'priority-low') {
+                                                $priorityText = 'Low';
+                                                $bgColor = 'bg-green-100 text-green-800';
+                                            }
+                                        @endphp
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full {{ $bgColor }}">
+                                            {{ $priorityText }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $bug['points'] ?? '-' }}
+                                        {{ $bug['list'] ?? '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $bug['members'] ?? 'Not assigned' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-600 text-white">
+                                            {{ $bug['points'] ?? 0 }}
+                                        </span>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
-                        <tfoot>
-                            <tr class="bg-gray-50">
-                                <th colspan="4" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Bug Points:</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $totalBugPoints }}</th>
+                        <tfoot class="bg-gray-50">
+                            <tr>
+                                <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-500">
+                                    Total Bug Points:
+                                </td>
+                                <td class="px-6 py-3 text-sm font-medium text-gray-900">
+                                    {{ $totalBugPoints }}
+                                </td>
                             </tr>
                         </tfoot>
                     </table>

@@ -98,11 +98,64 @@
 </style>
 
 <div class="max-w-7xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Story Points Report</h1>
+    <div class="flex justify-between items-start mb-6">
+        <div>
+            <div class="flex items-center space-x-4 mb-2">
+                <div class="w-12 h-12 rounded-full bg-primary-100 flex justify-center items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                @php
+                    // Get the current sprint number
+                    $sprintNumber = null;
+                    $currentSprint = \App\Models\Sprint::getCurrentSprint();
+                    if ($currentSprint) {
+                        $sprintNumber = $currentSprint->sprint_number;
+                    } else {
+                        // Fallback to next sprint number if no current sprint
+                        $sprintNumber = \App\Models\Sprint::getNextSprintNumber();
+                    }
+                @endphp
+                <div>
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold">Sprint: {{ $sprintNumber }}</h1>
+                        <span class="ml-3 px-3 py-1 text-xs font-medium bg-primary-100 text-primary-800 rounded-full">Report</span>
+                    </div>
+                    <h2 class="text-xl text-gray-600">Current Sprint Report</h2>
+                </div>
+            </div>
+        </div>
         
         <!-- Action Menu -->
-        <div class="flex space-x-2">
+        <div class="flex space-x-2 items-center">
+            <!-- Board/Team Selector -->
+            @if(auth()->user()->isAdmin() || !$singleBoard)
+                <div class="mr-2 flex items-center">
+                    <label for="board-selector" class="text-sm font-medium text-gray-700 mr-2">Team:</label>
+                    @if(count($boards) > 0)
+                        <select id="board-selector" class="rounded-md border-gray-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50">
+                            @foreach($boards as $board)
+                                <option value="{{ $board['id'] }}" {{ $board['id'] == $defaultBoardId ? 'selected' : '' }}>
+                                    {{ $board['name'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @else
+                        <div class="text-sm px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg">
+                            No Trello boards available. Please configure your Trello API settings first.
+                        </div>
+                    @endif
+                </div>
+            @elseif($singleBoard)
+                <div class="mr-2 flex items-center">
+                    <label class="text-sm font-medium text-gray-700 mr-2">Team:</label>
+                    <div class="text-sm font-medium">{{ $boards[0]['name'] }}</div>
+                    <!-- Hidden board selector with default selection -->
+                    <input type="hidden" id="board-selector" value="{{ $boards[0]['id'] }}">
+                </div>
+            @endif
+            
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open" class="bg-white border border-gray-300 rounded-md px-4 py-2 flex items-center text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -131,11 +184,17 @@
                             </div>
                             @endif
                         </button>
+                        <button id="create-new-report-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Create New Report
+                        </button>
                         <button id="refresh-report-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
-                            Refresh Data
+                            Refresh Now
                         </button>
                         <button id="print-report-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -178,7 +237,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                Reload Data
+                Refresh Now
             </button>
         </div>
     </div>
@@ -196,64 +255,6 @@
     </div>
 
     <div id="role" class="hidden" data-role="{{ auth()->user()->isAdmin() ? 'admin' : 'user' }}"></div>
-
-    <div class="bg-white shadow rounded-lg p-6 mb-6">
-        @if(auth()->user()->isAdmin())
-            <h2 class="text-lg font-semibold mb-4">Team Board</h2>
-            <div class="mb-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                As an admin, you can access all available Trello boards. Data will be loaded automatically.
-            </div>
-            
-            @if(count($boards) > 0)
-                <div class="mb-4">
-                    <select id="board-selector" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50">
-                        @foreach($boards as $board)
-                            <option value="{{ $board['id'] }}" {{ $board['id'] == $defaultBoardId ? 'selected' : '' }}>
-                                {{ $board['name'] }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            @else
-                <div class="mb-4 px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg text-sm">
-                    No Trello boards available. Please configure your Trello API settings first.
-                </div>
-            @endif
-            <!--in on team-->
-        @elseif($singleBoard)
-            <h2 class="text-lg font-semibold mb-4">Your Team</h2>
-            <div class="mb-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                You are a member of: <span class="font-medium">{{ $boards[0]['name'] }}</span>
-                <span class="block mt-1 text-xs">Data is being loaded automatically.</span>
-            </div>
-            <!-- Hidden board selector with default selection -->
-            <input type="hidden" id="board-selector" value="{{ $boards[0]['id'] }}">
-        @else
-            <h2 class="text-lg font-semibold mb-4">Your Teams</h2>
-            <div class="mb-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                You are a member of multiple. Data will be loaded automatically for the selected team.
-            </div>
-            
-            <div class="mb-4">
-                <select id="board-selector" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50">
-                    @foreach($boards as $board)
-                        <option value="{{ $board['id'] }}" {{ $board['id'] == $defaultBoardId ? 'selected' : '' }}>
-                            {{ $board['name'] }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-        @endif
-    </div>
 
     <div id="loading-indicator" class="hidden">
         <div class="flex justify-center items-center bg-white shadow rounded-lg p-6 mb-6">
@@ -281,12 +282,15 @@
                 </h2>
                 
                 <!-- Date Display -->
-                <div class="mb-3 text-sm text-gray-500 flex items-center">
+                <div id="sprint-date-range" class="mb-3 text-sm text-gray-500 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     Report Date: {{ $currentDate ?? Carbon\Carbon::now()->format('F d, Y') }}
                 </div>
+                
+                <!-- Last Updated Display -->
+                <div id="last-updated" class="mb-3 hidden"></div>
                 
                 <!-- Sprint Indicator -->
                 <div class="mb-4 bg-gray-50 p-3 rounded-lg">
@@ -317,6 +321,7 @@
                             </div>
                             <div class="text-gray-500 mt-1 text-xs">
                                 Week <span id="current-week-number">{{ $currentWeekNumber ?? '-' }}</span> of the year
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -364,6 +369,16 @@
                                 <span class="text-primary-700">End:</span> {{ $currentSprintEndDate ?? '-' }}
                             </div>
                         </div>
+                    </div>
+                </div>
+            
+            <!-- Board Name Display -->
+            <div id="board-name-display" class="mb-4 hidden">
+                <div class="flex items-center text-sm text-gray-500 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                    </svg>
+                    Board: <span id="board-name" class="font-medium"></span>
                     </div>
                 </div>
                 
@@ -473,6 +488,7 @@
                                 <th class="py-3 px-4 border-b text-center">Pass</th>
                                 <th class="py-3 px-4 border-b text-center">Bug</th>
                                 <th class="py-3 px-4 border-b text-center">Cancel</th>
+                                <th class="py-3 px-4 border-b text-center cursor-pointer hover:bg-blue-50" title="Click to add extra points">Extra</th>
                                 <th class="py-3 px-4 border-b text-center">Final</th>
                                 <th class="py-3 px-4 border-b text-center">Pass %</th>
                             </tr>
@@ -489,6 +505,7 @@
                                 <td id="total-pass" class="py-3 px-4 border-t text-center">0</td>
                                 <td id="total-bug" class="py-3 px-4 border-t text-center">0</td>
                                 <td id="total-cancel" class="py-3 px-4 border-t text-center">0</td>
+                                <td id="total-extra" class="py-3 px-4 border-t text-center">0</td>
                                 <td id="total-final" class="py-3 px-4 border-t text-center">0</td>
                                 <td class="py-3 px-4 border-t text-center">-</td>
                             </tr>
@@ -521,6 +538,31 @@
         </div>
     </div>
 
+    <!-- Extra Points Modal -->
+    <div id="extra-points-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full" style="z-index: 1000;">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Add Extra Points</h3>
+                <div class="mt-4">
+                    <input type="hidden" id="extra-points-member-id">
+                    <input type="hidden" id="extra-points-row-index">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Points</label>
+                        <input type="number" id="extra-points-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" step="0.5" min="0">
+                    </div>
+                </div>
+                <div class="mt-5 flex justify-end space-x-2">
+                    <button id="cancel-extra-points" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        Cancel
+                    </button>
+                    <button id="save-extra-points" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="mt-4 text-sm text-gray-600">
         <p><strong>Note:</strong> Calculation methods:</p>
         <ul class="list-disc ml-5">
@@ -539,7 +581,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Backlog ({{ $backlogData['bugCount'] }})
+                Backlog (<span id="backlog-title-count">{{ $backlogData['bugCount'] }}</span>)
             </h2>
             <p class="text-sm text-gray-600 mb-4">These bugs were carried over from previous sprints.</p>
             
@@ -557,61 +599,54 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sprint</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($backlogData['allBugs'] as $bug)
-                                <tr class="hover:bg-amber-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <a href="{{ $bug['url'] ?? '#' }}" class="text-primary-600 hover:text-primary-900" target="_blank">{{ $bug['id'] }}</a>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ $bug['name'] }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        @if(isset($bug['labels']) && is_array($bug['labels']))
-                                            @foreach($bug['labels'] as $label)
-                                                @if($label !== 'Backlog')
-                                                    <span class="px-2 py-1 text-xs font-medium rounded-full 
-                                                        {{ $label === 'High' ? 'bg-red-100 text-red-800' : 
-                                                        ($label === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 
-                                                        'bg-green-100 text-green-800') }}">
-                                                        {{ $label }}
-                                                    </span>
-                                                @endif
-                                            @endforeach
-                                        @else
-                                            <span class="text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $bug['assigned'] ?? 'Unassigned' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $bug['points'] ?? '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $bug['team'] ?? '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        @if(isset($bug['sprint_origin']))
-                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                                                Sprint {{ $bug['sprint_origin'] }}
-                                            </span>
-                                        @else
-                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                                                Sprint {{ $bug['sprint_number'] ?? '?' }}
-                                            </span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
+                    <tbody class="bg-white divide-y divide-gray-200" id="backlog-table-body">
+                        <!-- Table will be populated by JavaScript -->
                         </tbody>
                         <tfoot>
                             <tr class="bg-gray-100">
-                                <th colspan="4" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Bugs: {{ $backlogData['allBugs']->count() }}</th>
-                                <th colspan="3" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Points: {{ $backlogData['totalBugPoints'] }}</th>
+                            <th colspan="4" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Bugs: <span id="filtered-bug-count">{{ $backlogData['allBugs']->count() }}</span></th>
+                            <th colspan="3" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Points: <span id="filtered-bug-points">{{ $backlogData['totalBugPoints'] }}</span></th>
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+            
+            <!-- Pagination Controls -->
+            <div class="flex items-center justify-between mt-4">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <button id="prev-page-mobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Previous
+                    </button>
+                    <button id="next-page-mobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Next
+                    </button>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Showing <span id="page-start">1</span> to <span id="page-end">20</span> of <span id="total-items">{{ $backlogData['allBugs']->count() }}</span> bugs
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button id="prev-page" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Previous</span>
+                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div id="pagination-numbers" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                <!-- Pagination numbers will be added by JavaScript -->
+                            </div>
+                            <button id="next-page" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Next</span>
+                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
                 </div>
             </div>
             
@@ -626,7 +661,6 @@
         </div>
     </div>
     @endif
-</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -639,11 +673,64 @@
         const cardsByListContainer = document.getElementById('cards-by-list-container');
         const planPointsInput = document.getElementById('plan-points');
         let currentBoardId = '';
+        
+        // Backlog data and pagination
+        let allBacklogBugs = @json($backlogData['allBugs'] ?? []);
+        let filteredBacklogBugs = [];
+        let currentPage = 1;
+        const itemsPerPage = 20;
+        let totalPages = 1;
+
+        // Initialize last fetched indicator
+        const lastUpdatedEl = document.getElementById('last-updated');
 
         // Set the current board ID from the selector's value
         if (boardSelector && boardSelector.value) {
             currentBoardId = boardSelector.value;
         }
+        
+        // Initialize backlog table if it exists
+        const backlogTableBody = document.getElementById('backlog-table-body');
+        if (backlogTableBody) {
+            filterBacklogByCurrentTeam();
+            renderBacklogTable();
+        }
+        
+        // Initialize data from cached content if available
+        @if(isset($boardData))
+        // Populate data from cached content
+        const cachedData = @json($boardData);
+        
+        // Store the cached data globally so it can be updated
+        window.cachedData = cachedData;
+        
+        // Update board details
+        if (cachedData.boardDetails) {
+            updateBoardDetails(cachedData.boardDetails);
+        }
+        
+        // Update last fetched time
+        updateLastFetched(true, cachedData.lastFetched);
+        
+        // Update summary statistics
+        if (cachedData.storyPoints) {
+            updateSummaryData(cachedData.storyPoints);
+        }
+        
+        // Update member data
+        if (cachedData.memberPoints && Array.isArray(cachedData.memberPoints)) {
+            buildMemberTable(cachedData.memberPoints);
+        }
+        
+        // Update cards data
+        if (cachedData.cardsByList) {
+            renderCardsByList(cachedData.cardsByList);
+        }
+        
+        // Show containers
+        storyPointsSummary.classList.remove('hidden');
+        cardsByListContainer.classList.remove('hidden');
+        @endif
 
         // When the board selector changes, auto-fetch data
         boardSelector.addEventListener('change', function() {
@@ -655,16 +742,249 @@
             document.getElementById('board-name-display').classList.add('hidden');
             document.getElementById('last-updated').classList.add('hidden');
             
+            // Update backlog table with filtered data for the selected team
+            if (backlogTableBody) {
+                filterBacklogByCurrentTeam();
+                currentPage = 1;
+                renderBacklogTable();
+            }
+            
             // Automatically fetch data when selection changes
             if (currentBoardId) {
-                fetchDataBtn.click();
+                fetchDataWithoutForceRefresh();
             }
         });
 
-        // Connect the refresh button in the menu to the fetch data button
+        // Function to filter backlog bugs by the currently selected team
+        function filterBacklogByCurrentTeam() {
+            if (!allBacklogBugs || allBacklogBugs.length === 0) return;
+            
+            // Get the selected board's name
+            let selectedBoardName = '';
+            const selectedOption = boardSelector.options[boardSelector.selectedIndex];
+            if (selectedOption) {
+                selectedBoardName = selectedOption.text;
+            }
+            
+            // Filter bugs to only show those from the selected team
+            if (selectedBoardName) {
+                filteredBacklogBugs = Object.values(allBacklogBugs).filter(bug => bug.team === selectedBoardName);
+            } else {
+                filteredBacklogBugs = Object.values(allBacklogBugs);
+            }
+            
+            // Update counts and totals
+            const totalBugs = filteredBacklogBugs.length;
+            const totalPoints = filteredBacklogBugs.reduce((sum, bug) => sum + (parseInt(bug.points) || 0), 0);
+            
+            // Update UI elements
+            document.getElementById('filtered-bug-count').textContent = totalBugs;
+            document.getElementById('filtered-bug-points').textContent = totalPoints;
+            document.getElementById('total-items').textContent = totalBugs;
+            
+            // Update the count in the heading
+            updateBacklogCount(totalBugs);
+            
+            // Calculate total pages
+            totalPages = Math.ceil(totalBugs / itemsPerPage);
+            
+            // Setup pagination numbers
+            setupPagination();
+        }
+        
+        // Function to update backlog count in title
+        function updateBacklogCount(count) {
+            const backlogTitleCount = document.getElementById('backlog-title-count');
+            if (backlogTitleCount) {
+                backlogTitleCount.textContent = count;
+            }
+        }
+        
+        // Function to render the backlog table with paginated data
+        function renderBacklogTable() {
+            if (!backlogTableBody) return;
+            
+            // Clear current table
+            backlogTableBody.innerHTML = '';
+            
+            // Calculate start and end indices for current page
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredBacklogBugs.length);
+            
+            // Update pagination info
+            document.getElementById('page-start').textContent = filteredBacklogBugs.length > 0 ? startIndex + 1 : 0;
+            document.getElementById('page-end').textContent = endIndex;
+            
+            // If no bugs to display
+            if (filteredBacklogBugs.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
+                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                        No backlog bugs found for the selected team.
+                    </td>
+                `;
+                backlogTableBody.appendChild(emptyRow);
+                return;
+            }
+            
+            // Render visible bugs for current page
+            for (let i = startIndex; i < endIndex; i++) {
+                const bug = filteredBacklogBugs[i];
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-amber-50';
+                
+                // Format priority labels
+                let priorityLabels = '';
+                if (bug.labels && Array.isArray(bug.labels)) {
+                    bug.labels.forEach(label => {
+                        if (label !== 'Backlog') {
+                            let bgColorClass = 'bg-green-100 text-green-800';
+                            if (label === 'High') {
+                                bgColorClass = 'bg-red-100 text-red-800';
+                            } else if (label === 'Medium') {
+                                bgColorClass = 'bg-yellow-100 text-yellow-800';
+                            }
+                            priorityLabels += `<span class="px-2 py-1 text-xs font-medium rounded-full ${bgColorClass}">${label}</span> `;
+                        }
+                    });
+                }
+                
+                // Format sprint badge
+                let sprintBadge = '';
+                if (bug.sprint_origin) {
+                    sprintBadge = `
+                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                            Sprint ${bug.sprint_origin}
+                        </span>
+                    `;
+                } else {
+                    sprintBadge = `
+                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                            Sprint ${bug.sprint_number || '?'}
+                        </span>
+                    `;
+                }
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <a href="${bug.url || '#'}" class="text-primary-600 hover:text-primary-900" target="_blank">${bug.id}</a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ${bug.name}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${priorityLabels || '<span class="text-gray-400">-</span>'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${bug.assigned || 'Unassigned'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${bug.points || '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${bug.team || '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${sprintBadge}
+                    </td>
+                `;
+                
+                backlogTableBody.appendChild(row);
+            }
+        }
+        
+        // Function to setup pagination
+        function setupPagination() {
+            // Update pagination numbers
+            const paginationNumbers = document.getElementById('pagination-numbers');
+            if (paginationNumbers) {
+                paginationNumbers.innerHTML = `Page ${currentPage} of ${totalPages}`;
+            }
+            
+            // Setup event listeners for pagination buttons
+            const prevPage = document.getElementById('prev-page');
+            const nextPage = document.getElementById('next-page');
+            const prevPageMobile = document.getElementById('prev-page-mobile');
+            const nextPageMobile = document.getElementById('next-page-mobile');
+            
+            if (prevPage) {
+                prevPage.disabled = currentPage === 1;
+                prevPage.classList.toggle('opacity-50', currentPage === 1);
+                prevPage.addEventListener('click', function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderBacklogTable();
+                        setupPagination();
+                    }
+                });
+            }
+            
+            if (nextPage) {
+                nextPage.disabled = currentPage === totalPages;
+                nextPage.classList.toggle('opacity-50', currentPage === totalPages);
+                nextPage.addEventListener('click', function() {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderBacklogTable();
+                        setupPagination();
+                    }
+                });
+            }
+            
+            // Mobile pagination
+            if (prevPageMobile) {
+                prevPageMobile.disabled = currentPage === 1;
+                prevPageMobile.classList.toggle('opacity-50', currentPage === 1);
+                prevPageMobile.addEventListener('click', function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderBacklogTable();
+                        setupPagination();
+                    }
+                });
+            }
+            
+            if (nextPageMobile) {
+                nextPageMobile.disabled = currentPage === totalPages;
+                nextPageMobile.classList.toggle('opacity-50', currentPage === totalPages);
+                nextPageMobile.addEventListener('click', function() {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderBacklogTable();
+                        setupPagination();
+                    }
+                });
+            }
+        }
+        
+        // Function to fetch data with force refresh
+        function fetchDataWithForceRefresh() {
+            fetchDataWithParam('&force_refresh=true');
+        }
+        
+        // Function to fetch data without force refresh
+        function fetchDataWithoutForceRefresh() {
+            fetchDataWithParam('');
+        }
+        
+        // Function to fetch data with custom parameter
+        function fetchDataWithParam(customParam) {
+            // Store the original force refresh parameter
+            const originalButton = fetchDataBtn.cloneNode(true);
+            
+            // Perform the fetch with the custom parameter
+            fetchDataBtn.setAttribute('data-custom-param', customParam);
+            fetchDataBtn.click();
+            
+            // Restore the original button
+            fetchDataBtn.removeAttribute('data-custom-param');
+        }
+
+        // Add event listener to refresh button in dropdown
         if (refreshReportBtn) {
             refreshReportBtn.addEventListener('click', function() {
-                fetchDataBtn.click();
+                fetchDataWithForceRefresh();
             });
         }
 
@@ -675,14 +995,18 @@
             });
         }
 
-        // Auto-fetch data on page load (for all users)
+        // Auto-fetch data on page load (for all users) only if no cached data is available
         if (currentBoardId) {
+            @if(!isset($boardData))
             // Use a slight delay to ensure the DOM is fully loaded
             setTimeout(function() {
-                fetchDataBtn.click();
+                // Fetch data without forcing a refresh
+                fetchDataWithoutForceRefresh();
             }, 100);
+            @endif
         }
 
+        // Add event listener to fetch data button
         fetchDataBtn.addEventListener('click', function() {
             const boardId = boardSelector.value;
             if (!boardId) return;
@@ -714,7 +1038,11 @@
             const timestamp = Date.now();
             const randomStr = Math.random().toString(36).substring(7);
 
-            fetch(`/trello/data?board_id=${boardId}&_nocache=${timestamp}-${randomStr}`, {
+            // Check if we're using a custom parameter or the default Refresh Now button
+            const customParam = this.getAttribute('data-custom-param');
+            const forceRefreshParam = customParam !== null ? customParam : '&force_refresh=true';
+
+            fetch(`/trello/data?board_id=${boardId}&_nocache=${timestamp}-${randomStr}${forceRefreshParam}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -742,13 +1070,45 @@
 
                 // Update board details before anything else
                 updateBoardDetails(data.boardDetails);
+                
+                // Update the last updated time
+                updateLastFetched(data.cached, data.lastFetched);
 
                 // Update summary statistics
                 updateSummaryData(data.storyPoints);
 
-                // Completely rebuild member table with fresh data
+                // Update backlog data if available
+                if (data.backlogData) {
+                    allBacklogBugs = data.backlogData.allBugs || [];
+                    
+                    // Update backlog table
+                    if (backlogTableBody) {
+                        filterBacklogByCurrentTeam();
+                        renderBacklogTable();
+                    } else {
+                        // If no backlog table exists but we have backlog data, update the count
+                        updateBacklogCount(allBacklogBugs.length);
+                    }
+                }
+
+                // Update member data
                 if (data.memberPoints && Array.isArray(data.memberPoints)) {
                     console.log('Member points data received:', data.memberPoints.length, 'members');
+                    
+                    // Apply any saved extra points to the member data
+                    data.memberPoints.forEach(member => {
+                        if (currentBoardId && member.id) {
+                            const savedExtraPoint = parseFloat(localStorage.getItem(`extraPoints_${currentBoardId}_${member.id}`)) || 0;
+                            if (savedExtraPoint > 0) {
+                                member.extraPoint = savedExtraPoint;
+                                member.finalPoint = parseFloat(member.passPoint || 0) + savedExtraPoint;
+                            }
+                        }
+                    });
+                    
+                    // Also update the global cached data
+                    window.cachedData = data;
+                    
                     buildMemberTable(data.memberPoints);
                 } else {
                     console.warn('No member points data available');
@@ -770,7 +1130,11 @@
                 loadingIndicator.classList.add('hidden');
                 
                 // Show success toast
-                showToast('Data loaded successfully', 'success');
+                if (data.cached) {
+                    showToast('Loaded cached data successfully', 'success');
+                } else {
+                    showToast('Data refreshed successfully from Trello', 'success');
+                }
             })
             .catch(error => {
                 console.error('Fetch failed:', error);
@@ -782,6 +1146,32 @@
                 showToast('Failed to load data: ' + error.message, 'error');
             });
         });
+        
+        // Function to update the last fetched time indication
+        function updateLastFetched(cached, lastFetched) {
+            const lastUpdatedEl = document.getElementById('last-updated');
+            
+            if (lastUpdatedEl) {
+                lastUpdatedEl.innerHTML = `
+                    <div class="flex items-center text-xs text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 ${cached ? 'text-amber-500' : 'text-green-500'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        ${cached ? 'Using cached data from ' : 'Data refreshed '} ${lastFetched}
+                        ${cached ? '<span class="ml-2 text-xs text-primary-600 cursor-pointer underline" id="force-refresh">Refresh Now</span>' : ''}
+                    </div>
+                `;
+                lastUpdatedEl.classList.remove('hidden');
+                
+                // Add event listener to force refresh link
+                const forceRefreshLink = document.getElementById('force-refresh');
+                if (forceRefreshLink) {
+                    forceRefreshLink.addEventListener('click', function() {
+                        fetchDataWithForceRefresh();
+                    });
+                }
+            }
+        }
 
         // Function to completely destroy and recreate the table to prevent stale DOM
         function recreateTeamMembersTable() {
@@ -799,6 +1189,7 @@
                         <th class="py-3 px-4 border-b text-center">Pass</th>
                         <th class="py-3 px-4 border-b text-center">Bug</th>
                         <th class="py-3 px-4 border-b text-center">Cancel</th>
+                        <th class="py-3 px-4 border-b text-center cursor-pointer hover:bg-blue-50" title="Click to add extra points">Extra</th>
                         <th class="py-3 px-4 border-b text-center">Final</th>
                         <th class="py-3 px-4 border-b text-center">Pass %</th>
                     </tr>
@@ -815,6 +1206,7 @@
                         <td id="total-pass" class="py-3 px-4 border-t text-center">0</td>
                         <td id="total-bug" class="py-3 px-4 border-t text-center">0</td>
                         <td id="total-cancel" class="py-3 px-4 border-t text-center">0</td>
+                        <td id="total-extra" class="py-3 px-4 border-t text-center">0</td>
                         <td id="total-final" class="py-3 px-4 border-t text-center">0</td>
                         <td class="py-3 px-4 border-t text-center">-</td>
                     </tr>
@@ -895,23 +1287,34 @@
                 pass: 0,
                 bug: 0,
                 cancel: 0,
+                extra: 0,
                 final: 0
             };
 
             // Build each row with fresh data
             members.forEach(member => {
+                // Check if we have saved extra points for this member
+                const savedExtraPoint = currentBoardId && member.id ? 
+                    parseFloat(localStorage.getItem(`extraPoints_${currentBoardId}_${member.id}`)) || 0 : 0;
+                
                 // Extract numeric values safely
                 const pointPersonal = parseFloat(member.pointPersonal || 0);
                 const passPoint = parseFloat(member.passPoint || 0);
                 const bugPoint = parseFloat(member.bugPoint || 0);
                 const cancelPoint = parseFloat(member.cancelPoint || 0);
-                const finalPoint = parseFloat(member.finalPoint || 0);
+                
+                // Use saved extra point value if available, otherwise use the one from the data
+                const extraPoint = savedExtraPoint || parseFloat(member.extraPoint || 0);
+                
+                // Recalculate final point with the updated extra point
+                const finalPoint = passPoint + extraPoint;
 
                 // Update running totals
                 totals.personal += pointPersonal;
                 totals.pass += passPoint;
                 totals.bug += bugPoint;
                 totals.cancel += cancelPoint;
+                totals.extra += extraPoint;
                 totals.final += finalPoint;
 
                 // Calculate pass percentage: (passPoint / pointPersonal) * 100
@@ -944,6 +1347,7 @@
                     <td class="py-3 px-4 border-b text-center text-green-600">${passPoint.toFixed(1)}</td>
                     <td class="py-3 px-4 border-b text-center text-red-600">${bugPoint.toFixed(1)}</td>
                     <td class="py-3 px-4 border-b text-center text-orange-600">${cancelPoint.toFixed(1)}</td>
+                    <td class="py-3 px-4 border-b text-center text-blue-600 cursor-pointer hover:bg-blue-50">${extraPoint.toFixed(1)}</td>
                     <td class="py-3 px-4 border-b text-center font-bold">${finalPoint.toFixed(1)}</td>
                     <td class="py-3 px-4 border-b text-center">
                         <div class="inline-block w-12 text-center font-medium ${passPercentageClass}">
@@ -961,6 +1365,7 @@
             document.getElementById('total-pass').textContent = totals.pass.toFixed(1);
             document.getElementById('total-bug').textContent = totals.bug.toFixed(1);
             document.getElementById('total-cancel').textContent = totals.cancel.toFixed(1);
+            document.getElementById('total-extra').textContent = totals.extra.toFixed(1);
             document.getElementById('total-final').textContent = totals.final.toFixed(1);
 
             // 5. Point Current Sprint (sum of member personal points)
@@ -1007,6 +1412,7 @@
             document.getElementById('total-pass').textContent = '0.0';
             document.getElementById('total-bug').textContent = '0.0';
             document.getElementById('total-cancel').textContent = '0.0';
+            document.getElementById('total-extra').textContent = '0.0';
             document.getElementById('total-final').textContent = '0.0';
         }
 
@@ -1025,6 +1431,7 @@
             document.getElementById('total-pass').textContent = '0';
             document.getElementById('total-bug').textContent = '0';
             document.getElementById('total-cancel').textContent = '0';
+            document.getElementById('total-extra').textContent = '0';
             document.getElementById('total-final').textContent = '0';
 
             // Reset cards list
@@ -1385,7 +1792,7 @@
                 // Skip loading message row if present
                 if (rows[i].querySelector('td[colspan]')) continue;
                 
-                const cols = rows[i].querySelectorAll('td');
+                const cols = rows[i.querySelectorAll('td')];
                 let rowData = [];
                 
                 cols.forEach(col => {
@@ -1758,8 +2165,9 @@
                                     pass: parseFloat(cells[2].textContent) || 0,
                                     bug: parseFloat(cells[3].textContent) || 0,
                                     cancel: parseFloat(cells[4].textContent) || 0,
-                                    final: parseFloat(cells[5].textContent) || 0,
-                                    passPercent: cells[6].textContent.trim()
+                                    extra: parseFloat(cells[5].textContent) || 0,
+                                    final: parseFloat(cells[6].textContent) || 0,
+                                    passPercent: cells[7].textContent.trim()
                                 };
                             }
                             return null;
@@ -1769,6 +2177,7 @@
                             totalPass: parseFloat(document.getElementById('total-pass')?.textContent || '0'),
                             totalBug: parseFloat(document.getElementById('total-bug')?.textContent || '0'),
                             totalCancel: parseFloat(document.getElementById('total-cancel')?.textContent || '0'),
+                            totalExtra: parseFloat(document.getElementById('total-extra')?.textContent || '0'),
                             totalFinal: parseFloat(document.getElementById('total-final')?.textContent || '0')
                         }
                     });
@@ -1827,6 +2236,345 @@
                 .catch(error => {
                     console.error('Error saving board selection:', error);
                     showToast('An error occurred while saving the board selection', 'error');
+                });
+            });
+        }
+
+        // Extra Points Modal Functionality
+        const extraPointsModal = document.getElementById('extra-points-modal');
+        const extraPointsInput = document.getElementById('extra-points-input');
+        const cancelExtraPoints = document.getElementById('cancel-extra-points');
+        const saveExtraPoints = document.getElementById('save-extra-points');
+        let currentMemberId = null;
+        let currentRowIndex = null;
+
+        // Function to open extra points modal
+        function openExtraPointsModal(memberId, rowIndex, currentExtraPoints) {
+            currentMemberId = memberId;
+            currentRowIndex = rowIndex;
+            extraPointsInput.value = currentExtraPoints || 0;
+            document.getElementById('extra-points-member-id').value = memberId;
+            document.getElementById('extra-points-row-index').value = rowIndex;
+            extraPointsModal.classList.remove('hidden');
+        }
+
+        // Function to close extra points modal
+        function closeExtraPointsModal() {
+            extraPointsModal.classList.add('hidden');
+            extraPointsInput.value = '';
+            currentMemberId = null;
+            currentRowIndex = null;
+        }
+
+        // Add click handlers for each row in the team members table
+        document.getElementById('team-members-table-body').addEventListener('click', function(e) {
+            const row = e.target.closest('tr');
+            if (!row) return;
+
+            const extraCell = row.querySelector('td:nth-child(6)'); // Extra points column
+            if (e.target === extraCell || extraCell.contains(e.target)) {
+                const memberId = row.dataset.memberId;
+                const rowIndex = Array.from(row.parentElement.children).indexOf(row);
+                const currentExtraPoints = parseFloat(extraCell.textContent) || 0;
+                openExtraPointsModal(memberId, rowIndex, currentExtraPoints);
+            }
+        });
+
+        // Cancel button handler
+        cancelExtraPoints.addEventListener('click', closeExtraPointsModal);
+
+        // Save button handler
+        saveExtraPoints.addEventListener('click', function() {
+            const extraPoints = parseFloat(extraPointsInput.value) || 0;
+            const row = document.querySelector(`#team-members-table-body tr:nth-child(${parseInt(currentRowIndex) + 1})`);
+            
+            if (row) {
+                const extraCell = row.querySelector('td:nth-child(6)');
+                const finalCell = row.querySelector('td:nth-child(7)');
+                const passCell = row.querySelector('td:nth-child(3)');
+                
+                // Update extra points cell
+                extraCell.textContent = extraPoints.toFixed(1);
+                
+                // Recalculate final points (pass points + extra points)
+                const passPoints = parseFloat(passCell.textContent) || 0;
+                const finalPoints = passPoints + extraPoints;
+                finalCell.textContent = finalPoints.toFixed(1);
+                
+                // Save the extra points to localStorage
+                if (currentBoardId && currentMemberId) {
+                    // Use a key format that includes both board and member ID
+                    const storageKey = `extraPoints_${currentBoardId}_${currentMemberId}`;
+                    localStorage.setItem(storageKey, extraPoints);
+                    
+                    // Also update the cached data if we have it
+                    if (window.cachedData && window.cachedData.memberPoints) {
+                        const memberIndex = window.cachedData.memberPoints.findIndex(m => m.id === currentMemberId);
+                        if (memberIndex >= 0) {
+                            window.cachedData.memberPoints[memberIndex].extraPoint = extraPoints;
+                            window.cachedData.memberPoints[memberIndex].finalPoint = finalPoints;
+                        }
+                    }
+                }
+                
+                // Update totals
+                updateTotals();
+            }
+            
+            closeExtraPointsModal();
+            showToast('Extra points updated successfully', 'success');
+        });
+
+        // Function to update totals
+        function updateTotals() {
+            const rows = document.querySelectorAll('#team-members-table-body tr');
+            let totals = {
+                personal: 0,
+                pass: 0,
+                bug: 0,
+                cancel: 0,
+                extra: 0,
+                final: 0
+            };
+
+            rows.forEach(row => {
+                totals.personal += parseFloat(row.querySelector('td:nth-child(2)').textContent) || 0;
+                totals.pass += parseFloat(row.querySelector('td:nth-child(3)').textContent) || 0;
+                totals.bug += parseFloat(row.querySelector('td:nth-child(4)').textContent) || 0;
+                totals.cancel += parseFloat(row.querySelector('td:nth-child(5)').textContent) || 0;
+                totals.extra += parseFloat(row.querySelector('td:nth-child(6)').textContent) || 0;
+                totals.final += parseFloat(row.querySelector('td:nth-child(7)').textContent) || 0;
+            });
+
+            // Update totals in footer
+            document.getElementById('total-personal').textContent = totals.personal.toFixed(1);
+            document.getElementById('total-pass').textContent = totals.pass.toFixed(1);
+            document.getElementById('total-bug').textContent = totals.bug.toFixed(1);
+            document.getElementById('total-cancel').textContent = totals.cancel.toFixed(1);
+            document.getElementById('total-extra').textContent = totals.extra.toFixed(1);
+            document.getElementById('total-final').textContent = totals.final.toFixed(1);
+
+            // Update actual points and recalculate percentages for the sprint summary
+            document.getElementById('actual-points').textContent = totals.final.toFixed(1);
+            document.getElementById('actual-current-sprint').textContent = totals.final.toFixed(1);
+            
+            // Recalculate percentages
+            const planPoints = parseFloat(document.getElementById('plan-points').value) || 0;
+            if (planPoints > 0) {
+                const remainPercent = Math.round(((planPoints - totals.final) / planPoints) * 100);
+                const percentComplete = Math.round((totals.final / planPoints) * 100);
+                
+                document.getElementById('remain-percent').textContent = `${remainPercent}%`;
+                document.getElementById('percent-complete').textContent = `${percentComplete}%`;
+            }
+        }
+
+        // Add event listener for Create New Report button
+        const createNewReportBtn = document.getElementById('create-new-report-btn');
+        if (createNewReportBtn) {
+            createNewReportBtn.addEventListener('click', function() {
+                const boardSelector = document.getElementById('board-selector');
+                if (!boardSelector || !boardSelector.value) {
+                    showToast('Please select a board first', 'error');
+                    return;
+                }
+                
+                const boardId = boardSelector.value;
+                const boardName = boardSelector.options[boardSelector.selectedIndex].text;
+                
+                // Get the current sprint number
+                let sprintNumber = document.getElementById('current-sprint-number')?.textContent || '1';
+                
+                // Default report name
+                let reportName = `Sprint ${sprintNumber} Report - ${boardName}`;
+                
+                // Create a modal to let the user name the report
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-auto">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Create New Report</h3>
+                        <form id="quick-report-form">
+                            <div class="mb-4">
+                                <label for="report-name" class="block text-sm font-medium text-gray-700 mb-1">Report Name</label>
+                                <input type="text" id="report-name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" value="${reportName}" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="report-notes" class="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+                                <textarea id="report-notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"></textarea>
+                            </div>
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" id="cancel-report" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                    Save Report
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // Handle cancel button
+                document.getElementById('cancel-report').addEventListener('click', function() {
+                    document.body.removeChild(modal);
+                });
+                
+                // Handle form submission
+                document.getElementById('quick-report-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const reportName = document.getElementById('report-name').value;
+                    const notes = document.getElementById('report-notes').value;
+                    
+                    // Capture the current report data
+                    const storyPointsData = document.getElementById('story-points-summary');
+                    const bugCardsContainer = document.getElementById('cards-by-list-container');
+                    
+                    // Create structured data for storage
+                    const reportData = {
+                        board_id: boardId,
+                        board_name: boardName,
+                        report_name: reportName,
+                        name: reportName, // Add the 'name' field which is required by the database
+                        notes: notes
+                    };
+                    
+                    // Helper function to trim long text fields
+                    const trimDescription = (text, maxLength = 1000) => {
+                        if (!text) return '';
+                        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+                    };
+                    
+                    if (storyPointsData) {
+                        reportData.story_points_data = JSON.stringify({
+                            summary: {
+                                planPoints: parseInt(document.getElementById('plan-points')?.value || '0'),
+                                actualPoints: parseInt(document.getElementById('actual-points')?.textContent || '0'),
+                                remainPercent: document.getElementById('remain-percent')?.textContent || '0%',
+                                percentComplete: document.getElementById('percent-complete')?.textContent || '0%',
+                                currentSprintPoints: parseInt(document.getElementById('current-sprint-points')?.textContent || '0'),
+                                actualCurrentSprint: parseInt(document.getElementById('actual-current-sprint')?.textContent || '0'),
+                                boardName: document.getElementById('board-name-display')?.textContent || '',
+                                lastUpdated: document.getElementById('last-updated')?.textContent || ''
+                            },
+                            teamMembers: Array.from(document.querySelectorAll('#team-members-table-body tr')).map(row => {
+                                const cells = row.querySelectorAll('td');
+                                if (cells.length >= 7) {
+                                    return {
+                                        name: cells[0].textContent.trim(),
+                                        pointPersonal: parseFloat(cells[1].textContent) || 0,
+                                        pass: parseFloat(cells[2].textContent) || 0,
+                                        bug: parseFloat(cells[3].textContent) || 0,
+                                        cancel: parseFloat(cells[4].textContent) || 0,
+                                        extra: parseFloat(cells[5].textContent) || 0,
+                                        final: parseFloat(cells[6].textContent) || 0,
+                                        passPercent: cells[7].textContent.trim()
+                                    };
+                                }
+                                return null;
+                            }).filter(x => x !== null),
+                            totals: {
+                                totalPersonal: parseFloat(document.getElementById('total-personal')?.textContent || '0'),
+                                totalPass: parseFloat(document.getElementById('total-pass')?.textContent || '0'),
+                                totalBug: parseFloat(document.getElementById('total-bug')?.textContent || '0'),
+                                totalCancel: parseFloat(document.getElementById('total-cancel')?.textContent || '0'),
+                                totalExtra: parseFloat(document.getElementById('total-extra')?.textContent || '0'),
+                                totalFinal: parseFloat(document.getElementById('total-final')?.textContent || '0')
+                            }
+                        });
+                    }
+                    
+                    if (bugCardsContainer) {
+                        reportData.bug_cards_data = JSON.stringify({
+                            bugCards: Array.from(document.querySelectorAll('.bug-card')).map(card => {
+                                const nameElement = card.querySelector('.font-medium.text-gray-900');
+                                const pointElement = card.querySelector('.bg-red-600.rounded-full');
+                                const listElement = card.querySelector('.text-xs.text-gray-500');
+                                const descriptionElement = card.querySelector('.description-content');
+                                const memberElement = card.querySelector('.text-xs.text-gray-500.mt-1');
+                                
+                                return {
+                                    name: nameElement ? nameElement.textContent.trim() : 'Unnamed Card',
+                                    points: pointElement ? parseInt(pointElement.textContent) || 0 : 0,
+                                    list: listElement ? listElement.textContent.replace('From:', '').trim() : '',
+                                    description: descriptionElement ? trimDescription(descriptionElement.textContent.trim()) : '',
+                                    members: memberElement ? memberElement.textContent.trim() : 'Not assigned',
+                                    priorityClass: Array.from(card.classList).find(c => c.startsWith('priority-')) || 'priority-none'
+                                };
+                            }),
+                            bugCount: document.getElementById('bug-count')?.textContent || '0 bugs',
+                            totalBugPoints: document.getElementById('total-bug-points')?.textContent || '0'
+                        });
+                    }
+                    
+                    // Show loading message
+                    const saveButton = e.target.querySelector('button[type="submit"]');
+                    const originalButtonText = saveButton.textContent;
+                    saveButton.disabled = true;
+                    saveButton.textContent = 'Saving...';
+                    
+                    console.log('Saving report with data:', reportData);
+                    
+                    // Submit directly to savedReports.store endpoint
+                    fetch('{{ route("saved-reports.store") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify(reportData)
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        // Check if the response is JSON
+                        const contentType = response.headers.get('content-type');
+                        console.log('Response content type:', contentType);
+                        
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json().then(data => {
+                                if (!response.ok) {
+                                    console.error('Error response data:', data);
+                                    throw new Error(data.error || data.message || 'Network response was not ok');
+                                }
+                                return data;
+                            });
+                        } else {
+                            // Handle HTML response or other types
+                            if (!response.ok) {
+                                // Try to get text content for more info
+                                return response.text().then(text => {
+                                    console.error('Error response text:', text);
+                                    throw new Error('Network response was not ok');
+                                });
+                            }
+                            // Return a default success object for non-JSON responses
+                            return { success: response.ok, message: 'Report saved successfully' };
+                        }
+                    })
+                    .then(data => {
+                        document.body.removeChild(modal);
+                        
+                        if (data.success) {
+                            showToast('Report saved successfully!', 'success');
+                            
+                            // Optionally redirect to saved reports
+                            if (confirm('Report saved successfully! View saved reports?')) {
+                                window.location.href = '{{ route("saved-reports.index") }}';
+                            }
+                        } else {
+                            showToast(data.error || 'Error saving report', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error saving report:', error);
+                        saveButton.disabled = false;
+                        saveButton.textContent = originalButtonText;
+                        showToast('Error saving report: ' + error.message, 'error');
+                    });
                 });
             });
         }

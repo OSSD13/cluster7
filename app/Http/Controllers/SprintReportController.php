@@ -193,24 +193,66 @@ class SprintReportController extends Controller
         $notes = $report->notes;
         $isSavedReport = true;
         
-        // Extract team members data
+        // Extract team members data - ensure we capture all fields including 'extra'
         $teamMembers = $storyPointsData['teamMembers'] ?? [];
+        
+        // Make sure each team member has all required fields
+        foreach ($teamMembers as &$member) {
+            $member['pointPersonal'] = $member['pointPersonal'] ?? 0;
+            $member['pass'] = $member['pass'] ?? 0;
+            $member['bug'] = $member['bug'] ?? 0;
+            $member['cancel'] = $member['cancel'] ?? 0;
+            $member['extra'] = $member['extra'] ?? 0;
+            $member['final'] = $member['final'] ?? 0;
+            $member['passPercent'] = $member['passPercent'] ?? '0%';
+        }
         
         // Extract summary data
         $summaryData = $storyPointsData['summary'] ?? [];
         
-        // Override boardName from summary to ensure consistency
-        if (isset($summaryData['boardName'])) {
-            $summaryData['boardName'] = $boardName;
-        }
+        // Ensure all summary fields are present
+        $summaryData['planPoints'] = $summaryData['planPoints'] ?? 0;
+        $summaryData['actualPoints'] = $summaryData['actualPoints'] ?? 0;
+        $summaryData['remainPercent'] = $summaryData['remainPercent'] ?? '0%';
+        $summaryData['percentComplete'] = $summaryData['percentComplete'] ?? '0%';
+        $summaryData['currentSprintPoints'] = $summaryData['currentSprintPoints'] ?? 0;
+        $summaryData['actualCurrentSprint'] = $summaryData['actualCurrentSprint'] ?? 0;
+        $summaryData['boardName'] = $boardName;
+        $summaryData['lastUpdated'] = $summaryData['lastUpdated'] ?? '';
         
         // Extract totals
         $totals = $storyPointsData['totals'] ?? [];
+        
+        // Ensure all totals fields are present
+        $totals['totalPersonal'] = $totals['totalPersonal'] ?? 0;
+        $totals['totalPass'] = $totals['totalPass'] ?? 0;
+        $totals['totalBug'] = $totals['totalBug'] ?? 0;
+        $totals['totalCancel'] = $totals['totalCancel'] ?? 0;
+        $totals['totalExtra'] = $totals['totalExtra'] ?? 0;
+        $totals['totalFinal'] = $totals['totalFinal'] ?? 0;
         
         // Extract bug cards
         $bugCards = $bugCardsData['bugCards'] ?? [];
         $bugCount = $bugCardsData['bugCount'] ?? '0 bugs';
         $totalBugPoints = $bugCardsData['totalBugPoints'] ?? 0;
+        
+        // Process bug cards to ensure they have consistent data
+        foreach ($bugCards as &$bug) {
+            $bug['name'] = $bug['name'] ?? 'Unknown Bug';
+            $bug['points'] = $bug['points'] ?? 0;
+            $bug['list'] = $bug['list'] ?? '';
+            $bug['description'] = $bug['description'] ?? '';
+            $bug['members'] = $bug['members'] ?? 'Not assigned';
+            $bug['priorityClass'] = $bug['priorityClass'] ?? 'priority-none';
+        }
+        
+        // Create sprint info for display
+        $sprintInfo = [
+            'number' => $report->sprint->sprint_number ?? 'Unknown',
+            'startDate' => $report->sprint->formatted_start_date ?? 'N/A',
+            'endDate' => $report->sprint->formatted_end_date ?? 'N/A',
+            'progress' => $report->sprint->progress_percentage ?? 0,
+        ];
         
         // Get backlog bugs from either the current report's backlog_data, or fetch from BacklogController
         // Initialize backlog variables
@@ -235,100 +277,23 @@ class SprintReportController extends Controller
             }
         }
         
-        // If no backlog data in current report, get backlog data from all reports
-        if (empty($backlogCards)) {
-            // Get all saved reports with their sprints
-            $savedReports = \App\Models\SavedReport::with('sprint')->get();
-            $allBacklogBugs = collect();
-            
-            // Loop through all reports to collect backlog bugs
-            foreach ($savedReports as $savedReport) {
-                // Handle cases where report_data is already decoded or is a string
-                $reportData = $savedReport->report_data;
-                if (is_string($reportData)) {
-                    $reportData = json_decode($reportData, true);
-                }
-                
-                // Process current bug cards in this report
-                if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
-                    foreach ($reportData['bug_cards'] as $teamName => $bugs) {
-                        foreach ($bugs as $bug) {
-                            // Only include active bugs (not completed)
-                            if (!isset($bug['status']) || $bug['status'] !== 'completed') {
-                                $bug['team'] = $teamName;
-                                $bug['sprint_number'] = $savedReport->sprint->sprint_number;
-                                // Avoid duplicates by using ID as key
-                                $allBacklogBugs->put($bug['id'], $bug);
-                            }
-                        }
-                    }
-                }
-                
-                // Process backlog data in this report
-                if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
-                    foreach ($reportData['backlog'] as $teamName => $bugs) {
-                        foreach ($bugs as $bug) {
-                            // Only include active bugs (not completed)
-                            if (!isset($bug['status']) || $bug['status'] !== 'completed') {
-                                $bug['team'] = $teamName;
-                                $bug['sprint_number'] = $savedReport->sprint->sprint_number;
-                                // Avoid duplicates by using ID as key
-                                $allBacklogBugs->put($bug['id'], $bug);
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Filter to only show bugs for this team if we have team information
-            if (!empty($boardName)) {
-                $allBacklogBugs = $allBacklogBugs->filter(function ($bug) use ($boardName) {
-                    return isset($bug['team']) && $bug['team'] === $boardName;
-                });
-            }
-            
-            // Sort bugs by priority
-            $allBacklogBugs = $allBacklogBugs->sortBy(function ($bug) {
-                return $this->getPriorityValue($this->getBugPriority($bug));
-            });
-            
-            // Update backlog variables
-            $backlogCards = $allBacklogBugs->values()->all();
-            $backlogBugCount = count($backlogCards) . ' ' . \Illuminate\Support\Str::plural('bug', count($backlogCards));
-            $backlogTotalPoints = collect($backlogCards)->sum('points');
-        }
-        
-        // Additional sprint information using DateHelper for consistent formatting
-        $sprintInfo = [
-            'number' => $report->sprint->sprint_number,
-            'startDate' => DateHelper::formatSprintDate($report->sprint->start_date),
-            'endDate' => DateHelper::formatSprintDate($report->sprint->end_date),
-            'progress' => $report->sprint->progress_percentage,
-        ];
-        
-        // Format report creation date in 24-hour format
-        $report->formatted_created_at = DateHelper::formatDateTime($report->created_at);
-        
-        // Return view with all the extracted data
+        // Return the view with all necessary data
         return view('reports.sprints.report', compact(
             'report',
-            'reportVersion',
-            'storyPointsData',
-            'bugCardsData',
-            'boardName',
             'reportName',
+            'boardName',
             'notes',
-            'isSavedReport',
             'teamMembers',
             'summaryData',
             'totals',
             'bugCards',
             'bugCount',
             'totalBugPoints',
-            'sprintInfo',
             'backlogCards',
             'backlogBugCount',
-            'backlogTotalPoints'
+            'backlogTotalPoints',
+            'reportVersion',
+            'sprintInfo'
         ));
     }
     
@@ -378,7 +343,7 @@ class SprintReportController extends Controller
      * Delete a specific sprint report.
      *
      * @param int $reportId
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\View\View
      */
     public function delete($reportId)
     {
@@ -392,11 +357,24 @@ class SprintReportController extends Controller
             $sprintId = $report->sprint_id;
             $report->delete();
             
-            return redirect()->route('sprints.show', $sprintId)
-                ->with('success', 'Report deleted successfully.');
+            // Use direct routing to show sprint
+            $sprint = \App\Models\Sprint::findOrFail($sprintId);
+            $reports = SprintReport::where('sprint_id', $sprintId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+                
+            return view('sprints.show', [
+                'sprint' => $sprint,
+                'reports' => $reports,
+                'success' => 'Report deleted successfully.'
+            ]);
         } catch (\Exception $e) {
-            return redirect()->route('sprints.index')
-                ->with('error', 'Error deleting report: ' . $e->getMessage());
+            // Use direct routing to index
+            $sprints = \App\Models\Sprint::orderBy('sprint_number', 'desc')->get();
+            return view('sprints.index', [
+                'sprints' => $sprints,
+                'error' => 'Error deleting report: ' . $e->getMessage()
+            ]);
         }
     }
 } 

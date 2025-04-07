@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Setting;
+use App\Models\TrelloBoardData;
+use App\Http\Controllers\BacklogController;
 use Carbon\Carbon;
 
 class TrelloController extends Controller
@@ -49,6 +51,37 @@ class TrelloController extends Controller
                     throw new \Exception('Board ID is required.');
                 }
             }
+
+            // Get force refresh parameter from request
+            $forceRefresh = $request->input('force_refresh', false);
+
+            // Check if we have cached data for this board
+            $cachedData = \App\Models\TrelloBoardData::where('board_id', $boardId)->first();
+
+            // If we have recent cached data and not forcing refresh, return it
+            if ($cachedData && !$forceRefresh && !$cachedData->isStale()) {
+                \Log::info('Using cached data for board ID: ' . $boardId, [
+                    'last_fetched_at' => $cachedData->last_fetched_at,
+                ]);
+
+                // Return the cached data with the last fetched timestamp
+                return response()->json([
+                    'storyPoints' => $cachedData->story_points,
+                    'cardsByList' => $cachedData->cards_by_list,
+                    'memberPoints' => $cachedData->member_points,
+                    'boardDetails' => $cachedData->board_details,
+                    'backlogData' => $cachedData->backlog_data,
+                    'timestamp' => now()->toDateTimeString(),
+                    'requestedBoardId' => $boardId,
+                    'cached' => true,
+                    'lastFetched' => $cachedData->getLastFetchedFormatted(),
+                ])->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                  ->header('Pragma', 'no-cache')
+                  ->header('Expires', '0');
+            }
+
+            // If we're here, we need to fetch fresh data from Trello API
+            \Log::info('Fetching fresh data for board ID: ' . $boardId);
 
             // Important: Log the actual board ID being used
             \Log::info('Fetching data for board ID: ' . $boardId);
@@ -137,14 +170,56 @@ class TrelloController extends Controller
             $cardsByList = $this->organizeCardsByListWithPlugin($cards, $lists);
             $memberPoints = $this->calculateMemberStoryPoints($cards, $members, $boardId, $apiKey, $apiToken); // Add boardId and credentials here
 
+            // Get backlog data
+            $backlogController = app()->make(BacklogController::class);
+            $backlogData = $backlogController->getBacklogData();
+
+            // Ensure backlogData is properly formatted for collections
+            if ($backlogData && isset($backlogData['allBugs']) && is_array($backlogData['allBugs'])) {
+                $backlogData['allBugs'] = collect($backlogData['allBugs']);
+            }
+            
+            if ($backlogData && isset($backlogData['bugsByTeam']) && is_array($backlogData['bugsByTeam'])) {
+                foreach ($backlogData['bugsByTeam'] as $team => $bugs) {
+                    if (is_array($bugs)) {
+                        $backlogData['bugsByTeam'][$team] = collect($bugs);
+                    }
+                }
+            }
+            
+            if ($backlogData && isset($backlogData['bugsBySprint']) && is_array($backlogData['bugsBySprint'])) {
+                foreach ($backlogData['bugsBySprint'] as $sprint => $bugs) {
+                    if (is_array($bugs)) {
+                        $backlogData['bugsBySprint'][$sprint] = collect($bugs);
+                    }
+                }
+            }
+
+            // Save the data to the database for future use
+            \App\Models\TrelloBoardData::updateOrCreate(
+                ['board_id' => $boardId],
+                [
+                    'board_name' => $boardDetails['name'] ?? 'Unknown Board',
+                    'story_points' => $storyPoints,
+                    'cards_by_list' => $cardsByList,
+                    'member_points' => $memberPoints,
+                    'board_details' => $boardDetails,
+                    'backlog_data' => $backlogData,
+                    'last_fetched_at' => now(),
+                ]
+            );
+
             // Return the data with board details and a timestamp to prevent caching
             return response()->json([
                 'storyPoints' => $storyPoints,
                 'cardsByList' => $cardsByList,
                 'memberPoints' => $memberPoints,
                 'boardDetails' => $boardDetails,
+                'backlogData' => $backlogData,
                 'timestamp' => now()->toDateTimeString(), // Add timestamp
-                'requestedBoardId' => $boardId // Add the requested board ID for verification
+                'requestedBoardId' => $boardId, // Add the requested board ID for verification
+                'cached' => false,
+                'lastFetched' => 'just now',
             ])->header('Cache-Control', 'no-cache, no-store, must-revalidate')
               ->header('Pragma', 'no-cache')
               ->header('Expires', '0');
@@ -464,86 +539,119 @@ class TrelloController extends Controller
 
     public function storyPointsReport()
     {
+        // Get current user's boards
+        $apiKey = $this->getSetting('trello_api_key');
+        $apiToken = $this->getSetting('trello_api_token');
+        $boards = [];
+        $defaultBoardId = null;
+        $error = null;
+        $singleBoard = false;
+        $boardData = null;
+        $backlogData = null;
+        
         try {
-            // Get Trello API credentials from settings
-            $credentials = $this->getTrelloCredentials();
-            $apiKey = $credentials['apiKey'];
-            $apiToken = $credentials['apiToken'];
-
             if (!$apiKey || !$apiToken) {
-                return view('trello.story-points-report', [
-                    'error' => 'Trello API credentials are not configured. Please go to Settings > Trello API Settings to configure them.',
-                    'boards' => []
-                ]);
+                throw new \Exception('Trello API credentials not configured.');
             }
 
-            // Fetch all boards first
-            $allBoards = $this->fetchBoards($apiKey, $apiToken);
-            $userBoards = [];
-            $autoSelectBoard = true; // Always auto-select board
-            $defaultBoardId = null;
-
-            if (auth()->user()->isAdmin()) {
-                // Admins see all boards
-                $userBoards = $allBoards;
-                
-                // For admins, use the first board as default if exists
-                if (count($allBoards) > 0) {
-                    $defaultBoardId = $allBoards[0]['id'];
-                }
+            // Try to get boards for the user
+            $boards = $this->fetchBoards($apiKey, $apiToken);
             
-                // For testers and developers, filter boards they are members of
-                $userName = auth()->user()->name;
-
-                foreach ($allBoards as $board) {
-                    // Fetch board members
-                    $members = $this->fetchBoardMembers($board['id'], $apiKey, $apiToken);
-
-                    // Check if user is a member of this board
-                    foreach ($members as $member) {
-                        if ($member['fullName'] === $userName) {
-                            $userBoards[] = $board;
-                            break;
-                        }
+            // Filter boards for non-admin users based on board membership
+            if (!auth()->user()->isAdmin()) {
+                $boards = $this->filterBoardsForUser($boards, $apiKey, $apiToken);
+            }
+            
+            // Handle cases based on the number of available boards
+            if (count($boards) === 0) {
+                $error = "No Trello boards available. Please configure board access first.";
+            } elseif (count($boards) === 1) {
+                $singleBoard = true;
+                $defaultBoardId = $boards[0]['id'];
+            } else {
+                // Multiple boards - set default or use the user's preference
+                $defaultBoardId = session('trello.default_board_id', $boards[0]['id']);
+            }
+            
+            // Check if we have cached data for the default board
+            if ($defaultBoardId) {
+                $cachedData = TrelloBoardData::where('board_id', $defaultBoardId)->first();
+                
+                if ($cachedData) {
+                    $boardData = [
+                        'storyPoints' => $cachedData->story_points,
+                        'cardsByList' => $cachedData->cards_by_list,
+                        'memberPoints' => $cachedData->member_points,
+                        'boardDetails' => $cachedData->board_details,
+                        'backlogData' => $cachedData->backlog_data,
+                        'lastFetched' => $cachedData->getLastFetchedFormatted(),
+                    ];
+                    
+                    // If we have backlog data in the cache, use it
+                    if (isset($cachedData->backlog_data) && $cachedData->backlog_data) {
+                        $backlogData = $cachedData->backlog_data;
                     }
                 }
-
-                // If user has boards, select the first one by default
-                if (count($userBoards) > 0) {
-                    $defaultBoardId = $userBoards[0]['id'];
+            }
+            
+            // If we don't have backlog data from cache, try to get fresh data
+            if (!$backlogData) {
+                $backlogController = app()->make(BacklogController::class);
+                $backlogData = $backlogController->getBacklogData();
+            }
+            
+            // Ensure backlogData is properly formatted for collections
+            if ($backlogData && isset($backlogData['allBugs']) && is_array($backlogData['allBugs'])) {
+                $backlogData['allBugs'] = collect($backlogData['allBugs']);
+            }
+            
+            if ($backlogData && isset($backlogData['bugsByTeam']) && is_array($backlogData['bugsByTeam'])) {
+                foreach ($backlogData['bugsByTeam'] as $team => $bugs) {
+                    if (is_array($bugs)) {
+                        $backlogData['bugsByTeam'][$team] = collect($bugs);
+                    }
                 }
             }
             
-            // Calculate current sprint information
+            if ($backlogData && isset($backlogData['bugsBySprint']) && is_array($backlogData['bugsBySprint'])) {
+                foreach ($backlogData['bugsBySprint'] as $sprint => $bugs) {
+                    if (is_array($bugs)) {
+                        $backlogData['bugsBySprint'][$sprint] = collect($bugs);
+                    }
+                }
+            }
+            
+            // Get sprint info
             $sprintInfo = $this->getCurrentSprintInfo();
             
-            // Get current date
-            $currentDate = Carbon::now()->format('F d, Y');
-            
-            // Get backlog data from BacklogController
-            $trelloService = app()->make(\App\Services\TrelloService::class); // Resolve TrelloService from the container
-            $backlogController = new \App\Http\Controllers\BacklogController($trelloService);
-            $backlogData = $backlogController->getBacklogData();
-
-            return view('trello.story-points-report', array_merge([
-                'boards' => $userBoards,
-                'defaultBoardId' => $defaultBoardId,
-                'autoSelectBoard' => $autoSelectBoard,
-                'singleTeam' => count($userBoards) === 1 && !auth()->user()->isAdmin(),
-                'currentDate' => $currentDate,
-                'backlogData' => $backlogData
-            ], $sprintInfo));
         } catch (\Exception $e) {
-            \Log::error('Error in storyPointsReport', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return view('trello.story-points-report', [
-                'error' => $e->getMessage(),
-                'boards' => []
-            ]);
+            $error = $e->getMessage();
+            \Log::error('Error in storyPointsReport: ' . $e->getMessage());
         }
+        
+        // Get current date 
+        $currentDate = Carbon::now()->format('F d, Y');
+        
+        return view('trello.story-points-report', [
+            'boards' => $boards,
+            'defaultBoardId' => $defaultBoardId,
+            'singleBoard' => $singleBoard,
+            'error' => $error,
+            'currentDate' => $currentDate,
+            'boardData' => $boardData,
+            'backlogData' => $backlogData,
+            'currentSprintNumber' => $sprintInfo['currentSprintNumber'] ?? null,
+            'sprintDateRange' => $sprintInfo['sprintDateRange'] ?? null,
+            'sprintDurationDisplay' => $sprintInfo['sprintDurationDisplay'] ?? null,
+            'currentSprintDay' => $sprintInfo['currentSprintDay'] ?? null,
+            'sprintTotalDays' => $sprintInfo['sprintTotalDays'] ?? null,
+            'daysRemaining' => $sprintInfo['daysRemaining'] ?? null,
+            'nextReportDate' => $sprintInfo['nextReportDate'] ?? null,
+            'currentWeekNumber' => $sprintInfo['currentWeekNumber'] ?? null,
+            'currentSprintStartDate' => $sprintInfo['currentSprintStartDate'] ?? null,
+            'currentSprintEndDate' => $sprintInfo['currentSprintEndDate'] ?? null,
+            'sprintProgressPercent' => $sprintInfo['sprintProgressPercent'] ?? 0
+        ]);
     }
 
     /**
@@ -1074,5 +1182,34 @@ class TrelloController extends Controller
     public function fetchTrelloData(Request $request)
     {
         return $this->fetchStoryPoints($request);
+    }
+
+    /**
+     * Filter boards for the current user based on membership
+     *
+     * @param array $boards Board data from Trello API
+     * @param string $apiKey Trello API key
+     * @param string $apiToken Trello API token
+     * @return array Filtered boards where user is a member
+     */
+    private function filterBoardsForUser($boards, $apiKey, $apiToken)
+    {
+        $userName = auth()->user()->name;
+        $userBoards = [];
+        
+        foreach ($boards as $board) {
+            // Fetch board members
+            $members = $this->fetchBoardMembers($board['id'], $apiKey, $apiToken);
+            
+            // Check if user is a member of this board
+            foreach ($members as $member) {
+                if ($member['fullName'] === $userName) {
+                    $userBoards[] = $board;
+                    break;
+                }
+            }
+        }
+        
+        return $userBoards;
     }
 }

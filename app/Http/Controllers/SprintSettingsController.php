@@ -144,10 +144,10 @@ class SprintSettingsController extends Controller
     }
     
     /**
-     * Update sprint settings.
+     * Update the sprint settings.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\View\View
      */
     public function update(Request $request)
     {
@@ -189,13 +189,32 @@ class SprintSettingsController extends Controller
         // Update progress for all active sprints
         Sprint::updateProgressForActiveSprints();
         
-        return redirect()->route('settings.sprint')->with('success', 'Sprint settings updated successfully.');
+        // Use direct routing instead of redirect
+        $sprintDuration = $this->getSetting('sprint_duration', 7);
+        $sprintStartDay = $this->getSetting('sprint_start_day', 1);
+        $sprintEndTime = $this->getSetting('sprint_end_time', '17:00');
+        $autoSaveEnabled = $this->getSetting('auto_save_enabled', false);
+        
+        $currentSprint = Sprint::getCurrentSprint();
+        $nextSprintNumber = Sprint::getNextSprintNumber();
+        $recentSprints = Sprint::orderBy('sprint_number', 'desc')->take(5)->get();
+        
+        return view('settings.sprint', [
+            'sprintDuration' => $sprintDuration,
+            'sprintStartDay' => $sprintStartDay,
+            'sprintEndTime' => $sprintEndTime,
+            'autoSaveEnabled' => $autoSaveEnabled,
+            'currentSprint' => $currentSprint,
+            'nextSprintNumber' => $nextSprintNumber,
+            'recentSprints' => $recentSprints,
+            'success' => 'Sprint settings updated successfully.'
+        ]);
     }
     
     /**
      * Generate sprint reports manually.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\View\View
      */
     public function generateNow()
     {
@@ -246,11 +265,30 @@ class SprintSettingsController extends Controller
             
             DB::commit();
             
-            if ($exitCode === 0) {
-                return redirect()->route('settings.sprint')->with('success', 'Sprint reports generated successfully.');
-            } else {
-                return redirect()->route('settings.sprint')->with('error', 'Failed to generate sprint reports. Check the logs for details.');
-            }
+            // Use direct routing instead of redirect
+            $sprintDuration = $this->getSetting('sprint_duration', 7);
+            $sprintStartDay = $this->getSetting('sprint_start_day', 1);
+            $sprintEndTime = $this->getSetting('sprint_end_time', '17:00');
+            $autoSaveEnabled = $this->getSetting('auto_save_enabled', false);
+            
+            $nextSprintNumber = Sprint::getNextSprintNumber();
+            $recentSprints = Sprint::orderBy('sprint_number', 'desc')->take(5)->get();
+            
+            $message = $exitCode === 0 ? 
+                'Sprint reports generated successfully.' : 
+                'Failed to generate sprint reports. Check the logs for details.';
+            
+            return view('settings.sprint', [
+                'sprintDuration' => $sprintDuration,
+                'sprintStartDay' => $sprintStartDay,
+                'sprintEndTime' => $sprintEndTime,
+                'autoSaveEnabled' => $autoSaveEnabled,
+                'currentSprint' => $currentSprint,
+                'nextSprintNumber' => $nextSprintNumber,
+                'recentSprints' => $recentSprints,
+                'success' => $exitCode === 0 ? $message : null,
+                'error' => $exitCode !== 0 ? $message : null
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Error generating sprint report: ' . $e->getMessage(), [
@@ -259,7 +297,26 @@ class SprintSettingsController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             
-            return redirect()->route('settings.sprint')->with('error', 'An error occurred: ' . $e->getMessage());
+            // Use direct routing instead of redirect
+            $sprintDuration = $this->getSetting('sprint_duration', 7);
+            $sprintStartDay = $this->getSetting('sprint_start_day', 1);
+            $sprintEndTime = $this->getSetting('sprint_end_time', '17:00');
+            $autoSaveEnabled = $this->getSetting('auto_save_enabled', false);
+            
+            $currentSprint = Sprint::getCurrentSprint();
+            $nextSprintNumber = Sprint::getNextSprintNumber();
+            $recentSprints = Sprint::orderBy('sprint_number', 'desc')->take(5)->get();
+            
+            return view('settings.sprint', [
+                'sprintDuration' => $sprintDuration,
+                'sprintStartDay' => $sprintStartDay,
+                'sprintEndTime' => $sprintEndTime,
+                'autoSaveEnabled' => $autoSaveEnabled,
+                'currentSprint' => $currentSprint,
+                'nextSprintNumber' => $nextSprintNumber,
+                'recentSprints' => $recentSprints,
+                'error' => 'An error occurred: ' . $e->getMessage()
+            ]);
         }
     }
     
@@ -305,7 +362,7 @@ class SprintSettingsController extends Controller
      * Manually set the current sprint number
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\View\View
      */
     public function setCurrentSprint(Request $request)
     {
@@ -334,7 +391,26 @@ class SprintSettingsController extends Controller
         
         Sprint::updateProgressForActiveSprints();
         
-        return redirect()->route('settings.sprint')->with('success', 'Current sprint number has been manually set to ' . $validated['current_sprint_number'] . '.');
+        // Use direct routing instead of redirect
+        $sprintDuration = $this->getSetting('sprint_duration', 7);
+        $sprintStartDay = $this->getSetting('sprint_start_day', 1);
+        $sprintEndTime = $this->getSetting('sprint_end_time', '17:00');
+        $autoSaveEnabled = $this->getSetting('auto_save_enabled', false);
+        
+        $currentSprint = Sprint::getCurrentSprint();
+        $nextSprintNumber = Sprint::getNextSprintNumber();
+        $recentSprints = Sprint::orderBy('sprint_number', 'desc')->take(5)->get();
+        
+        return view('settings.sprint', [
+            'sprintDuration' => $sprintDuration,
+            'sprintStartDay' => $sprintStartDay,
+            'sprintEndTime' => $sprintEndTime,
+            'autoSaveEnabled' => $autoSaveEnabled,
+            'currentSprint' => $currentSprint,
+            'nextSprintNumber' => $nextSprintNumber,
+            'recentSprints' => $recentSprints,
+            'success' => 'Current sprint number has been manually set to ' . $validated['current_sprint_number'] . '.'
+        ]);
     }
     
     /**
