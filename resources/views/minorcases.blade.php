@@ -356,12 +356,12 @@
                             // Add a new empty row
                             const newRow = document.createElement('tr');
                             newRow.innerHTML = `
-                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Number"></td>
-                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Card Detail"></td>
-                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Description"></td>
-                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Member"></td>
-                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Point"></td>
-                <td class="px-4 py-2 text-center border border-white">
+                        <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Number"></td>
+                        <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Card Detail"></td>
+                        <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Description"></td>
+                        <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Member"></td>
+                        <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Point"></td>
+                        <td class="px-4 py-2 text-center border border-white">
                     <button class="px-2 py-1 text-white bg-green-500 rounded save-btn hover:bg-green-600">Save</button>
                 </td>
             `;
@@ -371,7 +371,7 @@
                             newRow.querySelector('.save-btn').addEventListener('click', function() {
                                 const inputs = newRow.querySelectorAll('input');
                                 const values = Array.from(inputs).map(input => input.value
-                                .trim());
+                                    .trim());
 
                                 if (values.some(val => !val)) {
                                     alert('Please fill in all fields.');
@@ -403,39 +403,28 @@
                     // Edit button logic
                     row.querySelector('.edit-btn').addEventListener('click', function() {
                         const cells = row.querySelectorAll('td:not(:last-child)');
-                        cells.forEach(cell => {
-                            const value = cell.textContent.trim();
-                            cell.innerHTML =
-                                `<input type="text" class="w-full p-1 border" value="${value}">`;
-                        });
+                        const isEditing = row.querySelector('input') !== null; // Check if already in edit mode
 
-                        // Change button to save
-                        this.textContent = 'Save';
-                        this.classList.remove('edit-btn', 'bg-yellow-500', 'hover:bg-yellow-600');
-                        this.classList.add('save-btn', 'bg-green-500', 'hover:bg-green-600');
-
-                        // Add save logic
-                        this.addEventListener('click', function() {
-                            const inputs = row.querySelectorAll('input');
-                            const values = Array.from(inputs).map(input => input.value.trim());
-
-                            if (values.some(val => !val)) {
-                                alert('Please fill in all fields.');
-                                return;
-                            }
-
-                            // Replace inputs with text
-                            inputs.forEach((input, index) => {
-                                const td = input.parentElement;
-                                td.textContent = index === 0 ? `#${input.value}` : input.value;
+                        if (!isEditing) {
+                            // Switch to edit mode
+                            cells.forEach(cell => {
+                                const value = cell.textContent.trim();
+                                cell.innerHTML =
+                                    `<input type="text" value="${value}" class="w-full p-1 border">`;
                             });
-
-                            // Change button back to edit
-                            this.textContent = 'Edit';
-                            this.classList.remove('save-btn', 'bg-green-500', 'hover:bg-green-600');
-                            this.classList.add('edit-btn', 'bg-yellow-500', 'hover:bg-yellow-600');
-                        });
+                            this.textContent = 'Save'; // Change button text to "Save"
+                        } else {
+                            // Save edited values
+                            cells.forEach(cell => {
+                                const input = cell.querySelector('input');
+                                if (input) {
+                                    cell.textContent = input.value.trim(); // Replace input with text
+                                }
+                            });
+                            this.textContent = 'Edit'; // Change button text back to "Edit"
+                        }
                     });
+
 
                     // Delete button logic
                     row.querySelector('.delete-btn').addEventListener('click', function() {
@@ -531,17 +520,52 @@
                                     if (input) {
                                         // For the first cell, add the # symbol back / สำหรับเซลล์แรก เพิ่มสัญลักษณ์ # กลับ
                                         if (index === 0) {
-                                            cell.textContent = `#${input.value}`;
-                                        } else {
-                                            if (index === 3) {
-                                                const [team, ...memberParts] = input.value
-                                                    .split(' ');
-                                                const member = memberParts.join(' ');
+                                            cell.textContent = input.value;
+                                            const number = parseInt(input.value);
+                                            // Update demo data with the edited number
+                                            demoData.forEach(item => {
+                                                if (item.number === number) {
+                                                    item.number = number;
+                                                }
                                                 cell.innerHTML =
-                                                    `<span class="px-2 py-1 mr-2 text-xs text-green-600 rounded bg-green-50">${team}</span>${member}`;
-                                            } else {
-                                                cell.textContent = input.value;
-                                            }
+                                                    `<span class="px-14 py-1 mr-2 bg-white border border-[#13A7FD] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">#${number}</span>`;
+                                            });
+                                        } else if (index === 4) {
+                                            // Handle point cell
+                                            const point = parseInt(input.value);
+                                            cell.innerHTML =
+                                                `<span class="px-16 py-1 mr-2 bg-[#BAF3FF] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">${point}pt.</span>`;
+                                        } else if (index === 2) {
+                                            // Handle description cell
+                                            cell.textContent = input.value;
+                                            // Update demo data with the edited description
+                                            demoData.forEach(item => {
+                                                if (item.description === cell.textContent) {
+                                                    item.description = input.value;
+                                                }
+                                            });
+                                        } else if (index === 3) {
+                                            // Handle member cell
+                                            const [team, ...memberParts] = input.value
+                                                .split(' ');
+                                            const member = memberParts.join(' ');
+                                            cell.innerHTML =
+                                                `<span class="px-2 py-1 mr-2 text-sm text-[#65BC23] rounded-3xl bg-[#DDFFEC] font-bold">${team}</span>${member}`;
+                                            // Update demo data with the edited team and member
+                                            demoData.forEach(item => {
+                                                if (item.teamName === team) {
+                                                    item.member = member;
+                                                }
+                                            });
+                                        } else if (index === 1) {
+                                            // Handle card detail cell
+                                            cell.textContent = input.value;
+                                            // Update demo data with the edited card detail
+                                            demoData.forEach(item => {
+                                                if (item.card_detail === cell.textContent) {
+                                                    item.card_detail = input.value;
+                                                }
+                                            });
                                         }
                                     }
                                 });
@@ -674,18 +698,21 @@
                                             // For the first cell, add the # symbol back
                                             if (index === 0) {
                                                 cell.textContent = `#${input.value}`;
-                                            } else {
-                                                if (index === 3) {
-                                                    const [team, ...memberParts] = input
-                                                        .value.split(' ');
-                                                    const member = memberParts.join(
-                                                        ' ');
-                                                    cell.innerHTML =
-                                                        `<span class="px-2 py-1 mr-2 text-xs text-green-600 rounded bg-green-50">${team}</span>${member}`;
-                                                } else {
-                                                    cell.textContent = input.value;
-                                                }
+                                                const number = input.value;
+                                                cell.innerHTML =
+                                                    `<span class="px-14 py-1 mr-2 bg-white border border-[#13A7FD] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">#${number}</span>`;
                                             }
+                                            if (index === 3) {
+                                                const [team, ...memberParts] = input
+                                                    .value.split(' ');
+                                                const member = memberParts.join(
+                                                    ' ');
+                                                cell.innerHTML =
+                                                    `<span class="px-2 py-1 mr-2 text-sm text-[#65BC23] rounded-3xl bg-[#DDFFEC] font-bold">${team}</span>${member}`;
+                                            } else {
+                                                cell.textContent = input.value;
+                                            }
+
                                         }
                                     });
                                     // Restore original SVG icon
