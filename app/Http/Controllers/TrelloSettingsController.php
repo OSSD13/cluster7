@@ -136,8 +136,11 @@ class TrelloSettingsController extends Controller
             $this->saveSetting('trello_board_id', $request->board_id);
         }
 
-        return redirect()->route('trello.settings.index')->with('success', 'Trello API settings updated successfully.');
+        // 
+        return redirect()->route('trello.settings.index')->with('success','');
     }
+
+    
 
     /**
      * Test the API connection via AJAX

@@ -6,8 +6,8 @@
 @section('content')
 <div class="rounded-[2vw] h-full w-full bg-gray-100 px-5 py-2">
 <div class="ml-3 pt-4 mx-right">
-    <div class="mb-1 flex justify-between items-center">
-        <div class="flex items-center space-x-3">
+    <div class="mb-1 flex justify-between items-center ">
+        <div class="flex items-center space-x-3 pb-3">
             <div class="w-20 h-20 rounded-full bg-sky-100 flex justify-center items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="#13A7FD" class="bi bi-gear" viewBox="0 0 16 16">
                     <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"></path>
@@ -16,7 +16,6 @@
             </div>
             <h2 class="text-[#13A7FD] text-6xl font-bold italic">Trello API Settings</h2>
         </div>
-        
         @if($connectionStatus && $connectionStatus['success'])
             <div class="flex items-center bg-green-50 rounded-full p-1">
                 <div class="h-3 w-3 rounded-full bg-green-500"></div>
@@ -29,30 +28,36 @@
             </div>
         @endif
     </div>
-
     <!-- Connection Status information -->
     @if($connectionStatus)
-        <div x-data="{ show: true }"
-             x-show="show"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 transform -translate-y-2"
-             x-transition:enter-end="opacity-100 transform translate-y-0"
-             x-transition:leave="transition ease-in duration-300"
-             x-transition:leave-start="opacity-100 transform translate-y-0"
-             x-transition:leave-end="opacity-0 transform -translate-y-2"
-             class="p-4 {{ $connectionStatus['success'] ? '' : 'bg-red-50' }}">
-            
-            <div class="flex items-center">
-                @if($connectionStatus['success'])
+        <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)"
+        x-show="show"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform -translate-y-2"
+            x-transition:enter-end="opacity-100 transform translate-y-0"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 transform translate-y-0"
+            x-transition:leave-end="opacity-0 transform -translate-y-2"
+            class="p-4 {{ $connectionStatus['success'] ? '' : 'flex-center rounded-xl bg-red-50 mt-5 mb-4 border-l-4 border-red-500' }}">
+
+            <div >
+                <div>
+                </div>
                     @if(!empty($connectionStatus['boards']))
-                    @endif
+                    <div>
+                    <div class=" mb-2 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-md">
+                        <div class="flex items-center">
+                            Trello API settings updated successfully.
+                        </div>
+                    </div>
+                    </div>
                     </p>
                 </div>
                 @else
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                     </svg>
-                    <div>
+                    <div>  
                         <p class="text-red-700 font-medium">{{ $connectionStatus['message'] }}</p>
                         @if(!empty($connectionStatus['details']))
                             <div class="mt-2 text-sm text-red-600">
@@ -68,12 +73,11 @@
                 @endif
             </div>
         </div>
+        
     @endif
-
     <div class="p-6 mb-10 bg-white rounded-3xl border-b border-gray-200">
         <form method="POST" action="{{ route('trello.settings.update') }}" id="settings-form">
             @csrf
-
             <div class="pt-3 ml-2 pr-3">
                 <label for="trello_api_key" class="block text-gray-700 text-lg font-bold mb-2">Trello API Key</label>
                 <input
@@ -83,7 +87,7 @@
                     value="{{ old('trello_api_key', $trelloApiKey) }}"
                     class="shadow appearance-none border  rounded-lg rounded w-full py-3 px-3 text-gray-500 leading-tight focus:outline-none focus:shadow-outline @error('trello_api_key') border-red-500 @enderror"
                     required
-                >
+            >
                 @error('trello_api_key')
                     <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
                 @enderror
@@ -270,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const apiTokenInput = document.getElementById('trello_api_token');
 
     const loadingIndicator = document.getElementById('loading-indicator');
-    const successResult = document.getElementById('success-result');
+    // const successResult = document.getElementById('success-result');
     const errorResult = document.getElementById('error-result');
     const modalTitle = document.getElementById('modal-title');
     const successMessage = document.getElementById('success-message');
@@ -336,7 +340,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     data.boards.forEach(board => {
                         const li = document.createElement('li');
-                        
                         li.innerHTML = `<a href="${board.url}" target="_blank" class="text-blue-600 hover:underline">${board.name}</a>`;
                         boardsList.appendChild(li);
                     });
