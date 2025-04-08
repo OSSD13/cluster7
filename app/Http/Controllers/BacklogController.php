@@ -8,6 +8,7 @@ use App\Models\Sprint;
 use App\Helpers\DateHelper;
 use Illuminate\Support\Facades\DB;
 use App\Models\SavedReport;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class BacklogController extends Controller
 {
@@ -29,12 +30,12 @@ class BacklogController extends Controller
     public function index()
     {
         $reports = SavedReport::with('sprint')->get();
-        
+
         // Initialize collections for backlog bugs
         $allBacklogBugs = collect();
         $backlogByTeam = [];
         $backlogBySprint = [];
-        
+
         // First pass: collect all bugs from reports (both current bugs and backlog)
         foreach ($reports as $report) {
             // Handle cases where report_data is already decoded or is a string
@@ -42,7 +43,7 @@ class BacklogController extends Controller
             if (is_string($reportData)) {
                 $reportData = json_decode($reportData, true);
             }
-            
+
             // Process current bug cards in this report
             if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
                 foreach ($reportData['bug_cards'] as $teamName => $bugs) {
@@ -56,7 +57,7 @@ class BacklogController extends Controller
                     }
                 }
             }
-            
+
             // Process backlog data in this report
             if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
                 foreach ($reportData['backlog'] as $teamName => $bugs) {
@@ -71,36 +72,44 @@ class BacklogController extends Controller
                 }
             }
         }
-        
+
         // Second pass: organize bugs by team and sprint
         foreach ($allBacklogBugs as $bug) {
             $teamName = $bug['team'];
             $sprintNumber = $bug['sprint_number'];
-            
+
             // Organize by team
             if (!isset($backlogByTeam[$teamName])) {
                 $backlogByTeam[$teamName] = collect();
             }
             $backlogByTeam[$teamName]->push($bug);
-            
+
             // Organize by sprint
             if (!isset($backlogBySprint[$sprintNumber])) {
                 $backlogBySprint[$sprintNumber] = collect();
             }
             $backlogBySprint[$sprintNumber]->push($bug);
         }
-        
+
         // Sort bugs by priority
         $sortedBacklogBugs = $allBacklogBugs->sortBy(function ($bug) {
             $priority = $this->getBugPriority($bug);
             return $this->getPriorityValue($priority);
         });
-        
-        // Sort sprints by number
-        $backlogBySprint = collect($backlogBySprint)->sortKeys();
-        
+
+        // Paginate the sorted bugs manually (10 items per page)
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 10;
+        $paginatedBugs = new LengthAwarePaginator(
+            $sortedBacklogBugs->forPage($currentPage, $perPage),
+            $sortedBacklogBugs->count(),
+            $perPage,
+            $currentPage,
+            ['path' => LengthAwarePaginator::resolveCurrentPath()]
+        );
+
         return view('backlog.index', [
-            'allBugs' => $sortedBacklogBugs,
+            'allBugs' => $paginatedBugs, // Use the paginated data here
             'bugsByTeam' => $backlogByTeam,
             'bugsBySprint' => $backlogBySprint
         ]);
@@ -114,12 +123,12 @@ class BacklogController extends Controller
     public function getBacklogData()
     {
         $reports = SavedReport::with('sprint')->get();
-        
+
         // Initialize collections for backlog bugs
         $allBacklogBugs = collect();
         $backlogByTeam = [];
         $backlogBySprint = [];
-        
+
         // First pass: collect all bugs from reports (both current bugs and backlog)
         foreach ($reports as $report) {
             // Handle cases where report_data is already decoded or is a string
@@ -127,7 +136,7 @@ class BacklogController extends Controller
             if (is_string($reportData)) {
                 $reportData = json_decode($reportData, true);
             }
-            
+
             // Process current bug cards in this report
             if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
                 foreach ($reportData['bug_cards'] as $teamName => $bugs) {
@@ -141,7 +150,7 @@ class BacklogController extends Controller
                     }
                 }
             }
-            
+
             // Process backlog data in this report
             if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
                 foreach ($reportData['backlog'] as $teamName => $bugs) {
@@ -156,34 +165,34 @@ class BacklogController extends Controller
                 }
             }
         }
-        
+
         // Second pass: organize bugs by team and sprint
         foreach ($allBacklogBugs as $bug) {
             $teamName = $bug['team'];
             $sprintNumber = $bug['sprint_number'];
-            
+
             // Organize by team
             if (!isset($backlogByTeam[$teamName])) {
                 $backlogByTeam[$teamName] = collect();
             }
             $backlogByTeam[$teamName]->push($bug);
-            
+
             // Organize by sprint
             if (!isset($backlogBySprint[$sprintNumber])) {
                 $backlogBySprint[$sprintNumber] = collect();
             }
             $backlogBySprint[$sprintNumber]->push($bug);
         }
-        
+
         // Sort bugs by priority
         $sortedBacklogBugs = $allBacklogBugs->sortBy(function ($bug) {
             $priority = $this->getBugPriority($bug);
             return $this->getPriorityValue($priority);
         });
-        
+
         // Sort sprints by number
         $backlogBySprint = collect($backlogBySprint)->sortKeys();
-        
+
         return [
             'allBugs' => $sortedBacklogBugs,
             'bugsByTeam' => $backlogByTeam,
@@ -204,7 +213,7 @@ class BacklogController extends Controller
                 }
             }
         }
-        
+
         // Default to Low priority if no priority label found
         return 'Low';
     }
