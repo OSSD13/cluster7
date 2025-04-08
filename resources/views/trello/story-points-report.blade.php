@@ -521,8 +521,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
     <!-- Extra Points Modal -->
     <div id="extra-points-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full" style="z-index: 1000;">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -656,7 +654,7 @@
             </div>
         </div>
     </div>
-
+</div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Get backlog elements
