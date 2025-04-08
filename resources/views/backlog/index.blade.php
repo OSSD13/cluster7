@@ -36,7 +36,6 @@
                 ({{ $allBugs->sum('points') }} {{ Str::plural('point', $allBugs->sum('points')) }})
             </span>
 
-
             <!-- Dropdown-->
             <div class="ms-60 grid grid-rows-2 gap-1">
                 <div>
@@ -60,9 +59,12 @@
                                 class="hidden absolute right-0 mt-2 bg-white border rounded-[15px] w-[400px] shadow-lg overflow-hidden dropdown-menu">
                                 <ul class="text-gray-700">
                                     <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="all">All</a></li>
-                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="Team Alpha">Team Alpha</a></li>
-                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="Team Beta">Team Beta</a></li>
-                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="Team Charlie">Team Charlie</a></li>  
+                                    @php
+                                        $teams = $allBugs->pluck('team')->unique()->filter()->values()->toArray();
+                                    @endphp
+                                    @foreach($teams as $team)
+                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="{{ $team }}">{{ $team }}</a></li>
+                                    @endforeach
                                 </ul>
                             </div>
                         </div>
@@ -104,7 +106,7 @@
                         <div class="relative inline-block text-left">
                 <button id="sprintDropdownButton"
                     class="flex items-center px-4 py-2 bg-white border rounded-[100px] shadow-md w-48 justify-between hover:bg-gray-200">
-                    <span id="selectedSprint" class="block px-6">1 ~ 10</span>
+                    <span id="selectedSprint" class="block w-full px-6">1 ~ 10</span>
                     <svg class="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                         fill="currentColor">
                         <path fill-rule="evenodd"
@@ -117,12 +119,12 @@
                 <div id="sprintDropdownMenu"
                     class="hidden absolute right-0 mt-2 w-48 bg-white border rounded-[15px] shadow-lg overflow-hidden dropdown-menu">
                     <ul class="text-gray-700">
-                        <li><a href="#" class="block px-12 py-2 hover:bg-gray-200 border-b">1 ~ 10</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">11 ~ 20</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">21 ~ 30</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">31 ~ 40</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">41 ~ 50</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">51 ~ 52</a></li>
+                        <li><a href="#" class="block px-12 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="1-10">1 ~ 10</a></li>
+                        <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="11-20">11 ~ 20</a></li>
+                        <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="21-30">21 ~ 30</a></li>
+                        <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="31-40">31 ~ 40</a></li>
+                        <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="41-50">41 ~ 50</a></li>
+                        <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200" data-sprint-range="51-52">51 ~ 52</a></li>
                     </ul>
                 </div>
             </div>
@@ -136,7 +138,7 @@
         </p>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
             @foreach($allBugs as $bug)
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow bug-card" data-team="{{ $bug['team'] ?? 'all' }}">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow bug-card" data-team="{{ $bug['team'] ?? 'all' }}" data-name="{{ $bug['name'] ?? '' }}" data-sprint="{{ $bug['sprint_origin'] ?? $bug['sprint_number'] ?? '?' }}">
                 <!-- Card Header with Bug ID and Priority -->
                 <div class="flex justify-between items-center p-4 border-b border-gray-100 ">
                     <div class="flex items-center">
@@ -258,25 +260,7 @@
         </style>
 
 <script>
-    function showTab(tabId) {
-        // Hide all tab contents
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.add('hidden');
-        });
-
-        // Show the selected tab content
-        document.getElementById(tabId + '-content').classList.remove('hidden');
-
-        // Update tab buttons
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.classList.remove('border-primary-500', 'text-primary-600');
-            button.classList.add('border-transparent', 'text-gray-500');
-        });
-
-        // Set active tab button
-        document.getElementById('tab-' + tabId).classList.remove('border-transparent', 'text-gray-500');
-        document.getElementById('tab-' + tabId).classList.add('border-primary-500', 'text-primary-600');
-    }
+    
 
     function setupDropdown(buttonId, menuId, selectedId) {
         document.getElementById(buttonId).addEventListener("click", function() {
@@ -291,7 +275,8 @@
 
                 // Update displayed items based on selected filters
                 if (menuId === "sprintDropdownMenu") {
-                    updateDisplayedSprints();
+                    const sprintRange = this.getAttribute('data-sprint-range');
+                    filterBySprint(sprintRange);
                 } else if (menuId === "teamDropdownMenu") {
                     filterByTeam(this.getAttribute('data-team'));
                 }
@@ -336,16 +321,115 @@
 
     function filterByTeam(selectedTeam) {
         const bugCards = document.querySelectorAll('.bug-card');
+        const selectedTeamText = document.getElementById('selectedTeam').textContent;
+        const selectedSprintRange = document.getElementById('selectedSprint').textContent;
+        
+        // Extract sprint range from the selected sprint text
+        let startSprint = 1;
+        let endSprint = 52;
+        
+        if (selectedSprintRange !== 'All') {
+            const sprintMatch = selectedSprintRange.match(/(\d+)\s*~\s*(\d+)/);
+            if (sprintMatch) {
+                startSprint = parseInt(sprintMatch[1]);
+                endSprint = parseInt(sprintMatch[2]);
+            }
+        }
         
         bugCards.forEach(card => {
             const cardTeam = card.getAttribute('data-team');
+            const cardSprint = parseInt(card.getAttribute('data-sprint')) || 999;
             
-            if (selectedTeam === 'all' || cardTeam === selectedTeam) {
+            const teamMatch = selectedTeam === 'all' || cardTeam === selectedTeam;
+            const sprintMatch = cardSprint >= startSprint && cardSprint <= endSprint;
+            
+            if (teamMatch && sprintMatch) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
             }
         });
+        
+        // Update the count of visible bugs
+        updateBugCount();
+        
+        // Automatically sort bugs by sprint after filtering
+        sortBugsBySprint();
+    }
+
+    function filterBySprint(sprintRange) {
+        const bugCards = document.querySelectorAll('.bug-card');
+        const [startSprint, endSprint] = sprintRange.split('-').map(Number);
+        const selectedTeam = document.getElementById('selectedTeam').textContent;
+        
+        bugCards.forEach(card => {
+            const cardSprint = parseInt(card.getAttribute('data-sprint'));
+            const cardTeam = card.getAttribute('data-team');
+            
+            const sprintMatch = !isNaN(cardSprint) && cardSprint >= startSprint && cardSprint <= endSprint;
+            const teamMatch = selectedTeam === 'All' || cardTeam === selectedTeam;
+            
+            if (sprintMatch && teamMatch) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Update the count of visible bugs
+        updateBugCount();
+        
+        // Automatically sort bugs by sprint after filtering
+        sortBugsBySprint();
+    }
+    
+    function updateBugCount() {
+        const visibleBugs = document.querySelectorAll('.bug-card[style="display: block"]').length;
+        const totalPoints = Array.from(document.querySelectorAll('.bug-card[style="display: block"]'))
+            .reduce((sum, card) => {
+                const pointsElement = card.querySelector('.w-8.h-8.rounded-full.bg-amber-100');
+                const points = pointsElement ? parseInt(pointsElement.textContent.trim()) || 0 : 0;
+                return sum + points;
+            }, 0);
+            
+        // Update the bug count display
+        const bugCountElement = document.getElementById('bugCountDisplay');
+        if (bugCountElement) {
+            bugCountElement.textContent = `${visibleBugs} ${visibleBugs === 1 ? 'bug' : 'bugs'} (${totalPoints} ${totalPoints === 1 ? 'point' : 'points'})`;
+        }
+    }
+    
+    // Initialize the bug count display and sort bugs automatically
+    document.addEventListener('DOMContentLoaded', function() {
+        updateBugCount();
+        
+        // Automatically sort bugs by sprint when page loads
+        sortBugsBySprint();
+    });
+    
+    function sortBugsBySprint() {
+        const bugContainer = document.querySelector('.grid.grid-cols-1.gap-4.md\\:grid-cols-2.lg\\:grid-cols-2');
+        const bugCards = Array.from(document.querySelectorAll('.bug-card'));
+        
+        // Sort bug cards by sprint number
+        bugCards.sort((a, b) => {
+            const sprintA = parseInt(a.getAttribute('data-sprint')) || 999;
+            const sprintB = parseInt(b.getAttribute('data-sprint')) || 999;
+            return sprintA - sprintB;
+        });
+        
+        // Clear the container
+        bugCards.forEach(card => {
+            card.remove();
+        });
+        
+        // Add sorted cards back to the container
+        bugCards.forEach(card => {
+            bugContainer.appendChild(card);
+        });
+        
+        // Update the count of visible bugs
+        updateBugCount();
     }
 </script>
 @endsection
