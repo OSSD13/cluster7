@@ -15,7 +15,7 @@ use App\Http\Controllers\BacklogController;
 use App\Http\Controllers\ConfirmController;
 use App\Http\Controllers\CompleteController;
 use App\Http\Controllers\MinorCasesController;
-
+use App\Http\Controllers\MinorCaseController;
 
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
 
@@ -58,7 +58,19 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     // Minor Cases Routes
     Route::get('/minorcases', [MinorCasesController::class, 'index'])->name('minorcases');
     Route::get('/report-data', [MinorCasesController::class, 'getMinorCasesData'])->name('minor-cases.data');
-    
+
+    // New Minor Case Routes (singular controller)
+    Route::resource('minor-cases', MinorCaseController::class);
+    Route::get('/minor-cases/sprint/{sprintId}', [MinorCaseController::class, 'getBySprintId'])->name('minor-cases.by-sprint');
+    Route::patch('/minor-cases/{id}/status', [MinorCaseController::class, 'updateStatus'])->name('minor-cases.update-status');
+
+    // Trello Minor Case API Routes (for integration with the reports)
+    Route::get('/trello/minor-cases', [MinorCaseController::class, 'index'])->name('trello.minor-cases.index');
+    Route::get('/trello/minor-cases/{id}', [MinorCaseController::class, 'show'])->name('trello.minor-cases.show');
+    Route::post('/trello/minor-cases', [MinorCaseController::class, 'store'])->name('trello.minor-cases.store');
+    Route::put('/trello/minor-cases/{id}', [MinorCaseController::class, 'update'])->name('trello.minor-cases.update');
+    Route::delete('/trello/minor-cases/{id}', [MinorCaseController::class, 'destroy'])->name('trello.minor-cases.destroy');
+
     // Admin Only Routes
     Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
         // Admin User Management Routes
