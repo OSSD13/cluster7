@@ -115,6 +115,8 @@ class MinorCasesController extends Controller
                         }
                     }
                 }
+                // Allow users to see data from all teams they belong to
+                // Removed the limitation to first team only
             } catch (\Exception $e) {
                 // Log error but don't fail - empty team list will result
                 \Log::error('Error fetching user teams: ' . $e->getMessage());

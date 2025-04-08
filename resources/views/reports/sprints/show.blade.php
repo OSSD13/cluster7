@@ -7,11 +7,12 @@
 @section('content')
 <div class="max-w-7xl mx-auto">
     <div class="mb-6">
-        <a href="{{ route('sprints.index') }}" class="text-primary-600 hover:text-primary-900 flex items-center">
+        <!--ask if is admin go to route sprint index if not go to user report-->
+        <a href="{{ auth()->user()->isAdmin() ? route('sprints.index') : route('reports') }}" class="text-primary-600 hover:text-primary-900 flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Back to all sprints
+            Back to {{ auth()->user()->isAdmin() ? 'All sprints' : 'All Reports' }}
         </a>
     </div>
 
@@ -30,7 +31,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                Create New Report
+                View Current Sprint Report
             </a>
         </div>
     </div>
@@ -158,13 +159,17 @@
                                                 {{ $report->is_auto_generated ? 'Auto' : 'Manual' }}
                                             </span>
                                         </td>
+                                        <!-- Actions -->
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('sprint-reports.show', $report->id) }}" class="text-primary-600 hover:text-primary-900 mr-3">View</a>
+                                            <!--if user is admin show edit and delete-->
+                                            @if((auth()->user()->isAdmin() ) || (auth()->user()->role === 'tester'))
                                             <form action="{{ route('sprint-reports.delete', $report->id) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this report?')">Delete</button>
                                             </form>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -182,7 +187,7 @@
                     if (teams.length > 0) {
                         // Convert team name to a slug for use as ID
                         const firstTeamSlug = teams[0].replace(/[^a-z0-9]/gi, '-').toLowerCase();
-                        showTeamReports(firstTeamSlug);
+                        showTeamReports(firstTeamSlug); 
                     }
                 });
                 
@@ -216,11 +221,16 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
+                @if(auth()->user()->isAdmin()|| auth()->user()->role === 'tester')
                 <h3 class="text-lg font-medium text-gray-900 mb-2">No reports available for this sprint</h3>
                 <p class="text-gray-500 mb-4">Generate a new report to track your sprint progress.</p>
                 <a href="{{ route('story.points.report') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                    Create New Report
+                    View Current Sprint Report
                 </a>
+                @else
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No reports available for this sprint</h3>
+                <p class="text-gray-500 mb-4">Generate a new report to track your sprint progress.</p>
+                @endif
             </div>
         @endif
     </div>

@@ -95,8 +95,12 @@ class BacklogController extends Controller
             $teamName = $bug['team'];
             $sprintNumber = $bug['sprint_number'];
             
-            // Organize by team i delete by team from user
-                       
+            // Organize by team
+            if (!isset($backlogByTeam[$teamName])) {
+                $backlogByTeam[$teamName] = collect();
+            }
+            $backlogByTeam[$teamName]->push($bug);
+            
             // Organize by sprint
             if (!isset($backlogBySprint[$sprintNumber])) {
                 $backlogBySprint[$sprintNumber] = collect();
@@ -237,17 +241,21 @@ class BacklogController extends Controller
                 
                 $boards = $this->trelloService->getBoards(['id', 'name'], $options);
                 
-                // Filter for boards where user is a member
+                // Filter for boards where user is a direct member (not workspace-level access)
                 foreach ($boards as $board) {
-                    if (isset($board['members'])) {
+                    if (isset($board['members']) && is_array($board['members'])) {
                         foreach ($board['members'] as $member) {
                             if (isset($member['fullName']) && $member['fullName'] === $userName) {
+                                // User is explicitly added to this board
                                 $userTeams[] = $board['name'];
                                 break;
                             }
                         }
                     }
                 }
+                
+                // Allow users to see backlogs from all their teams
+                // Removed the limitation to only see the first team
             } catch (\Exception $e) {
                 // Log error but don't fail - empty team list will result
                 \Log::error('Error fetching user teams: ' . $e->getMessage());

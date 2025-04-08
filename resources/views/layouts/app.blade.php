@@ -6,12 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Laravel') }} - @yield('title', 'Dashboard')</title>
-    
     <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.2/dist/alpine.min.js" defer></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <!-- Add custom styles for sidebar buttons -->
     <style>
         .sidebar-button {
             max-width: 90%;
@@ -75,69 +72,56 @@
 </head>
 
 <body class="bg-gray-50">
-    <div class="min-h-screen flex" x-data="{ sidebarOpen: localStorage.getItem('sidebarOpen') === 'false' ? false : true }" x-init="$watch('sidebarOpen', val => localStorage.setItem('sidebarOpen', val))">
+    <div class="min-h-screen flex" x-data="{ sidebarOpen: true }">
         <!-- Sidebar -->
-        <div class="bg-white shadow-md flex flex-col sidebar-transition overflow-hidden"
-            :class="sidebarOpen ? 'w-64' : 'w-16'">
-            <!-- Logo and App Name -->
-            <div class="py-4 px-4 border-gray-200 flex items-center justify-between">
-                <div class="flex items-center">
-                    <!-- Logo -->
-                    <div class="flex items-center justify-center"
-                        :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'"
-                        x-transition:enter="transition ease-out duration-300"
-                        x-transition:leave="transition ease-in duration-200">
-                        <img src="{{ asset('Frame 25.png') }}" class="h-15 w-15">
-                    </div>
-                    <!-- App Name -->
-                    <span class="ml-2 font-medium text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'"
-                        x-transition:enter="transition ease-out duration-300"
-                        x-transition:leave="transition ease-in duration-200">
-                        {{ config('Laravel') }}
-                    </span>
+        <div
+            class="bg-white shadow-md flex flex-col fixed h-full z-30 transition-all duration-300 ease-in-out"
+            :class="sidebarOpen ? 'w-64' : 'w-20'">
+            <!-- Logo and Toggle Section -->
+            <div class="py-4 px-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center" :class="sidebarOpen ? 'flex' : 'hidden'">
+                    <img src="{{ asset('Frame_25.png') }}" class="h-15 w-15">
                 </div>
-                <!-- Sidebar Toggle Button -->
-                <button @click="sidebarOpen = !sidebarOpen"
-                    class="p-1 rounded-full hover:bg-gray-200 focus:outline-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                <button
+                    @click="sidebarOpen = !sidebarOpen"
+                    class="p-2 rounded-lg hover:bg-[#13A7FD focus:outline-none">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 transition-transform duration-300"
+                        :class="sidebarOpen ? 'transform rotate-180' : ''"
+                        fill="none"
+                        viewBox="0 0 24 24"
                         stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6h16M4 12h16M4 18h7" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
                     </svg>
                 </button>
             </div>
 
-            <!-- User Profile Card - Only Show When Expanded -->
-            <div class="px-4 py-4 border-b border-gray-200" x-show="sidebarOpen"
-                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <!-- Profile Section -->
+            <div class="px-4 py-4 border-b border-gray-200" x-show="sidebarOpen" x-transition>
                 <div class="bg-gray-50 rounded-lg p-3 shadow-sm">
                     <div class="flex items-center">
                         <div class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
-                            <span
-                                class="text-primary-700 font-bold text-lg">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                            <span class="text-primary-700 font-bold text-lg">{{ substr(auth()->user()->name, 0, 1) }}</span>
                         </div>
 
                         <div class="ml-3 flex-1 min-w-0">
                             <div class="mt-1">
                                 @php
-                                    $roleBgColor = 'bg-gray-100';
-                                    $roleTextColor = 'text-gray-800';
-
-                                    if (auth()->user()->isAdmin()) {
-                                        $roleBgColor = 'bg-red-100';
-                                        $roleTextColor = 'text-red-800';
-                                    } elseif (auth()->user()->isTester()) {
-                                        $roleBgColor = 'bg-blue-100';
-                                        $roleTextColor = 'text-blue-800';
-                                    } elseif (auth()->user()->isDeveloper()) {
-                                        $roleBgColor = 'bg-green-100';
-                                        $roleTextColor = 'text-green-800';
-                                    }
+                                $roleBgColor = 'bg-gray-100';
+                                $roleTextColor = 'text-gray-800';
+                                if (auth()->user()->isAdmin()) {
+                                $roleBgColor = 'bg-red-100';
+                                $roleTextColor = 'text-red-800';
+                                } elseif (auth()->user()->isTester()) {
+                                $roleBgColor = 'bg-blue-100';
+                                $roleTextColor = 'text-blue-800';
+                                } elseif (auth()->user()->isDeveloper()) {
+                                $roleBgColor = 'bg-green-100';
+                                $roleTextColor = 'text-green-800';
+                                }
                                 @endphp
-                                <span
-                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $roleBgColor }} {{ $roleTextColor }}">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $roleBgColor }} {{ $roleTextColor }}">
                                     {{ ucfirst(auth()->user()->role) }}
                                 </span>
                             </div>
@@ -150,12 +134,9 @@
                         </div>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit"
-                                class="text-gray-600 hover:text-gray-900 p-1 rounded-full hover:bg-gray-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            <button type="submit" class="text-gray-600 hover:text-gray-900 p-1 rounded-full hover:bg-gray-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                 </svg>
                             </button>
                         </form>
@@ -164,228 +145,136 @@
             </div>
 
             <!-- Navigation Menu -->
-            <div class="py-4 flex-grow">
-                <!-- Section headers - Only Show When Expanded -->
-                @if (!auth()->user()->isAdmin())
-                    <div class="px-4 py-2 mb-2" x-show="sidebarOpen"
-                        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-                        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-                        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-                        <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">User</p>
-                    </div>
-                @endif
-
-                <!-- Menu Items -->
-                @if (!auth()->user()->isAdmin())
-                    <a href="{{ route('trello.teams.index') }}"
-                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('trello.teams.*') ? 'active' : '' }}"
-                        :class="sidebarOpen ? '' : 'flex justify-center'">
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">My
-                                Teams</span>
-                            <span class="tooltip-text" x-show="!sidebarOpen">My Teams</span>
-                        </div>
-                    </a>
-                @endif
-
-                <!-- Reports Section -->
-                <div class="px-4 py-2 mt-4 mb-2" x-show="sidebarOpen"
-                    x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-                    x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <div class="py-4 pe-2 flex-grow overflow-y-auto">
+                <div class="px-4 py-2 mt-2 mb-2" x-show="sidebarOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                     <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Reports</p>
                 </div>
-                </svg>
-                <a href="{{ route('story.points.report') }}"
-                    class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('story.points.report') ? 'active' : '' }}"
-                    :class="sidebarOpen ? '' : 'flex justify-center'">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                <!-- Menu Items -->
+                <div class="space-y-1">
+                    <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                         </svg>
-                        @php
-                            $currentSprint = \App\Models\Sprint::getCurrentSprint();
-                            $sprintNumber = $currentSprint
-                                ? $currentSprint->sprint_number
-                                : \App\Models\Sprint::getNextSprintNumber();
-                        @endphp
-                        <span class="ml-3 text-fade inline-block align-middle" x-show="sidebarOpen">
-                            <span
-                                class="inline-flex items-center justify-center rounded-full bg-green-200 px-2.5 py-0.5 text-green-700 align-middle">
-                                <p class="text-[12px] whitespace-nowrap inline-block align-middle">On-going</p>
-                            </span>
-                            Sprint: {{ $sprintNumber }}
+                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Dashboard
                         </span>
-                        <span class="tooltip-text" x-show="!sidebarOpen">Current Sprint Report</span>
-                    </div>
-                </a>
-
-                <a href="{{ route('minorcases') }}"
-                    class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('minorcases') ? 'active' : '' }}"
-                    :class="sidebarOpen ? '' : 'flex justify-center'">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                            class="bi bi-send" viewBox="0 0 16 16">
-                            <path
-                                d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z" />
-                        </svg>
-                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Minor
-                            Cases</span>
-                        <span class="tooltip-text" x-show="!sidebarOpen">Minor Cases</span>
-                    </div>
-                </a>
-                @if (auth()->user()->isAdmin())
-                    <a href="{{ route('trello.teams.index') }}"
-                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('trello.teams.*') ? 'active' : '' }}"
-                        :class="sidebarOpen ? '' : 'flex justify-center'">
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            <span class="ml-3 text-fade"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Trello Teams</span>
-                            <span class="tooltip-text" x-show="!sidebarOpen">Trello Teams</span>
-                        </div>
                     </a>
-                @endif
-                @if (auth()->user()->isAdmin())
-                    <a href="{{ route('settings.sprint') }}"
-                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('settings.sprint') ? 'active' : '' }}"
-                        :class="sidebarOpen ? '' : 'flex justify-center'">
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span class="ml-3 text-fade"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Sprint Settings</span>
-                            <span class="tooltip-text" x-show="!sidebarOpen">Sprint Settings</span>
-                        </div>
-                    </a>
-                @endif
-
-                <a href="{{ route('saved-reports.index') }}"
-                    class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('saved-reports.*') ? 'active' : '' }}"
-                    :class="sidebarOpen ? '' : 'flex justify-center'">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    @if(auth()->user()->isDeveloper() || auth()->user()->isTester())
+                    <a href="{{ route('reports') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('reports') ? 'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Saved
-                            Reports</span>
-                        <span class="tooltip-text" x-show="!sidebarOpen">Saved Reports</span>
-                    </div>
-                </a>
-
-                <a href="{{ route('sprints.index') }}"
-                    class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('sprints.*') || request()->routeIs('sprint-reports.*') ? 'active' : '' }}"
-                    :class="sidebarOpen ? '' : 'flex justify-center'">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Sprint
-                            Reports</span>
-                        <span class="tooltip-text" x-show="!sidebarOpen">Sprint Reports</span>
-                    </div>
-                </a>
-
-                <a href="{{ route('backlog.index') }}"
-                    class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('backlog.*') ? 'active' : '' }}"
-                    :class="sidebarOpen ? '' : 'flex justify-center'">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" fill="currentColor"
-                            class="bi bi-bug" viewBox="0 0 16 16">
-                            <path
-                                d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623M4 7v4a4 4 0 0 0 3.5 3.97V7zm4.5 0v7.97A4 4 0 0 0 12 11V7zM12 6a4 4 0 0 0-1.334-2.982A3.98 3.98 0 0 0 8 2a3.98 3.98 0 0 0-2.667 1.018A4 4 0 0 0 4 6z" />
-                        </svg>
-                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Bug
-                            Backlog</span>
-                        <span class="tooltip-text" x-show="!sidebarOpen">Bug Backlog</span>
-                    </div>
-                </a>
-
-                <!-- Admin Settings Section -->
-                @if (auth()->user()->isAdmin())
-                    <div class="px-4 py-2 mt-6 mb-4" x-show="sidebarOpen"
-                        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-                        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-                        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-                        <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Admin Settings</p>
-                    </div>
-
-                    <a href="{{ route('users.index') }}"
-                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('users.*') ? 'active' : '' }}"
-                        :class="sidebarOpen ? '' : 'flex justify-center'">
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                            <span class="ml-3 text-fade"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">User Management</span>
-                            <span class="tooltip-text" x-show="!sidebarOpen">User Management</span>
-                        </div>
+                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Reports
+                        </span>
                     </a>
+                    @endif
+                    <a href="{{ route('story.points.report') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('story.points.report') ? 'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
 
-                    <a href="{{ route('trello.settings.index') }}"
-                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('trello.settings.*') ? 'active' : '' }}"
-                        :class="sidebarOpen ? '' : 'flex justify-center'">
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span class="ml-3 text-fade"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Trello API Settings</span>
-                            <span class="tooltip-text" x-show="!sidebarOpen">Trello API Settings</span>
-                        </div>
+                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Current Sprint Report
+                        </span>
                     </a>
-                @endif
+                    <a href="{{ route('minorcases') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('minorcases') ?  'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z" />
+                        </svg>
+                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Minor Cases
+                        </span>
+                    </a>
+                    <a href="{{ route('backlog.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('backlog.*') ? '  bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Bug Backlog
+                        </span>
+                    </a>
+                    <a href="{{ route('trello.teams.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('trello.teams.*') ? 'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]'}}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Trello teams
+                        </span>
+                    </a>
+                    @if(auth()->user()->isAdmin() )
+                    <a href="{{ route('settings.sprint') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('settings.sprint') ? 'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Sprint Settings
+                        </span>
+                    </a>
+                    <a href="{{ route('saved-reports.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('saved-reports.*') ?'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                        </svg>
+                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Saved Reports
+                        </span>
+                    </a>
+                    <a href="{{ route('sprints.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('sprints.*') || request()->routeIs('sprint-reports.*') ? 'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Sprint Reports
+                        </span>
+                    </a>
+                    @endif
+                    @if(auth()->user()->isAdmin() || auth()->user()->isTester())
+                    <div class="px-4 py-2 mt-6 mb-6" x-show="sidebarOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                        <p class="text-xs uppercase font-semibold text-gray-500 mt-1 mb-1 tracking-wider">Admin Settings</p>
+                    </div>
+                    <a href="{{ route('users.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('users.*') ? 'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]'}}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            User Management
+                        </span>
+                    </a>
+                    <a href="{{ route('trello.settings.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('trello.settings.*') ?'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Trello API Settings
+                        </span>
+                    </a>
+                    @endif
+                </div>
             </div>
 
-            <!-- App Version - Only Show When Expanded -->
-            <div class="border-t border-gray-200 py-3 px-4" x-show="sidebarOpen"
-                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-                <p class="text-xs text-gray-500 text-center">v{{ config('app.version', '1.0') }}</p>
+            <!-- App Version -->
+            <div class="border-t border-gray-200 py-3 px-4">
+                <p class="text-xs text-gray-500 text-center" :class="sidebarOpen ? '' : 'hidden'">
+                    v{{ config('app.version', '1.0') }}
+                </p>
             </div>
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 transition-all duration-300"
+            :class="sidebarOpen ? 'ml-64' : 'ml-20'">
             <main class="flex-1 py-6 px-4 sm:px-6 lg:px-8 overflow-auto">
-                @if (session('success'))
-                    <div class="max-w-7xl mx-auto mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded"
-                        role="alert">
-                        <p>{{ session('success') }}</p>
-                    </div>
+                @if(session('success'))
+                <div class="max-w-7xl mx-auto mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded" role="alert">
+                    <p>{{ session('success') }}</p>
+                </div>
                 @endif
 
-                @if (session('error'))
-                    <div class="max-w-7xl mx-auto mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded"
-                        role="alert">
-                        <p>{{ session('error') }}</p>
-                    </div>
+                @if(session('error'))
+                <div class="max-w-7xl mx-auto mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded" role="alert">
+                    <p>{{ session('error') }}</p>
+                </div>
                 @endif
 
                 @yield('content')
@@ -411,6 +300,25 @@
             }
         }
     </script>
+
+    <style>
+        .sidebar-transition {
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .overflow-y-auto::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .overflow-y-auto {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+    </style>
 </body>
 
 </html>

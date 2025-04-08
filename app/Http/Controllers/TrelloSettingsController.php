@@ -146,15 +146,10 @@ class TrelloSettingsController extends Controller
             'message' => 'Not tested',
             'details' => []
         ];
-        
-        return view('trello.settings', [
-            'trelloApiKey' => $apiKey,
-            'trelloApiToken' => $apiToken,
-            'boardId' => $boardId,
-            'connectionStatus' => $connectionStatus,
-            'success' => 'Trello API settings updated successfully.'
-        ]);
+        return redirect()->route('trello.settings.index')->with('success','');
     }
+
+    
 
     /**
      * Test the API connection via AJAX
