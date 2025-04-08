@@ -24,8 +24,14 @@
         </div>
 
         <!-- Container for both Dropdowns and add button -->
-        <div class="absolute flex space-x-4 top-14 right-10 ">
-
+        <div class="absolute top-14 right-10 flex space-x-4">
+            <div class="relative inline-block text-left py-3.5">
+                <button id="addSprintBtn"
+                    class="flex items-center py-1.5 border rounded-[100px] shadow-md w-12.5 justify-between"
+                    style="background-color: #13A7FD">
+                    <span class="block px-10  text-[#ffffff] font-semibold text-2xl relative -mt-1 ">+</span>
+                </button>
+            </div>
             <!-- Year Dropdown -->
             <div class="relative inline-block text-left py-3.5">
                 <button id="yearDropdownButton"
@@ -43,12 +49,12 @@
                 <div id="yearDropdownMenu"
                     class="hidden absolute right-0 mt-2 w-32 bg-white border rounded-[15px] shadow-lg overflow-hidden">
                     <ul class="text-gray-700">
-                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2025</a></li>
-                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2024</a></li>
-                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2023</a></li>
-                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2022</a></li>
-                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2021</a></li>
-                        <li><a href="#" class="block py-2 px-11 hover:bg-gray-200">2020</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2025</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2024</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2023</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2022</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2021</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">2020</a></li>
                     </ul>
                 </div>
             </div>
@@ -56,7 +62,7 @@
             <!-- Sprint Dropdown -->
             <div class="relative inline-block text-left py-3.5">
                 <button id="sprintDropdownButton"
-                    class="flex items-center justify-between px-4 py-2 bg-white border rounded-full shadow-md w-49 ">
+                    class="flex items-center px-4 py-2 bg-white border rounded-[100px] shadow-md w-49 justify-between">
                     <span id="selectedSprint" class="block px-6">Sprint 1 ~ 10</span>
                     <svg class="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                         fill="currentColor">
@@ -70,15 +76,16 @@
                 <div id="sprintDropdownMenu"
                     class="hidden absolute right-0 mt-2 w-48 bg-white border rounded-[15px] shadow-lg overflow-hidden">
                     <ul class="text-gray-700">
-                        <li><a href="#" class="block px-12 py-2 border-b hover:bg-gray-200">Sprint 1 ~ 10</a></li>
-                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 11 ~ 20</a></li>
-                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 21 ~ 30</a></li>
-                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 31 ~ 40</a></li>
-                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 41 ~ 50</a></li>
-                        <li><a href="#" class="block py-2 px-11 hover:bg-gray-200">Sprint 51 ~ 52</a></li>
+                        <li><a href="#" class="block px-12 py-2 hover:bg-gray-200 border-b">Sprint 1 ~ 10</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 11 ~ 20</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 21 ~ 30</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 31 ~ 40</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 41 ~ 50</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">Sprint 51 ~ 52</a></li>
                     </ul>
                 </div>
             </div>
+
         </div>
 
         <style>
@@ -104,9 +111,14 @@
                 width: 16%;
                 text-align: center;
             }
+
             .sprint-icon {
                 width: 3%;
                 text-align: center;
+            }
+
+            .new-sprint {
+                border: #13A7FD;
             }
         </style>
 
@@ -114,6 +126,9 @@
             document.addEventListener("DOMContentLoaded", function() {
                 // ปีที่คงที่สำหรับช่วงวันที่สปรินต์
                 const SPRINT_YEAR = 2025;
+                let demoData = []; // Store demo data globally
+                let newSprints = []; // Track newly added sprints
+                let nextSprintNumber = 1; // Track next sprint number
 
                 // ฟังก์ชั่นในการรับช่วงวันที่สำหรับสปรินต์
                 function getSprintDateRange(sprintNumber) {
@@ -242,6 +257,13 @@
                         sprintContainer.appendChild(sprintDiv);
                     });
 
+                    // Add any new sprints that were created
+                    newSprints.forEach(sprintNumber => {
+                        const sprintDiv = createSprintDiv(sprintNumber, []);
+                        sprintDiv.classList.add('new-sprint');
+                        sprintContainer.prepend(sprintDiv); // Add new sprints at the top
+                    });
+
                     // ตั้งค่าตัวรับฟังเหตุการณ์สำหรับองค์ประกอบที่เพิ่งสร้างใหม่
                     setupSprintEventListeners();
 
@@ -252,59 +274,185 @@
 
                     // Update displayed sprints based on filters
                     updateDisplayedSprints();
+
+                    // Update next sprint number
+                    if (sortedSprintNumbers.length > 0) {
+                        nextSprintNumber = Math.max(...sortedSprintNumbers.map(Number)) + 1;
+                    }
                 }
 
                 // สร้าง div สปรินต์ด้วยข้อมูล
                 function createSprintDiv(sprintNumber, sprintItems) {
                     const sprintDiv = document.createElement("div");
-                    sprintDiv.className = "bg-white rounded-3xl p-0 mb-5 sprint-block w-49  ";
+                    sprintDiv.className = "bg-white rounded-3xl p-0 mb-5 sprint-block w-49";
                     sprintDiv.dataset.sprintNumber = sprintNumber;
 
-                    // ตรวจสอบว่าสปรินต์นี้มีข้อมูลหรือไม่
+                    // Check if the sprint has data
                     const hasData = sprintItems && sprintItems.length > 0;
                     const dataClass = hasData ? "sprint-from-report" : "";
 
-                    // รับช่วงวันที่สำหรับสปรินต์นี้ (ใช้ปีคงที่เสมอ)
+                    // Get the date range for this sprint
                     const dateRange = getSprintDateRange(parseInt(sprintNumber));
 
                     sprintDiv.innerHTML = `
-            <div class="flex items-center justify-between px-10 py-3 text-lg font-bold text-blue-700 cursor-pointer rounded-3xl sprint-header bg-sky-100"  >
-                <span class="mr-8 text-[#13A7FD] text-2xl" style="width: 80%;">Sprint #${sprintNumber} </span>
-                    <span class="text-sm font-normal mb-2 lace-items-end sprint-date text-[#13A7FD] mt-3  bg-white rounded-3xl px-2 py-1">${dateRange}</span>
-       <span class="collapse-icon text-[#13A7FD] sprint-icon">▲</span>
-            </div>
+        <div class="flex h-12 items-center px-10 py-3 text-lg font-bold text-blue-700 cursor-pointer rounded-3xl sprint-header bg-sky-100">
+            <span class="mr-2 text-[#13A7FD] text-1xl" style="width: 9%;">Sprint #${sprintNumber}</span>
+            <button class="ml-3 px-3 py-1 text-white text-left bg-[#13A7FD] rounded-full add-table-btn hover:bg-blue-600" >+</button>
+            <span style="width: 70%;"></span>
+            <span class="ml-20 text-sm font-normal mb-2 lace-items-end sprint-date text-[#13A7FD] mt-3 bg-white rounded-3xl px-2 py-1">${dateRange}</span>
+            <span class="collapse-icon text-[#13A7FD] sprint-icon px-5 text-right">▲</span>
 
-            <div class="sprint-content mt-2 bg-white p-4 rounded-3xl  style="display: block;" ${dataClass}">
-                <table class="w-full border border-collapse bg gray-200 ">
-                    <thead class="bg gray-700">
-                        <tr>
-                            <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Number</span></th>
-                            <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Card_Detail</span></th>
-                            <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Description</span></th>
-                            <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Member</span></th>
-                            <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Point</span></th>
-                            <th class="px-4 py-2 border border-white w-54 text-[#13A7FD"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Actions</span></th>
-                        </tr>
-                    </thead>
-                    <tbody class="card-list">
-                        ${hasData ? renderCardRows(sprintItems) : '<tr class="italic text-gray-500 no-data"><td colspan="6" class="py-2 text-center">No data available</td></tr>'}
-                    </tbody>
-                </table>
-            </div>
-        `;
+        </div>
+
+        <div class="sprint-content mt-2 bg-white p-4 rounded-3xl style="display: block;" ${dataClass}">
+            <table class="w-full border border-collapse bg gray-200">
+                <thead class="bg-gray-50 rounded-full">
+                    <tr>
+                        <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Number</span></th>
+                        <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Card_Detail</span></th>
+                        <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Description</span></th>
+                        <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Member</span></th>
+                        <th class="px-4 py-2 border border-white"><span class="px-8 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold shadow-md">Personal_Point</span></th>
+                        <th class="px-4 py-2 border border-white w-54 text-[#13A7FD]"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody class="card-list">
+                    ${hasData ? renderCardRows(sprintItems) : '<tr class="italic text-gray-500 no-data"><td colspan="6" class="py-2 text-center">No data available</td></tr>'}
+                </tbody>
+            </table>
+        </div>
+    `;
 
                     return sprintDiv;
                 }
 
+                function setupSprintEventListeners() {
+                    // Toggle collapse/expand
+                    document.querySelectorAll('.sprint-header').forEach(header => {
+                        header.addEventListener('click', () => {
+                            const content = header.nextElementSibling;
+                            const icon = header.querySelector('.collapse-icon');
+
+                            if (content.style.display === 'none' || content.style.display === '') {
+                                content.style.display = 'block';
+                                icon.textContent = '▲';
+                            } else {
+                                content.style.display = 'none';
+                                icon.textContent = '▼';
+                            }
+                        });
+                    });
+
+                    // Add table button logic
+                    document.querySelectorAll('.add-table-btn').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const sprintContent = this.closest('.sprint-header').nextElementSibling;
+                            const tbody = sprintContent.querySelector('.card-list');
+
+                            // Remove "No data" row if present
+                            const noDataRow = tbody.querySelector('.no-data');
+                            if (noDataRow) noDataRow.remove();
+
+                            // Add a new empty row
+                            const newRow = document.createElement('tr');
+                            newRow.innerHTML = `
+                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Number"></td>
+                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Card Detail"></td>
+                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Description"></td>
+                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Member"></td>
+                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Point"></td>
+                <td class="px-4 py-2 text-center border border-white">
+                    <button class="px-2 py-1 text-white bg-green-500 rounded save-btn hover:bg-green-600">Save</button>
+                </td>
+            `;
+                            tbody.appendChild(newRow);
+
+                            // Add save button logic
+                            newRow.querySelector('.save-btn').addEventListener('click', function() {
+                                const inputs = newRow.querySelectorAll('input');
+                                const values = Array.from(inputs).map(input => input.value
+                                .trim());
+
+                                if (values.some(val => !val)) {
+                                    alert('Please fill in all fields.');
+                                    return;
+                                }
+
+                                // Replace inputs with text
+                                inputs.forEach((input, index) => {
+                                    const td = input.parentElement;
+                                    td.textContent = index === 0 ? `#${input.value}` :
+                                        input.value;
+                                });
+
+                                // Replace save button with edit/delete buttons
+                                const actionCell = newRow.querySelector('td:last-child');
+                                actionCell.innerHTML = `
+                    <button class="px-2 py-1 text-white bg-yellow-500 rounded edit-btn hover:bg-yellow-600">Edit</button>
+                    <button class="px-2 py-1 text-white bg-red-500 rounded delete-btn hover:bg-red-600">Delete</button>
+                `;
+
+                                // Add edit and delete button logic
+                                setupEditAndDeleteButtons(newRow);
+                            });
+                        });
+                    });
+                }
+
+                function setupEditAndDeleteButtons(row) {
+                    // Edit button logic
+                    row.querySelector('.edit-btn').addEventListener('click', function() {
+                        const cells = row.querySelectorAll('td:not(:last-child)');
+                        cells.forEach(cell => {
+                            const value = cell.textContent.trim();
+                            cell.innerHTML =
+                                `<input type="text" class="w-full p-1 border" value="${value}">`;
+                        });
+
+                        // Change button to save
+                        this.textContent = 'Save';
+                        this.classList.remove('edit-btn', 'bg-yellow-500', 'hover:bg-yellow-600');
+                        this.classList.add('save-btn', 'bg-green-500', 'hover:bg-green-600');
+
+                        // Add save logic
+                        this.addEventListener('click', function() {
+                            const inputs = row.querySelectorAll('input');
+                            const values = Array.from(inputs).map(input => input.value.trim());
+
+                            if (values.some(val => !val)) {
+                                alert('Please fill in all fields.');
+                                return;
+                            }
+
+                            // Replace inputs with text
+                            inputs.forEach((input, index) => {
+                                const td = input.parentElement;
+                                td.textContent = index === 0 ? `#${input.value}` : input.value;
+                            });
+
+                            // Change button back to edit
+                            this.textContent = 'Edit';
+                            this.classList.remove('save-btn', 'bg-green-500', 'hover:bg-green-600');
+                            this.classList.add('edit-btn', 'bg-yellow-500', 'hover:bg-yellow-600');
+                        });
+                    });
+
+                    // Delete button logic
+                    row.querySelector('.delete-btn').addEventListener('click', function() {
+                        if (confirm('Are you sure you want to delete this row?')) {
+                            row.remove();
+                        }
+                    });
+                }
                 // เรนเดอร์แถวการ์ดจากไอเทมสปรินต์
                 function renderCardRows(items) {
                     return items.map(item => `
             <tr>
                 <td class="px-4 py-2 text-center border border-white"><span class="px-14 py-1 mr-2 bg-white border border-[#13A7FD] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">#${item.number || ''}</span></td>
                 <td class="px-4 py-2 text-center border border-white">${item.card_detail || ''}</td>
-                <td class="px-4 py-2 text-center border border-white" style="width: 40%;">${item.description || ''}</td>
+                <td class="px-15 py-2 text-center border border-white" style="width: 40%;">${item.description || ''}</td>
                 <td class="px-4 py-2 text-center border border-white"><span class="px-2 py-1 mr-2 text-sm font-bold text-[#65BC23] rounded-3xl bg-[#DDFFEC]">${item.teamName || ''}</span>${item.member || ''}</td>
-                <td class="px-4 py-2 text-center border border-white "><span class="px-14 py-1 mr-2 bg-[#BAF3FF] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">${item.point || ''}</span></td>
+                <td class="px-4 py-2 text-center border border-white "><span class="px-16 py-1 mr-2 bg-[#BAF3FF] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">${item.point || ''}pt.</span></td>
                 <td class="px-4 py-2 text-center border border-white">
                     <button class="px-2 py-2 mr-1 text-white bg-[#FFC7B2] rounded-full edit-btn hover:bg-yellow-600">
                         <svg class="w-5 h-5 text-[#985E00]  hover:text-white " width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -355,11 +503,11 @@
 
                             // จัดเก็บเนื้อหา SVG ต้นฉบับ
                             const originalSvgContent = `<svg class="w-5 h-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24"
-         xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
-         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>`;
+                            xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>`;
 
                             // ตรวจสอบว่าอยู่ในโหมดแก้ไขหรือไม่โดยค้นหาอินพุต
                             const isEditing = row.querySelector("input") !== null;
@@ -399,6 +547,9 @@
                                 });
                                 // กู้คืนไอคอน SVG ดั้งเดิม
                                 this.innerHTML = originalSvgContent;
+
+                                // Update demo data with the edited values
+                                updateDemoDataWithEdit(row);
                             }
                         });
                     });
@@ -407,14 +558,37 @@
                     document.querySelectorAll(".delete-btn").forEach(button => {
                         button.addEventListener("click", function() {
                             let row = this.closest("tr");
-                            if (confirm("Are you sure you want to delete this row?")) {
-                                row.remove();
+                            const sprintBlock = row.closest('.sprint-block');
+                            const isNewSprint = sprintBlock.classList.contains('new-sprint');
 
-                                // ตรวจสอบว่านี่คือแถวสุดท้ายหรือไม่ และอัปเดตข้อความ "ไม่มีข้อมูล" หากจำเป็น
-                                const tbody = this.closest("tbody");
-                                if (tbody.querySelectorAll("tr").length === 0) {
-                                    tbody.innerHTML =
-                                        '<tr class="italic text-gray-500 no-data"><td colspan="6" class="py-2 text-center">No data available</td></tr>';
+                            if (isNewSprint) {
+                                if (confirm("Are you sure you want to delete this entire sprint?")) {
+                                    const sprintNumber = parseInt(sprintBlock.dataset.sprintNumber);
+                                    // Remove from newSprints array
+                                    newSprints = newSprints.filter(num => num !== sprintNumber);
+                                    sprintBlock.remove();
+                                }
+                            } else {
+                                if (confirm("Are you sure you want to delete this row?")) {
+                                    const sprintNumber = parseInt(row.closest('.sprint-block').dataset
+                                        .sprintNumber);
+                                    const cardNumber = row.querySelector('td:first-child').textContent
+                                        .replace('#', '');
+
+                                    // Remove from demo data
+                                    demoData = demoData.filter(item =>
+                                        !(item.sprint_number === sprintNumber && item.number ===
+                                            cardNumber)
+                                    );
+
+                                    row.remove();
+
+                                    // ตรวจสอบว่านี่คือแถวสุดท้ายหรือไม่ และอัปเดตข้อความ "ไม่มีข้อมูล" หากจำเป็น
+                                    const tbody = this.closest("tbody");
+                                    if (tbody.querySelectorAll("tr").length === 0) {
+                                        tbody.innerHTML =
+                                            '<tr class="italic text-gray-500 no-data"><td colspan="6" class="py-2 text-center">No data available</td></tr>';
+                                    }
                                 }
                             }
                         });
@@ -524,6 +698,31 @@
                     });
                 }
 
+                // Update demo data with edited row values
+                function updateDemoDataWithEdit(row) {
+                    const sprintNumber = parseInt(row.closest('.sprint-block').dataset.sprintNumber);
+                    const cardNumber = row.querySelector('td:first-child').textContent.replace('#', '');
+
+                    // Find the item in demoData
+                    const itemIndex = demoData.findIndex(item =>
+                        item.sprint_number === sprintNumber && item.number === cardNumber
+                    );
+
+                    if (itemIndex !== -1) {
+                        // Update the item with new values
+                        demoData[itemIndex] = {
+                            sprint_number: sprintNumber,
+                            number: cardNumber,
+                            card_detail: row.querySelector('td:nth-child(2)').textContent,
+                            description: row.querySelector('td:nth-child(3)').textContent,
+                            teamName: row.querySelector('td:nth-child(4) span').textContent,
+                            member: row.querySelector('td:nth-child(4)').textContent.replace(row.querySelector(
+                                'td:nth-child(4) span').textContent, '').trim(),
+                            point: row.querySelector('td:nth-child(5) span').textContent
+                        };
+                    }
+                }
+
                 // Update displayed sprints based on filters
                 function updateDisplayedSprints() {
                     const sprintRange = document.getElementById('selectedSprint').textContent;
@@ -545,80 +744,93 @@
                     });
                 }
 
+                // Function to add a new sprint
+                function addNewSprint() {
+                    const sprintNumber = nextSprintNumber++;
+                    newSprints.push(sprintNumber);
+
+                    // Create the new sprint div
+                    const sprintDiv = createSprintDiv(sprintNumber, []);
+                    sprintDiv.classList.add('new-sprint');
+
+                    // Add to the container at the top
+                    document.getElementById('sprintContainer').prepend(sprintDiv);
+
+                    // Set up event listeners for the new sprint
+                    setupSprintEventListeners();
+
+                    // Update displayed sprints based on current filter
+                    updateDisplayedSprints();
+                }
+
                 // Function to load demo data if report data is not available
                 function loadDemoData() {
-                    const demoData = [{
+                    // Initial demo data
+                    const initialDemoData = [{
                             sprint_number: 13,
-                            data: [{
-                                    number: '1',
-                                    card_detail: 'Update UI',
-                                    description: 'Update login page',
-                                    member: 'John',
-                                    teamName: 'Alhpa',
-                                    point: 3
-                                },
-                                {
-                                    number: '2',
-                                    card_detail: 'Fix bug',
-                                    description: 'This page displays all backlog bugs from previous sprints',
-                                    member: 'Sarah',
-                                    teamName: 'Alhpa',
-                                    point: 2
-                                }
-                            ]
+                            number: '1',
+                            card_detail: 'Update UI',
+                            description: 'Update login page',
+                            member: 'John',
+                            teamName: 'Alpha',
+                            point: 3
+                        },
+                        {
+                            sprint_number: 13,
+                            number: '2',
+                            card_detail: 'Fix bug',
+                            description: 'This page displays all backlog bugs from previous sprints',
+                            member: 'Sarah',
+                            teamName: 'Alpha',
+                            point: 2
                         },
                         {
                             sprint_number: 1,
-                            data: [{
-                                number: '1',
-                                card_detail: 'New feature',
-                                description: 'Add dashboard',
-                                member: 'Mike',
-                                teamName: 'Alhpa',
-                                point: 5
-                            }]
+                            number: '1',
+                            card_detail: 'New feature',
+                            description: 'Add dashboard',
+                            member: 'Mike',
+                            teamName: 'Alpha',
+                            point: 5
                         },
                         {
                             sprint_number: 3,
-                            data: [{
-                                number: '1',
-                                card_detail: 'New feature',
-                                description: 'Add dashboard',
-                                member: 'Mike',
-                                teamName: 'Alhpa',
-                                point: 5
-                            }]
+                            number: '1',
+                            card_detail: 'New feature',
+                            description: 'Add dashboard',
+                            member: 'Mike',
+                            teamName: 'Alpha',
+                            point: 5
                         },
                         {
                             sprint_number: 14,
-                            data: [{
-                                number: '1',
-                                card_detail: 'New feature',
-                                description: 'Add dashboard',
-                                member: 'Mike',
-                                teamName: 'Alhpa',
-                                point: 5
-                            }]
+                            number: '1',
+                            card_detail: 'New feature',
+                            description: 'Add dashboard',
+                            member: 'Mike',
+                            teamName: 'Alpha',
+                            point: 5
                         }
                     ];
 
-                    const formattedData = [];
-                    demoData.forEach(sprint => {
-                        sprint.data.forEach(item => {
-                            formattedData.push({
-                                sprint_number: sprint.sprint_number,
-                                number: item.number,
-                                card_detail: item.card_detail,
-                                description: item.description,
-                                teamName: item.teamName,
-                                member: item.member,
-                                point: item.point
-                            });
-                        });
-                    });
+                    // Merge with any existing demo data (preserving edits)
+                    demoData = [...initialDemoData, ...demoData.filter(item =>
+                        !initialDemoData.some(initialItem =>
+                            initialItem.sprint_number === item.sprint_number &&
+                            initialItem.number === item.number
+                        )
+                    )];
 
-                    populateSprintsFromReport(formattedData);
+                    // Find the highest sprint number to set nextSprintNumber
+                    const maxSprintNumber = demoData.reduce((max, item) =>
+                        Math.max(max, item.sprint_number), 0);
+                    nextSprintNumber = maxSprintNumber + 1;
+
+                    populateSprintsFromReport(demoData);
                 }
+
+                // Set up the add sprint button
+                document.getElementById('addSprintBtn').addEventListener('click', addNewSprint);
 
                 // Initialize by loading report data
                 loadReportData();
