@@ -297,7 +297,7 @@
                     sprintDiv.innerHTML = `
         <div class="flex h-12 items-center px-10 py-3 text-lg font-bold text-blue-700 cursor-pointer rounded-3xl sprint-header bg-sky-100">
             <span class="mr-2 text-[#13A7FD] text-1xl" style="width: 9%;">Sprint #${sprintNumber}</span>
-            <button class="ml-3 px-3 py-1 text-white text-left bg-[#13A7FD] rounded-full add-table-btn hover:bg-blue-600" >+</button>
+            <button class="ml-3 px-3 py-1 text-white text-left bg-[#13A7FD] rounded-full add-table-btn hover:bg-blue-600">+</button>
             <span style="width: 70%;"></span>
             <span class="ml-20 text-sm font-normal mb-2 lace-items-end sprint-date text-[#13A7FD] mt-3 bg-white rounded-3xl px-2 py-1">${dateRange}</span>
             <span class="collapse-icon text-[#13A7FD] sprint-icon px-5 text-right">▲</span>
@@ -356,15 +356,14 @@
                             // Add a new empty row
                             const newRow = document.createElement('tr');
                             newRow.innerHTML = `
-                        <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Number"></td>
-                        <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Card Detail"></td>
-                        <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Description"></td>
-                        <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Member"></td>
-                        <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Point"></td>
-                        <td class="px-4 py-2 text-center border border-white">
-                    <button class="px-2 py-1 text-white bg-green-500 rounded save-btn hover:bg-green-600">Save</button>
-                </td>
-            `;
+                                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Number"></td>
+                                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Card Detail"></td>
+                                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Description"></td>
+                                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Member"></td>
+                                <td class="px-4 py-2 text-center border border-white"><input type="text" class="w-full p-1 border" placeholder="Point"></td>
+                                <td class="px-4 py-2 text-center border border-white">
+                            <button class="px-2 py-1 text-white bg-green-500 rounded save-btn hover:bg-green-600">Save</button>
+                        </td>`;
                             tbody.appendChild(newRow);
 
                             // Add save button logic
@@ -388,9 +387,9 @@
                                 // Replace save button with edit/delete buttons
                                 const actionCell = newRow.querySelector('td:last-child');
                                 actionCell.innerHTML = `
-                    <button class="px-2 py-1 text-white bg-yellow-500 rounded edit-btn hover:bg-yellow-600">Edit</button>
-                    <button class="px-2 py-1 text-white bg-red-500 rounded delete-btn hover:bg-red-600">Delete</button>
-                `;
+                                    <button class="px-2 py-1 text-white bg-yellow-500 rounded edit-btn hover:bg-yellow-600">Edit</button>
+                                    <button class="px-2 py-1 text-white bg-red-500 rounded delete-btn hover:bg-red-600">Delete</button>
+                                `;
 
                                 // Add edit and delete button logic
                                 setupEditAndDeleteButtons(newRow);
@@ -540,7 +539,8 @@
                                             cell.textContent = input.value;
                                             // Update demo data with the edited description
                                             demoData.forEach(item => {
-                                                if (item.description === cell.textContent) {
+                                                if (item.description === cell
+                                                    .textContent) {
                                                     item.description = input.value;
                                                 }
                                             });
@@ -562,7 +562,8 @@
                                             cell.textContent = input.value;
                                             // Update demo data with the edited card detail
                                             demoData.forEach(item => {
-                                                if (item.card_detail === cell.textContent) {
+                                                if (item.card_detail === cell
+                                                    .textContent) {
                                                     item.card_detail = input.value;
                                                 }
                                             });
@@ -671,55 +672,6 @@
                             // Store original SVG content
                             const originalSvgContent = editBtn.innerHTML;
 
-                            editBtn.addEventListener('click', function() {
-                                let cells = row.querySelectorAll("td:not(:last-child)");
-
-                                // Check if we're in edit mode by looking for inputs
-                                const isEditing = row.querySelector("input") !== null;
-
-                                if (!isEditing) {
-                                    // Switch to edit mode
-                                    cells.forEach(cell => {
-                                        let value = cell.textContent.trim();
-                                        // For the first cell, remove the # symbol if present
-                                        if (cell === cells[0] && value.startsWith(
-                                                '#')) {
-                                            value = value.substring(1);
-                                        }
-                                        cell.innerHTML =
-                                            `<input type="text" value="${value}" class="w-full p-1 border">`;
-                                    });
-                                    this.innerHTML = "Save";
-                                } else {
-                                    // Save edited values
-                                    cells.forEach((cell, index) => {
-                                        let input = cell.querySelector("input");
-                                        if (input) {
-                                            // For the first cell, add the # symbol back
-                                            if (index === 0) {
-                                                cell.textContent = `#${input.value}`;
-                                                const number = input.value;
-                                                cell.innerHTML =
-                                                    `<span class="px-14 py-1 mr-2 bg-white border border-[#13A7FD] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">#${number}</span>`;
-                                            }
-                                            if (index === 3) {
-                                                const [team, ...memberParts] = input
-                                                    .value.split(' ');
-                                                const member = memberParts.join(
-                                                    ' ');
-                                                cell.innerHTML =
-                                                    `<span class="px-2 py-1 mr-2 text-sm text-[#65BC23] rounded-3xl bg-[#DDFFEC] font-bold">${team}</span>${member}`;
-                                            } else {
-                                                cell.textContent = input.value;
-                                            }
-
-                                        }
-                                    });
-                                    // Restore original SVG icon
-                                    this.innerHTML = originalSvgContent;
-                                }
-                            });
-
                             form.reset();
                         });
                     });
@@ -810,6 +762,15 @@
                             member: 'Sarah',
                             teamName: 'Alpha',
                             point: 2
+                        },
+                        {
+                            sprint_number: 1,
+                            number: '2',
+                            card_detail: 'Fix bug',
+                            description: 'Na hee hee',
+                            member: 'Sarah',
+                            teamName: 'Alpha',
+                            point: 100
                         },
                         {
                             sprint_number: 1,
