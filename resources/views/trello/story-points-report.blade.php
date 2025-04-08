@@ -169,21 +169,6 @@
                 <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                     <div class="py-1">
                         <!-- Save Report Button with Sprint Auto-Save Hint -->
-                        <button id="save-report-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center relative group">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                            </svg>
-                            Save Report
-                            @if(auth()->user()->isAdmin())
-                            <div class="hidden group-hover:block absolute z-10 -top-2 left-full ml-2 px-3 py-2 bg-gray-800 text-white text-xs rounded shadow-lg w-64">
-                                <span class="relative">
-                                    Sprint reports are saved automatically at the end of each week.
-                                    <a href="{{ route('settings.sprint') }}" class="text-blue-300 hover:underline">Configure in Sprint Settings</a>
-                                    <span class="absolute -left-7 top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-800"></span>
-                                </span>
-                            </div>
-                            @endif
-                        </button>
                         <button id="create-new-report-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -376,7 +361,7 @@
             <div id="board-name-display" class="mb-4 hidden">
                 <div class="flex items-center text-sm text-gray-500 mb-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2m0 0V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                     </svg>
                     Board: <span id="board-name" class="font-medium"></span>
                     </div>
@@ -536,8 +521,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
     <!-- Extra Points Modal -->
     <div id="extra-points-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full" style="z-index: 1000;">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -587,11 +570,11 @@
 
             <div class="mt-4">
                 <div class="overflow-x-auto">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
+                    <div id="backlog-cards-container" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
                         @foreach($backlogData['allBugs'] as $bug)
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                        <div class="backlog-bug-card bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow" data-team="{{ $bug['team'] ?? 'Unknown' }}">
                             <!-- Card Header with Bug ID and Priority -->
-                            <div class="flex justify-between items-center p-4 border-b border-gray-100 ">
+                            <div class="flex justify-between items-center p-4 border-b border-gray-100">
                                 <div class="flex items-center">
                                     <!-- Points in circle -->
                                     <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center font-bold text-sm mr-3">
@@ -616,21 +599,15 @@
                                 </div>
                             </div>
 
-                            <!-- Bug Name/Description/buttom -->
+                            <!-- Bug Name/Description/button -->
                             <div class="p-4 grid grid-cols-9">
-
-                                <div class="col-span-8 text-left h-20 overflow-auto ">โค้ดที่คุณให้มาคือการใช้  Tailwind  Tailwind Tailาจอที่ใช้งาน
+                                <div class="col-span-8 text-left h-20 overflow-auto">
+                                    {{ $bug['description'] ?? 'No description available' }}
                                 </div>
                                 <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center ms-3 h-8 w-8 col-start-9">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-pencil-square" viewBox="0 0 16 16 ">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                                         <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                                         <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                    </svg>
-                                </button>
-
-                                <button type="button" class="text-[#FF0004] bg-[#FFACAE] hover:bg-[#FF7C7E] focus:outline-none font-medium rounded-full px-2 py-2 text-center  h-8 w-8  col-start-11">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
-                                        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
                                     </svg>
                                 </button>
                             </div>
@@ -641,7 +618,7 @@
                                     <span class="text-sm text-gray-500">Assign to:</span>
 
                                     <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-[#BAF3FF] text-[#13A7FD]">
-                                        {{ $bug['team'] ?? '-' }}
+                                        {{ $bug['team'] ?? 'Unknown' }}
                                     </span>
 
                                     <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full">
@@ -652,7 +629,7 @@
                                 <!-- Status indicator -->
                                 <div>
                                     <span class="px-2 py-1 text-xs font-medium rounded-full bg-[#DDFFEC] text-[#82DF3C]">
-                                        Success
+                                        {{ $bug['status'] ?? 'Open' }}
                                     </span>
                                 </div>
                             </div>
@@ -661,16 +638,81 @@
                     </div>
                 </div>
 
-            <div class="mt-4 text-right">
-                <a href="{{ route('backlog.index') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    View Full Backlog
-                </a>
+                <!-- No bugs message - hidden by default -->
+                <div id="no-bugs-message" class="hidden bg-yellow-50 text-yellow-700 p-4 rounded-lg text-center">
+                    No backlog bugs found for the selected team.
+                </div>
+
+                <div class="mt-4 text-right">
+                    <a href="{{ route('backlog.index') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        View Full Backlog
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get backlog elements
+            const backlogCards = document.querySelectorAll('.backlog-bug-card');
+            const backlogTitleCount = document.getElementById('backlog-title-count');
+            const noBugsMessage = document.getElementById('no-bugs-message');
+            const backlogCardsContainer = document.getElementById('backlog-cards-container');
+
+            // Get board selector
+            const boardSelector = document.getElementById('board-selector');
+
+            // Initial filtering based on the selected board
+            if (boardSelector) {
+                const selectedOption = boardSelector.options[boardSelector.selectedIndex];
+                if (selectedOption) {
+                    const selectedBoardName = selectedOption.text;
+                    filterBacklogCards(selectedBoardName);
+                }
+
+                // Add listener to the board selector for automatic filtering
+                boardSelector.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption) {
+                        const selectedBoardName = selectedOption.text;
+                        filterBacklogCards(selectedBoardName);
+                    }
+                });
+            }
+
+            // Function to filter backlog cards based on team
+            function filterBacklogCards(team) {
+                let visibleCount = 0;
+
+                backlogCards.forEach(card => {
+                    const cardTeam = card.getAttribute('data-team');
+
+                    if (!team || team === '' || cardTeam === team) {
+                        card.style.display = '';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Update the count in the title
+                backlogTitleCount.textContent = visibleCount;
+
+                // Show/hide no bugs message
+                if (visibleCount === 0) {
+                    noBugsMessage.classList.remove('hidden');
+                    backlogCardsContainer.classList.add('hidden');
+                } else {
+                    noBugsMessage.classList.add('hidden');
+                    backlogCardsContainer.classList.remove('hidden');
+                }
+            }
+        });
+    </script>
     @endif
 
 <script>
