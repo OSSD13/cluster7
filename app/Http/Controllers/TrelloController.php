@@ -1,21 +1,21 @@
 <?php
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\BacklogController;
 use App\Models\Setting;
 use App\Models\TrelloBoardData;
-use App\Http\Controllers\BacklogController;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class TrelloController extends Controller
 {
     private function getTrelloCredentials()
     {
         return [
-            'apiKey' => $this->getSetting('trello_api_key'),
+            'apiKey'   => $this->getSetting('trello_api_key'),
             'apiToken' => $this->getSetting('trello_api_token'),
-            'boardId' => $this->getSetting('trello_board_id')
+            'boardId'  => $this->getSetting('trello_board_id'),
         ];
     }
 
@@ -35,27 +35,27 @@ class TrelloController extends Controller
         try {
             // Add debugging to help identify the issue
             \Log::info('Starting fetchStoryPoints', [
-                'board_id' => $request->input('board_id'),
-                'user' => auth()->user()->name,
-                'timestamp' => now()->toDateTimeString(),
+                'board_id'    => $request->input('board_id'),
+                'user'        => auth()->user()->name,
+                'timestamp'   => now()->toDateTimeString(),
                 'request_url' => $request->fullUrl(),
-                'base_url' => url('/'),
+                'base_url'    => url('/'),
             ]);
 
             // Get Trello API credentials from settings
             $credentials = $this->getTrelloCredentials();
-            $apiKey = $credentials['apiKey'];
-            $apiToken = $credentials['apiToken'];
+            $apiKey      = $credentials['apiKey'];
+            $apiToken    = $credentials['apiToken'];
 
-            if (!$apiKey || !$apiToken) {
+            if (! $apiKey || ! $apiToken) {
                 throw new \Exception('Trello API credentials are not configured. Please go to Settings > Trello API Settings to configure them.');
             }
 
             // Get board ID from request or use default
             $boardId = $request->input('board_id');
-            if (!$boardId) {
+            if (! $boardId) {
                 $boardId = $credentials['boardId'];
-                if (!$boardId) {
+                if (! $boardId) {
                     throw new \Exception('Board ID is required.');
                 }
             }
@@ -67,25 +67,25 @@ class TrelloController extends Controller
             $cachedData = \App\Models\TrelloBoardData::where('board_id', $boardId)->first();
 
             // If we have recent cached data and not forcing refresh, return it
-            if ($cachedData && !$forceRefresh && !$cachedData->isStale()) {
+            if ($cachedData && ! $forceRefresh && ! $cachedData->isStale()) {
                 \Log::info('Using cached data for board ID: ' . $boardId, [
                     'last_fetched_at' => $cachedData->last_fetched_at,
                 ]);
 
                 // Return the cached data with the last fetched timestamp
                 return response()->json([
-                    'storyPoints' => $cachedData->story_points,
-                    'cardsByList' => $cachedData->cards_by_list,
-                    'memberPoints' => $cachedData->member_points,
-                    'boardDetails' => $cachedData->board_details,
-                    'backlogData' => $cachedData->backlog_data,
-                    'timestamp' => now()->toDateTimeString(),
+                    'storyPoints'      => $cachedData->story_points,
+                    'cardsByList'      => $cachedData->cards_by_list,
+                    'memberPoints'     => $cachedData->member_points,
+                    'boardDetails'     => $cachedData->board_details,
+                    'backlogData'      => $cachedData->backlog_data,
+                    'timestamp'        => now()->toDateTimeString(),
                     'requestedBoardId' => $boardId,
-                    'cached' => true,
-                    'lastFetched' => $cachedData->getLastFetchedFormatted(),
+                    'cached'           => true,
+                    'lastFetched'      => $cachedData->getLastFetchedFormatted(),
                 ])->header('Cache-Control', 'no-cache, no-store, must-revalidate')
-                  ->header('Pragma', 'no-cache')
-                  ->header('Expires', '0');
+                    ->header('Pragma', 'no-cache')
+                    ->header('Expires', '0');
             }
 
             // If we're here, we need to fetch fresh data from Trello API
@@ -93,23 +93,23 @@ class TrelloController extends Controller
 
             // Important: Log the actual board ID being used
             \Log::info('Fetching data for board ID: ' . $boardId, [
-                'user' => auth()->user()->name,
-                'user_id' => auth()->id(),
-                'is_admin' => auth()->user()->isAdmin() ? 'Yes' : 'No'
+                'user'     => auth()->user()->name,
+                'user_id'  => auth()->id(),
+                'is_admin' => auth()->user()->isAdmin() ? 'Yes' : 'No',
             ]);
 
             // More direct approach with simpler structure and better error handling
-            $cards = [];
-            $members = [];
-            $lists = [];
+            $cards        = [];
+            $members      = [];
+            $lists        = [];
             $boardDetails = null;
 
             // Step 0: Fetch board details first to get the name
             try {
                 $boardResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}", [
-                    'key' => $apiKey,
-                    'token' => $apiToken,
-                    'fields' => 'name,url,dateLastActivity'
+                    'key'    => $apiKey,
+                    'token'  => $apiToken,
+                    'fields' => 'name,url,dateLastActivity',
                 ]);
 
                 if ($boardResponse->successful()) {
@@ -124,14 +124,14 @@ class TrelloController extends Controller
             // Step 1: Fetch cards
             try {
                 $response = Http::withOptions([
-                    'verify' => false,
+                    'verify'  => false,
                     'timeout' => 30,
                 ])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/cards", [
-                    'key' => $apiKey,
-                    'token' => $apiToken,
-                    'fields' => 'name,idList,labels,desc,idMembers',
+                    'key'        => $apiKey,
+                    'token'      => $apiToken,
+                    'fields'     => 'name,idList,labels,desc,idMembers',
                     'pluginData' => 'true',
-                    'members' => 'true'
+                    'members'    => 'true',
                 ]);
 
                 if ($response->successful()) {
@@ -147,9 +147,9 @@ class TrelloController extends Controller
             // Step 2: Fetch members
             try {
                 $membersResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/members", [
-                    'key' => $apiKey,
-                    'token' => $apiToken,
-                    'fields' => 'id,fullName,username,avatarUrl'
+                    'key'    => $apiKey,
+                    'token'  => $apiToken,
+                    'fields' => 'id,fullName,username,avatarUrl',
                 ]);
 
                 if ($membersResponse->successful()) {
@@ -163,9 +163,9 @@ class TrelloController extends Controller
             // Step 3: Fetch lists
             try {
                 $listsResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/lists", [
-                    'key' => $apiKey,
-                    'token' => $apiToken,
-                    'fields' => 'name,id'
+                    'key'    => $apiKey,
+                    'token'  => $apiToken,
+                    'fields' => 'name,id',
                 ]);
 
                 if ($listsResponse->successful()) {
@@ -179,13 +179,13 @@ class TrelloController extends Controller
             }
 
             // Generate the reports with simplified structure
-            $storyPoints = $this->calculateStoryPointsWithPlugin($cards);
-            $cardsByList = $this->organizeCardsByListWithPlugin($cards, $lists);
+            $storyPoints  = $this->calculateStoryPointsWithPlugin($cards);
+            $cardsByList  = $this->organizeCardsByListWithPlugin($cards, $lists);
             $memberPoints = $this->calculateMemberStoryPoints($cards, $members, $boardId, $apiKey, $apiToken); // Add boardId and credentials here
 
             // Get backlog data
             $backlogController = app()->make(BacklogController::class);
-            $backlogData = $backlogController->getBacklogData();
+            $backlogData       = $backlogController->getBacklogData();
 
             // Ensure backlogData is properly formatted for collections
             if ($backlogData && isset($backlogData['allBugs']) && is_array($backlogData['allBugs'])) {
@@ -212,39 +212,39 @@ class TrelloController extends Controller
             \App\Models\TrelloBoardData::updateOrCreate(
                 ['board_id' => $boardId],
                 [
-                    'board_name' => $boardDetails['name'] ?? 'Unknown Board',
-                    'story_points' => $storyPoints,
-                    'cards_by_list' => $cardsByList,
-                    'member_points' => $memberPoints,
-                    'board_details' => $boardDetails,
-                    'backlog_data' => $backlogData,
+                    'board_name'      => $boardDetails['name'] ?? 'Unknown Board',
+                    'story_points'    => $storyPoints,
+                    'cards_by_list'   => $cardsByList,
+                    'member_points'   => $memberPoints,
+                    'board_details'   => $boardDetails,
+                    'backlog_data'    => $backlogData,
                     'last_fetched_at' => now(),
                 ]
             );
 
             // Return the data with board details and a timestamp to prevent caching
             return response()->json([
-                'storyPoints' => $storyPoints,
-                'cardsByList' => $cardsByList,
-                'memberPoints' => $memberPoints,
-                'boardDetails' => $boardDetails,
-                'backlogData' => $backlogData,
-                'timestamp' => now()->toDateTimeString(), // Add timestamp
-                'requestedBoardId' => $boardId, // Add the requested board ID for verification
-                'cached' => false,
-                'lastFetched' => 'just now',
+                'storyPoints'      => $storyPoints,
+                'cardsByList'      => $cardsByList,
+                'memberPoints'     => $memberPoints,
+                'boardDetails'     => $boardDetails,
+                'backlogData'      => $backlogData,
+                'timestamp'        => now()->toDateTimeString(), // Add timestamp
+                'requestedBoardId' => $boardId,                  // Add the requested board ID for verification
+                'cached'           => false,
+                'lastFetched'      => 'just now',
             ])->header('Cache-Control', 'no-cache, no-store, must-revalidate')
-              ->header('Pragma', 'no-cache')
-              ->header('Expires', '0');
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
         } catch (\Exception $e) {
             \Log::error('Error in fetchStoryPoints', [
                 'board_id' => $request->input('board_id'),
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'message'  => $e->getMessage(),
+                'trace'    => $e->getTraceAsString(),
             ]);
             return response()->json([
-                'error' => $e->getMessage(),
-                'details' => app()->environment('local') ? $e->getTraceAsString() : null
+                'error'   => $e->getMessage(),
+                'details' => app()->environment('local') ? $e->getTraceAsString() : null,
             ], 500);
         }
     }
@@ -266,16 +266,16 @@ class TrelloController extends Controller
 
     private function calculateStoryPointsWithPlugin($cards)
     {
-        $total = 0;
-        $completed = 0;
+        $total      = 0;
+        $completed  = 0;
         $inProgress = 0;
-        $todo = 0;
+        $todo       = 0;
 
         foreach ($cards as $card) {
             // Extract story points from plugin data
             $points = 0;
 
-            if (isset($card['pluginData']) && !empty($card['pluginData'])) {
+            if (isset($card['pluginData']) && ! empty($card['pluginData'])) {
                 $points = $this->getStoryPoints($card['pluginData']);
             }
 
@@ -287,7 +287,7 @@ class TrelloController extends Controller
             if ($points > 0) {
                 $total += $points;
 
-                $isDone = false;
+                $isDone       = false;
                 $isInProgress = false;
 
                 // Check if card has a "Done" label
@@ -314,11 +314,11 @@ class TrelloController extends Controller
         }
 
         return [
-            'total' => $total,
-            'completed' => $completed,
-            'inProgress' => $inProgress,
-            'todo' => $todo,
-            'percentComplete' => $total > 0 ? round(($completed / $total) * 100, 2) : 0
+            'total'           => $total,
+            'completed'       => $completed,
+            'inProgress'      => $inProgress,
+            'todo'            => $todo,
+            'percentComplete' => $total > 0 ? round(($completed / $total) * 100, 2) : 0,
         ];
     }
 
@@ -329,12 +329,12 @@ class TrelloController extends Controller
         // Get members to include in response
         $memberMap = [];
         foreach ($cards as $card) {
-            if (isset($card['members']) && !empty($card['members'])) {
+            if (isset($card['members']) && ! empty($card['members'])) {
                 foreach ($card['members'] as $member) {
                     $memberMap[$member['id']] = [
-                        'id' => $member['id'],
-                        'fullName' => $member['fullName'] ?? null,
-                        'username' => $member['username'] ?? null,
+                        'id'        => $member['id'],
+                        'fullName'  => $member['fullName'] ?? null,
+                        'username'  => $member['username'] ?? null,
                         'avatarUrl' => $member['avatarUrl'] ?? null,
                     ];
                 }
@@ -342,20 +342,20 @@ class TrelloController extends Controller
         }
 
         foreach ($cards as $card) {
-            $listId = $card['idList'];
+            $listId   = $card['idList'];
             $listName = isset($lists[$listId]) ? $lists[$listId] : 'Unknown List';
 
-            if (!isset($cardsByList[$listName])) {
+            if (! isset($cardsByList[$listName])) {
                 $cardsByList[$listName] = [
-                    'cards' => [],
-                    'totalPoints' => 0
+                    'cards'       => [],
+                    'totalPoints' => 0,
                 ];
             }
 
             // Extract story points from plugin data
             $points = 0;
 
-            if (isset($card['pluginData']) && !empty($card['pluginData'])) {
+            if (isset($card['pluginData']) && ! empty($card['pluginData'])) {
                 $points = $this->getStoryPoints($card['pluginData']);
             }
 
@@ -366,7 +366,7 @@ class TrelloController extends Controller
 
             // Extract member information
             $members = [];
-            if (isset($card['idMembers']) && !empty($card['idMembers'])) {
+            if (isset($card['idMembers']) && ! empty($card['idMembers'])) {
                 foreach ($card['idMembers'] as $memberId) {
                     if (isset($memberMap[$memberId])) {
                         $members[] = $memberMap[$memberId];
@@ -376,17 +376,17 @@ class TrelloController extends Controller
 
             $cardsByList[$listName]['totalPoints'] += $points;
             $cardsByList[$listName]['cards'][] = [
-                'id' => $card['id'],
-                'desc' => $card['desc'],
-                'name' => $card['name'],
-                'labels' => $card['labels'],
-                'idList' => $card['idList'],
-                'listName' => $lists[$card['idList']] ?? 'Unknown List',
-                'points' => $points,
-                'hasPoints' => $points > 0,
-                'members' => $members,
+                'id'          => $card['id'],
+                'desc'        => $card['desc'],
+                'name'        => $card['name'],
+                'labels'      => $card['labels'],
+                'idList'      => $card['idList'],
+                'listName'    => $lists[$card['idList']] ?? 'Unknown List',
+                'points'      => $points,
+                'hasPoints'   => $points > 0,
+                'members'     => $members,
                 'membersFull' => collect($memberMap)->whereIn('id', $card['idMembers'])->values(),
-                'url' => "https://trello.com/c/{$card['id']}"
+                'url'         => "https://trello.com/c/{$card['id']}",
             ];
         }
 
@@ -405,15 +405,15 @@ class TrelloController extends Controller
      */
     private function calculateMemberStoryPoints($cards, $members, $boardId, $apiKey, $apiToken)
     {
-        $doneListIds = [];
+        $doneListIds   = [];
         $cancelListIds = [];
 
         // Create a map of list IDs to list names for checking card position
         try {
             $listsResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/lists", [
-                'key' => $apiKey,
-                'token' => $apiToken,
-                'fields' => 'name,id'
+                'key'    => $apiKey,
+                'token'  => $apiToken,
+                'fields' => 'name,id',
             ]);
 
             if ($listsResponse->successful()) {
@@ -426,7 +426,7 @@ class TrelloController extends Controller
                     }
                     // Check for Cancel section lists
                     if (strpos($listName, 'cancel') !== false || strpos($listName, 'cancelled') !== false ||
-                       strpos($listName, 'canceled') !== false) {
+                        strpos($listName, 'canceled') !== false) {
                         $cancelListIds[] = $list['id'];
                     }
                 }
@@ -445,29 +445,29 @@ class TrelloController extends Controller
             }
 
             $memberMap[$member['id']] = [
-                'id' => $member['id'],
-                'fullName' => $member['fullName'],
-                'username' => $member['username'],
-                'avatarUrl' => $member['avatarUrl'] ?? null,
+                'id'            => $member['id'],
+                'fullName'      => $member['fullName'],
+                'username'      => $member['username'],
+                'avatarUrl'     => $member['avatarUrl'] ?? null,
                 'pointPersonal' => 0,
-                'passPoint' => 0,
-                'bugPoint' => 0,
-                'cancelPoint' => 0,
-                'finalPoint' => 0,
-                'cards' => []
+                'passPoint'     => 0,
+                'bugPoint'      => 0,
+                'cancelPoint'   => 0,
+                'finalPoint'    => 0,
+                'cards'         => [],
             ];
         }
 
         // Analyze cards and assign points to members
         foreach ($cards as $card) {
             // Skip cards without members
-            if (!isset($card['idMembers']) || empty($card['idMembers'])) {
+            if (! isset($card['idMembers']) || empty($card['idMembers'])) {
                 continue;
             }
 
             // Extract story points from plugin data
             $points = 0;
-            if (isset($card['pluginData']) && !empty($card['pluginData'])) {
+            if (isset($card['pluginData']) && ! empty($card['pluginData'])) {
                 $points = $this->getStoryPoints($card['pluginData']);
             }
 
@@ -482,7 +482,7 @@ class TrelloController extends Controller
             }
 
             // Determine card status based on section (list) AND labels
-            $isDone = false;
+            $isDone      = false;
             $isCancelled = false;
 
             // First, check if card is in a Done list
@@ -495,7 +495,7 @@ class TrelloController extends Controller
             }
 
             // If not determined by list, check labels (as backup)
-            if (!$isDone && !$isCancelled && isset($card['labels'])) {
+            if (! $isDone && ! $isCancelled && isset($card['labels'])) {
                 foreach ($card['labels'] as $label) {
                     $labelName = strtolower($label['name']);
 
@@ -526,9 +526,9 @@ class TrelloController extends Controller
                     $cardStatus = $isDone ? 'pass' : ($isCancelled ? 'cancel' : 'bug');
 
                     $memberMap[$memberId]['cards'][] = [
-                        'name' => $card['name'],
+                        'name'   => $card['name'],
                         'points' => $points,
-                        'status' => $cardStatus
+                        'status' => $cardStatus,
                     ];
                 }
             }
@@ -542,12 +542,12 @@ class TrelloController extends Controller
 
             // Pass percentage formula: (passPoint / pointPersonal) * 100
             $member['passPercentage'] = $member['pointPersonal'] > 0
-                ? round(($member['passPoint'] / $member['pointPersonal']) * 100, 2)
-                : 0;
+            ? round(($member['passPoint'] / $member['pointPersonal']) * 100, 2)
+            : 0;
         }
 
         // Sort by total points (descending)
-        usort($result, function($a, $b) {
+        usort($result, function ($a, $b) {
             return $b['pointPersonal'] <=> $a['pointPersonal'];
         });
 
@@ -557,17 +557,17 @@ class TrelloController extends Controller
     public function storyPointsReport()
     {
         // Get current user's boards
-        $apiKey = $this->getSetting('trello_api_key');
-        $apiToken = $this->getSetting('trello_api_token');
-        $boards = [];
+        $apiKey         = $this->getSetting('trello_api_key');
+        $apiToken       = $this->getSetting('trello_api_token');
+        $boards         = [];
         $defaultBoardId = null;
-        $error = null;
-        $singleBoard = false;
-        $boardData = null;
-        $backlogData = null;
+        $error          = null;
+        $singleBoard    = false;
+        $boardData      = null;
+        $backlogData    = null;
 
         try {
-            if (!$apiKey || !$apiToken) {
+            if (! $apiKey || ! $apiToken) {
                 throw new \Exception('Trello API credentials not configured.');
             }
 
@@ -577,7 +577,7 @@ class TrelloController extends Controller
             if (auth()->user()->isAdmin()) {
                 // Admins see all boards
                 $userBoards = $boards;
-                
+
                 // For admins, use the first board as default if exists
                 if (count($boards) > 0) {
                     $defaultBoardId = $boards[0]['id'];
@@ -596,7 +596,7 @@ class TrelloController extends Controller
             if (count($boards) === 0) {
                 $error = "No Trello boards available. Please configure board access first.";
             } elseif (count($boards) === 1) {
-                $singleBoard = true;
+                $singleBoard    = true;
                 $defaultBoardId = $boards[0]['id'];
             } else {
                 // Multiple boards - set default or use the user's preference
@@ -609,12 +609,12 @@ class TrelloController extends Controller
 
                 if ($cachedData) {
                     $boardData = [
-                        'storyPoints' => $cachedData->story_points,
-                        'cardsByList' => $cachedData->cards_by_list,
+                        'storyPoints'  => $cachedData->story_points,
+                        'cardsByList'  => $cachedData->cards_by_list,
                         'memberPoints' => $cachedData->member_points,
                         'boardDetails' => $cachedData->board_details,
-                        'backlogData' => $cachedData->backlog_data,
-                        'lastFetched' => $cachedData->getLastFetchedFormatted(),
+                        'backlogData'  => $cachedData->backlog_data,
+                        'lastFetched'  => $cachedData->getLastFetchedFormatted(),
                     ];
 
                     // If we have backlog data in the cache, use it
@@ -625,9 +625,9 @@ class TrelloController extends Controller
             }
 
             // If we don't have backlog data from cache, try to get fresh data
-            if (!$backlogData) {
+            if (! $backlogData) {
                 $backlogController = app()->make(BacklogController::class);
-                $backlogData = $backlogController->getBacklogData();
+                $backlogData       = $backlogController->getBacklogData();
             }
 
             // Ensure backlogData is properly formatted for collections
@@ -640,24 +640,26 @@ class TrelloController extends Controller
                     if (is_array($bugs)) {
                         $backlogData['bugsByTeam'][$team] = collect($bugs);
                     }
-                // For non-admin users, allow all their teams to be visible
-                // And ensure the defaultBoardId is set to the first board
-                if (count($userBoards) > 0) {
-                    $defaultBoardId = $userBoards[0]['id'];
-                    \Log::info('Setting default board for user: ' . $userName, [
-                        'defaultBoardId' => $defaultBoardId,
-                        'boardName' => $userBoards[0]['name'],
-                        'totalBoards' => count($userBoards)
-                    ]);
-                } else {
-                    \Log::warning('No boards found for user: ' . $userName);
+                    // For non-admin users, allow all their teams to be visible
+                    // And ensure the defaultBoardId is set to the first board
+                    $userName = auth()->user()->name;
+                    if (count($userBoards) > 0) {
+                        $defaultBoardId = $userBoards[0]['id'];
+                        \Log::info('Setting default board for user: ' . $userName, [
+                            'defaultBoardId' => $defaultBoardId,
+                            'boardName'      => $userBoards[0]['name'],
+                            'totalBoards'    => count($userBoards),
+                        ]);
+                    } else {
+                        \Log::warning('No boards found for user: ' . $userName);
+                    }
                 }
-            }
 
-            if ($backlogData && isset($backlogData['bugsBySprint']) && is_array($backlogData['bugsBySprint'])) {
-                foreach ($backlogData['bugsBySprint'] as $sprint => $bugs) {
-                    if (is_array($bugs)) {
-                        $backlogData['bugsBySprint'][$sprint] = collect($bugs);
+                if ($backlogData && isset($backlogData['bugsBySprint']) && is_array($backlogData['bugsBySprint'])) {
+                    foreach ($backlogData['bugsBySprint'] as $sprint => $bugs) {
+                        if (is_array($bugs)) {
+                            $backlogData['bugsBySprint'][$sprint] = collect($bugs);
+                        }
                     }
                 }
             }
@@ -674,24 +676,24 @@ class TrelloController extends Controller
         $currentDate = Carbon::now()->format('F d, Y');
 
         return view('trello.story-points-report', [
-            'boards' => $boards,
-            'defaultBoardId' => $defaultBoardId,
-            'singleBoard' => $singleBoard,
-            'error' => $error,
-            'currentDate' => $currentDate,
-            'boardData' => $boardData,
-            'backlogData' => $backlogData,
-            'currentSprintNumber' => $sprintInfo['currentSprintNumber'] ?? null,
-            'sprintDateRange' => $sprintInfo['sprintDateRange'] ?? null,
-            'sprintDurationDisplay' => $sprintInfo['sprintDurationDisplay'] ?? null,
-            'currentSprintDay' => $sprintInfo['currentSprintDay'] ?? null,
-            'sprintTotalDays' => $sprintInfo['sprintTotalDays'] ?? null,
-            'daysRemaining' => $sprintInfo['daysRemaining'] ?? null,
-            'nextReportDate' => $sprintInfo['nextReportDate'] ?? null,
-            'currentWeekNumber' => $sprintInfo['currentWeekNumber'] ?? null,
+            'boards'                 => $boards,
+            'defaultBoardId'         => $defaultBoardId,
+            'singleBoard'            => $singleBoard,
+            'error'                  => $error,
+            'currentDate'            => $currentDate,
+            'boardData'              => $boardData,
+            'backlogData'            => $backlogData,
+            'currentSprintNumber'    => $sprintInfo['currentSprintNumber'] ?? null,
+            'sprintDateRange'        => $sprintInfo['sprintDateRange'] ?? null,
+            'sprintDurationDisplay'  => $sprintInfo['sprintDurationDisplay'] ?? null,
+            'currentSprintDay'       => $sprintInfo['currentSprintDay'] ?? null,
+            'sprintTotalDays'        => $sprintInfo['sprintTotalDays'] ?? null,
+            'daysRemaining'          => $sprintInfo['daysRemaining'] ?? null,
+            'nextReportDate'         => $sprintInfo['nextReportDate'] ?? null,
+            'currentWeekNumber'      => $sprintInfo['currentWeekNumber'] ?? null,
             'currentSprintStartDate' => $sprintInfo['currentSprintStartDate'] ?? null,
-            'currentSprintEndDate' => $sprintInfo['currentSprintEndDate'] ?? null,
-            'sprintProgressPercent' => $sprintInfo['sprintProgressPercent'] ?? 0
+            'currentSprintEndDate'   => $sprintInfo['currentSprintEndDate'] ?? null,
+            'sprintProgressPercent'  => $sprintInfo['sprintProgressPercent'] ?? 0,
         ]);
     }
 
@@ -708,17 +710,17 @@ class TrelloController extends Controller
             // Get sprint settings controller to use consistent calculations
             $sprintSettingsController = new \App\Http\Controllers\SprintSettingsController();
 
-            // Get current sprint settings with explicit defaults
-            $sprintDuration = (int)$this->getSetting('sprint_duration', 7); // Default to 7 days
-            $sprintStartDay = (int)$this->getSetting('sprint_start_day', 1); // Monday default
+                                                                              // Get current sprint settings with explicit defaults
+            $sprintDuration = (int) $this->getSetting('sprint_duration', 7);  // Default to 7 days
+            $sprintStartDay = (int) $this->getSetting('sprint_start_day', 1); // Monday default
 
             \Log::debug('Retrieved sprint settings', [
                 'sprintDuration' => $sprintDuration,
-                'sprintStartDay' => $sprintStartDay
+                'sprintStartDay' => $sprintStartDay,
             ]);
 
             // Get current sprint info directly from SprintSettingsController's index method
-            $now = Carbon::now();
+            $now               = Carbon::now();
             $currentWeekNumber = $now->weekOfYear;
 
             try {
@@ -727,7 +729,7 @@ class TrelloController extends Controller
             } catch (\Exception $e) {
                 \Log::error('Error getting sprint number', [
                     'message' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace'   => $e->getTraceAsString(),
                 ]);
                 $currentSprintNumber = max(1, $now->weekOfYear);
             }
@@ -741,57 +743,57 @@ class TrelloController extends Controller
             } catch (\Exception $e) {
                 \Log::error('Error calculating next report date', [
                     'message' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace'   => $e->getTraceAsString(),
                 ]);
                 $nextReportDate = 'Not available';
             }
 
             // Calculate current sprint start date based on settings
             try {
-                $sprintStartDate = $sprintSettingsController->getCurrentSprintStartDate($sprintStartDay, $sprintDuration);
-                $currentSprintStartDate = $sprintStartDate->format('M j, Y');
+                $sprintStartDate             = $sprintSettingsController->getCurrentSprintStartDate($sprintStartDay, $sprintDuration);
+                $currentSprintStartDate      = $sprintStartDate->format('M j, Y');
                 $currentSprintStartDateShort = $sprintStartDate->format('M j');
                 \Log::debug('Retrieved sprint start date', ['sprintStartDate' => $sprintStartDate->format('Y-m-d')]);
             } catch (\Exception $e) {
                 \Log::error('Error calculating sprint start date', [
                     'message' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace'   => $e->getTraceAsString(),
                 ]);
-                $sprintStartDate = $now->copy()->startOfWeek();
-                $currentSprintStartDate = $sprintStartDate->format('M j, Y');
+                $sprintStartDate             = $now->copy()->startOfWeek();
+                $currentSprintStartDate      = $sprintStartDate->format('M j, Y');
                 $currentSprintStartDateShort = $sprintStartDate->format('M j');
             }
 
             // Calculate sprint end date (duration - 1 days after start)
-            $sprintEndDate = $sprintStartDate->copy()->addDays($sprintDuration - 1);
-            $currentSprintEndDate = $sprintEndDate->format('M j, Y');
+            $sprintEndDate             = $sprintStartDate->copy()->addDays($sprintDuration - 1);
+            $currentSprintEndDate      = $sprintEndDate->format('M j, Y');
             $currentSprintEndDateShort = $sprintEndDate->format('M j');
-            $sprintDateRange = $currentSprintStartDateShort . ' - ' . $currentSprintEndDateShort;
+            $sprintDateRange           = $currentSprintStartDateShort . ' - ' . $currentSprintEndDateShort;
 
             // Verify sprint end date is not before start date (safety check)
             if ($sprintEndDate->lt($sprintStartDate)) {
                 \Log::error('Sprint end date is before start date', [
-                    'start' => $sprintStartDate->format('Y-m-d'),
-                    'end' => $sprintEndDate->format('Y-m-d'),
-                    'duration' => $sprintDuration
+                    'start'    => $sprintStartDate->format('Y-m-d'),
+                    'end'      => $sprintEndDate->format('Y-m-d'),
+                    'duration' => $sprintDuration,
                 ]);
 
                 // Fix the dates - ensure end date is always after start date
-                $sprintEndDate = $sprintStartDate->copy()->addDays(max(1, $sprintDuration - 1));
-                $currentSprintEndDate = $sprintEndDate->format('M j, Y');
+                $sprintEndDate             = $sprintStartDate->copy()->addDays(max(1, $sprintDuration - 1));
+                $currentSprintEndDate      = $sprintEndDate->format('M j, Y');
                 $currentSprintEndDateShort = $sprintEndDate->format('M j');
-                $sprintDateRange = $currentSprintStartDateShort . ' - ' . $currentSprintEndDateShort;
+                $sprintDateRange           = $currentSprintStartDateShort . ' - ' . $currentSprintEndDateShort;
             }
 
             \Log::debug('Calculated sprint end date', ['sprintEndDate' => $sprintEndDate->format('Y-m-d')]);
 
-            // Calculate progress percentage
+                                                  // Calculate progress percentage
             $totalDays = max(1, $sprintDuration); // Ensure no division by zero
 
             // Calculate days elapsed since sprint start
             $daysElapsed = 0;
             if ($now->startOfDay()->gte($sprintStartDate->startOfDay())) {
-                // If today is after or equal to sprint start date
+                                                                                                   // If today is after or equal to sprint start date
                 $daysElapsed = $sprintStartDate->startOfDay()->diffInDays($now->startOfDay()) + 1; // +1 to include current day
             }
 
@@ -815,62 +817,62 @@ class TrelloController extends Controller
             }
 
             // Sprint duration display
-            $weeksCount = $sprintDuration / 7;
+            $weeksCount            = $sprintDuration / 7;
             $sprintDurationDisplay = $weeksCount == 1 ? '1 Week' : $weeksCount . ' Weeks';
 
             \Log::debug('Sprint info for report page', [
-                'startDate' => $sprintStartDate->format('Y-m-d'),
-                'endDate' => $sprintEndDate->format('Y-m-d'),
-                'duration' => $sprintDuration,
-                'daysElapsed' => $daysElapsed,
+                'startDate'     => $sprintStartDate->format('Y-m-d'),
+                'endDate'       => $sprintEndDate->format('Y-m-d'),
+                'duration'      => $sprintDuration,
+                'daysElapsed'   => $daysElapsed,
                 'daysRemaining' => $daysRemaining,
-                'progress' => $sprintProgressPercent
+                'progress'      => $sprintProgressPercent,
             ]);
 
             return [
-                'currentWeekNumber' => $currentWeekNumber,
-                'currentSprintNumber' => $currentSprintNumber,
-                'nextReportDate' => $nextReportDate,
-                'currentSprintStartDate' => $currentSprintStartDate,
-                'currentSprintEndDate' => $currentSprintEndDate,
-                'sprintProgressPercent' => $sprintProgressPercent,
-                'daysElapsed' => $daysElapsed,
-                'daysRemaining' => $daysRemaining,
-                'sprintDateRange' => $sprintDateRange,
-                'sprintDurationDisplay' => $sprintDurationDisplay,
-                'currentSprintDay' => $daysElapsed,
-                'sprintTotalDays' => $totalDays,
+                'currentWeekNumber'           => $currentWeekNumber,
+                'currentSprintNumber'         => $currentSprintNumber,
+                'nextReportDate'              => $nextReportDate,
+                'currentSprintStartDate'      => $currentSprintStartDate,
+                'currentSprintEndDate'        => $currentSprintEndDate,
+                'sprintProgressPercent'       => $sprintProgressPercent,
+                'daysElapsed'                 => $daysElapsed,
+                'daysRemaining'               => $daysRemaining,
+                'sprintDateRange'             => $sprintDateRange,
+                'sprintDurationDisplay'       => $sprintDurationDisplay,
+                'currentSprintDay'            => $daysElapsed,
+                'sprintTotalDays'             => $totalDays,
                 'currentSprintStartDateShort' => $currentSprintStartDateShort,
-                'currentSprintEndDateShort' => $currentSprintEndDateShort
+                'currentSprintEndDateShort'   => $currentSprintEndDateShort,
             ];
         } catch (\Exception $e) {
             \Log::error('Error calculating sprint info in TrelloController::getCurrentSprintInfo', [
                 'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+                'trace'   => $e->getTraceAsString(),
             ]);
 
             // Get the default values directly from Carbon to avoid potential errors
-            $now = Carbon::now();
+            $now       = Carbon::now();
             $startDate = $now->copy()->startOfWeek();
-            $endDate = $now->copy()->endOfWeek();
+            $endDate   = $now->copy()->endOfWeek();
 
             return [
-                'currentWeekNumber' => $now->weekOfYear,
-                'currentSprintNumber' => 0, // Using 0 to indicate an error occurred
-                'nextReportDate' => 'Not available',
-                'currentSprintStartDate' => $startDate->format('M j, Y'),
-                'currentSprintEndDate' => $endDate->format('M j, Y'),
-                'sprintProgressPercent' => 0,
-                'daysElapsed' => 0,
-                'daysRemaining' => 7,
-                'sprintDateRange' => $startDate->format('M j') . ' - ' . $endDate->format('M j'),
-                'sprintDurationDisplay' => '1 Week',
-                'currentSprintDay' => 0,
-                'sprintTotalDays' => 7,
+                'currentWeekNumber'           => $now->weekOfYear,
+                'currentSprintNumber'         => 0, // Using 0 to indicate an error occurred
+                'nextReportDate'              => 'Not available',
+                'currentSprintStartDate'      => $startDate->format('M j, Y'),
+                'currentSprintEndDate'        => $endDate->format('M j, Y'),
+                'sprintProgressPercent'       => 0,
+                'daysElapsed'                 => 0,
+                'daysRemaining'               => 7,
+                'sprintDateRange'             => $startDate->format('M j') . ' - ' . $endDate->format('M j'),
+                'sprintDurationDisplay'       => '1 Week',
+                'currentSprintDay'            => 0,
+                'sprintTotalDays'             => 7,
                 'currentSprintStartDateShort' => $startDate->format('M j'),
-                'currentSprintEndDateShort' => $endDate->format('M j')
+                'currentSprintEndDateShort'   => $endDate->format('M j'),
             ];
         }
     }
@@ -888,9 +890,9 @@ class TrelloController extends Controller
         try {
             $response = Http::withOptions(['verify' => false])
                 ->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/members", [
-                    'key' => $apiKey,
-                    'token' => $apiToken,
-                    'fields' => 'id,fullName,username'
+                    'key'    => $apiKey,
+                    'token'  => $apiToken,
+                    'fields' => 'id,fullName,username',
                 ]);
 
             if ($response->successful()) {
@@ -901,7 +903,7 @@ class TrelloController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error fetching board members', [
                 'boardId' => $boardId,
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage(),
             ]);
             return [];
         }
@@ -911,10 +913,10 @@ class TrelloController extends Controller
     {
         try {
             $response = Http::get($this->getTrelloApiBaseUrl() . 'members/me/boards', [
-                'key' => $apiKey,
-                'token' => $apiToken,
+                'key'    => $apiKey,
+                'token'  => $apiToken,
                 'fields' => 'name,url,idOrganization',
-                'filter' => 'open'
+                'filter' => 'open',
             ]);
 
             if ($response->successful()) {
@@ -938,21 +940,21 @@ class TrelloController extends Controller
         try {
             $boardId = $request->input('board_id');
 
-            if (!$boardId) {
+            if (! $boardId) {
                 return response()->json(['error' => 'Board ID is required'], 400);
             }
 
             // Get Trello API credentials from settings
             $credentials = $this->getTrelloCredentials();
-            $apiKey = $credentials['apiKey'];
-            $apiToken = $credentials['apiToken'];
+            $apiKey      = $credentials['apiKey'];
+            $apiToken    = $credentials['apiToken'];
 
             // Fetch board details for verification
             $boardDetails = [];
             try {
                 $boardResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}", [
-                    'key' => $apiKey,
-                    'token' => $apiToken
+                    'key'   => $apiKey,
+                    'token' => $apiToken,
                 ]);
 
                 if ($boardResponse->successful()) {
@@ -968,12 +970,12 @@ class TrelloController extends Controller
 
             try {
                 $cardsResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/cards", [
-                    'key' => $apiKey,
-                    'token' => $apiToken,
-                    'fields' => 'id,name,desc,idList,idMembers,labels,pluginData',
-                    'members' => 'true',
+                    'key'           => $apiKey,
+                    'token'         => $apiToken,
+                    'fields'        => 'id,name,desc,idList,idMembers,labels,pluginData',
+                    'members'       => 'true',
                     'member_fields' => 'id,fullName,username,avatarUrl',
-                    'pluginData' => 'true'
+                    'pluginData'    => 'true',
                 ]);
 
                 if ($cardsResponse->successful()) {
@@ -989,9 +991,9 @@ class TrelloController extends Controller
             // Step 2: Fetch all lists from the board
             try {
                 $listsResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/lists", [
-                    'key' => $apiKey,
-                    'token' => $apiToken,
-                    'fields' => 'name,id'
+                    'key'    => $apiKey,
+                    'token'  => $apiToken,
+                    'fields' => 'name,id',
                 ]);
 
                 if ($listsResponse->successful()) {
@@ -1007,7 +1009,7 @@ class TrelloController extends Controller
             $listsData = [];
 
             // First, identify Done and Cancel lists by name
-            $doneListNames = [];
+            $doneListNames   = [];
             $cancelListNames = [];
 
             foreach ($lists as $listId => $listName) {
@@ -1029,23 +1031,23 @@ class TrelloController extends Controller
 
                 // Initialize the lists data structure
                 $listsData[$listName] = [
-                    'cards' => []
+                    'cards' => [],
                 ];
             }
 
             // Now process each card
             foreach ($cards as $card) {
-                $listId = $card['idList'];
+                $listId   = $card['idList'];
                 $listName = $lists[$listId] ?? 'Unknown List';
 
                 // Skip if list is unknown
-                if (!isset($listsData[$listName])) {
+                if (! isset($listsData[$listName])) {
                     continue;
                 }
 
                 // Extract story points
                 $points = 0;
-                if (isset($card['pluginData']) && !empty($card['pluginData'])) {
+                if (isset($card['pluginData']) && ! empty($card['pluginData'])) {
                     $points = $this->getStoryPoints($card['pluginData']);
                 }
 
@@ -1056,37 +1058,37 @@ class TrelloController extends Controller
 
                 // Add the card with its detail
                 $cardData = [
-                    'id' => $card['id'],
-                    'name' => $card['name'],
+                    'id'          => $card['id'],
+                    'name'        => $card['name'],
                     'description' => $card['desc'] ?? '',
-                    'points' => $points,
-                    'labels' => $card['labels'] ?? [],
-                    'members' => $card['members'] ?? [],
-                    'idList' => $card['idList'],
-                    'idMembers' => $card['idMembers'] ?? [],
-                    'url' => "https://trello.com/c/{$card['id']}"
+                    'points'      => $points,
+                    'labels'      => $card['labels'] ?? [],
+                    'members'     => $card['members'] ?? [],
+                    'idList'      => $card['idList'],
+                    'idMembers'   => $card['idMembers'] ?? [],
+                    'url'         => "https://trello.com/c/{$card['id']}",
                 ];
 
                 $listsData[$listName]['cards'][] = $cardData;
             }
 
             return response()->json([
-                'listsData' => $listsData,
-                'boardDetails' => $boardDetails,
-                'timestamp' => now()->toDateTimeString(),
-                'requestedBoardId' => $boardId
+                'listsData'        => $listsData,
+                'boardDetails'     => $boardDetails,
+                'timestamp'        => now()->toDateTimeString(),
+                'requestedBoardId' => $boardId,
             ])->header('Cache-Control', 'no-cache, no-store, must-revalidate')
-              ->header('Pragma', 'no-cache')
-              ->header('Expires', '0');
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
         } catch (\Exception $e) {
             \Log::error('Error in fetchBugCards', [
                 'board_id' => $request->input('board_id'),
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'message'  => $e->getMessage(),
+                'trace'    => $e->getTraceAsString(),
             ]);
             return response()->json([
-                'error' => $e->getMessage(),
-                'details' => app()->environment('local') ? $e->getTraceAsString() : null
+                'error'   => $e->getMessage(),
+                'details' => app()->environment('local') ? $e->getTraceAsString() : null,
             ], 500);
         }
     }
@@ -1100,10 +1102,10 @@ class TrelloController extends Controller
     public function saveBoardSelection(Request $request)
     {
         $request->validate([
-            'board_id' => 'required|string',
-            'board_name' => 'required|string',
+            'board_id'          => 'required|string',
+            'board_name'        => 'required|string',
             'story_points_data' => 'nullable|string',
-            'bug_cards_data' => 'nullable|string',
+            'bug_cards_data'    => 'nullable|string',
         ]);
 
         // Store in session
@@ -1144,12 +1146,12 @@ class TrelloController extends Controller
         }
 
         \Log::info('Board selection saved', [
-            'board_id' => $request->board_id,
-            'board_name' => $request->board_name,
-            'has_story_points_data' => $request->has('story_points_data'),
-            'has_bug_cards_data' => $request->has('bug_cards_data'),
+            'board_id'                 => $request->board_id,
+            'board_name'               => $request->board_name,
+            'has_story_points_data'    => $request->has('story_points_data'),
+            'has_bug_cards_data'       => $request->has('bug_cards_data'),
             'story_points_data_length' => $request->has('story_points_data') ? strlen($request->story_points_data) : 0,
-            'bug_cards_data_length' => $request->has('bug_cards_data') ? strlen($request->bug_cards_data) : 0
+            'bug_cards_data_length'    => $request->has('bug_cards_data') ? strlen($request->bug_cards_data) : 0,
         ]);
 
         return response()->json(['success' => true]);
@@ -1160,7 +1162,7 @@ class TrelloController extends Controller
      */
     private function getAutoIncrementedSprintNumber()
     {
-        $now = Carbon::now();
+        $now         = Carbon::now();
         $currentYear = $now->year;
 
         // Find the last sprint number from this year's reports
@@ -1174,7 +1176,7 @@ class TrelloController extends Controller
             // Extract sprint number from report name
             $matches = [];
             if (preg_match('/Sprint (\d+)/', $lastReport->report_name, $matches)) {
-                $lastSprintNumber = (int)$matches[1];
+                $lastSprintNumber = (int) $matches[1];
                 // Increment by 1
                 return $lastSprintNumber + 1;
             }
@@ -1182,14 +1184,14 @@ class TrelloController extends Controller
 
         // If no previous reports found for this year, or couldn't parse sprint number,
         // Calculate based on week number as fallback
-        $weekNumber = $now->weekOfYear;
-        $sprintDuration = (int)$this->getSetting('sprint_duration', 7);
+        $weekNumber     = $now->weekOfYear;
+        $sprintDuration = (int) $this->getSetting('sprint_duration', 7);
 
         // For weekly sprints, sprint number = week number
         // For longer sprints, calculate sprint number based on duration
         $sprintNumber = $sprintDuration > 0
-            ? ceil($weekNumber / ($sprintDuration / 7))
-            : 1;
+        ? ceil($weekNumber / ($sprintDuration / 7))
+        : 1;
 
         // If this is first sprint of the year, return 1
         return max(1, min(52, $sprintNumber));
@@ -1208,8 +1210,8 @@ class TrelloController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error in getSprintInfo: ' . $e->getMessage());
             return response()->json([
-                'error' => 'Failed to get sprint information',
-                'message' => $e->getMessage()
+                'error'   => 'Failed to get sprint information',
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -1235,7 +1237,7 @@ class TrelloController extends Controller
      */
     private function filterBoardsForUser($boards, $apiKey, $apiToken)
     {
-        $userName = auth()->user()->name;
+        $userName   = auth()->user()->name;
         $userBoards = [];
 
         foreach ($boards as $board) {

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Laravel') }} - @yield('title', 'Dashboard')</title>
+    <title>Cluster7 - @yield('title', 'Dashboard')</title>
 
     <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.2/dist/alpine.min.js" defer></script>
@@ -78,8 +78,7 @@
     <div class="min-h-screen flex" x-data="{ sidebarOpen: localStorage.getItem('sidebarOpen') === 'false' ? false : true }" x-init="$watch('sidebarOpen', val => localStorage.setItem('sidebarOpen', val))">
         <!-- Sidebar -->
         <div class="bg-white shadow-md flex flex-col sidebar-transition overflow-hidden"
-            :class="sidebarOpen ? 'w-64' : 'w-16'">
-            <!-- Logo and App Name -->
+            :class="sidebarOpen ? 'w-64' : 'w-16'">                <!-- Logo and App Name -->
             <div class="py-4 px-4 border-gray-200 flex items-center justify-between">
                 <div class="flex items-center">
                     <!-- Logo -->
@@ -89,12 +88,6 @@
                         x-transition:leave="transition ease-in duration-200">
                         <img src="{{ asset('Frame 25.png') }}" class="h-15 w-15">
                     </div>
-                    <!-- App Name -->
-                    <span class="ml-2 font-medium text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'"
-                        x-transition:enter="transition ease-out duration-300"
-                        x-transition:leave="transition ease-in duration-200">
-                        {{ config('Laravel') }}
-                    </span>
                 </div>
                 <!-- Sidebar Toggle Button -->
                 <button @click="sidebarOpen = !sidebarOpen"
@@ -200,11 +193,6 @@
                     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                     <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Reports</p>
                 </div>
-                </svg>
-                <a href="{{ route('story.points.report') }}"
-                    class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('story.points.report') ? 'active' : '' }}"
-                    :class="sidebarOpen ? '' : 'flex justify-center'">
-                </a>
                 <!-- Trello Teams - Available for all users -->
                 <a href="{{ route('trello.teams.index') }}"
                     class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('trello.teams.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
@@ -424,6 +412,7 @@
                             </div>
                         </a>
                     @endif
+                @endif
             </div>
 
             <!-- App Version - Only Show When Expanded -->
@@ -431,7 +420,7 @@
                 x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
                 x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
                 x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-                <p class="text-xs text-gray-500 text-center">v{{ config('app.version', '1.0') }}</p>
+                <p class="text-xs text-gray-500 text-center">v1.0</p>
             </div>
         </div>
 

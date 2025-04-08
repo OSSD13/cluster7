@@ -172,7 +172,18 @@ class SprintSettingsController extends Controller
         
         // Recalculate current sprint with new settings
         $currentSprintNumber = $this->getCurrentSprintNumber();
-        $sprintStartDate = $this->getCurrentSprintStartDate($validated['sprint_start_day'], $validated['sprint_duration']);
+        
+        // Get the current sprint before updating
+        $currentSprint = Sprint::getCurrentSprint();
+        
+        // If we have a current sprint, use its start date
+        if ($currentSprint) {
+            $sprintStartDate = $currentSprint->start_date;
+        } else {
+            // Otherwise calculate new start date
+            $sprintStartDate = $this->getCurrentSprintStartDate($validated['sprint_start_day'], $validated['sprint_duration']);
+        }
+        
         $sprintEndDate = $sprintStartDate->copy()->addDays($validated['sprint_duration'] - 1);
         
         // Update or create the current sprint
@@ -195,11 +206,36 @@ class SprintSettingsController extends Controller
         $sprintEndTime = $this->getSetting('sprint_end_time', '17:00');
         $autoSaveEnabled = $this->getSetting('auto_save_enabled', false);
         
-        $currentSprint = Sprint::getCurrentSprint();
         $nextSprintNumber = Sprint::getNextSprintNumber();
         $recentSprints = Sprint::orderBy('sprint_number', 'desc')->take(5)->get();
         
-        return view('settings.sprint', [
+        // Calculate current week number
+        $currentWeekNumber = Carbon::now()->weekOfYear;
+        
+        // Calculate next report date
+        $nextReportDate = $this->getNextReportDate($sprintStartDay, $sprintDuration, $sprintEndTime);
+        
+        // Calculate sprint progress percentage
+        $sprintProgressPercent = $currentSprint ? $currentSprint->progress_percentage : 0;
+        
+        // Calculate sprint start and end dates
+        if ($currentSprint) {
+            // Format dates using DateHelper for consistent formatting
+            $currentSprintStartDate = \App\Helpers\DateHelper::formatSprintDate($currentSprint->start_date);
+            $currentSprintEndDate = \App\Helpers\DateHelper::formatSprintDate($currentSprint->end_date);
+            $daysElapsed = $currentSprint->days_elapsed;
+            $daysRemaining = $currentSprint->days_remaining;
+        } else {
+            // Calculate manual dates if no sprint found
+            $sprintStartDate = $this->getCurrentSprintStartDate($sprintStartDay, $sprintDuration);
+            $currentSprintStartDate = \App\Helpers\DateHelper::formatSprintDate($sprintStartDate);
+            $sprintEndDate = $sprintStartDate->copy()->addDays($sprintDuration - 1);
+            $currentSprintEndDate = \App\Helpers\DateHelper::formatSprintDate($sprintEndDate);
+            $daysElapsed = 0;
+            $daysRemaining = $sprintDuration;
+        }
+        
+        return view('settings.sprint-settings', [
             'sprintDuration' => $sprintDuration,
             'sprintStartDay' => $sprintStartDay,
             'sprintEndTime' => $sprintEndTime,
@@ -207,6 +243,14 @@ class SprintSettingsController extends Controller
             'currentSprint' => $currentSprint,
             'nextSprintNumber' => $nextSprintNumber,
             'recentSprints' => $recentSprints,
+            'currentSprintNumber' => $currentSprintNumber,
+            'currentWeekNumber' => $currentWeekNumber,
+            'nextReportDate' => $nextReportDate,
+            'sprintProgressPercent' => $sprintProgressPercent,
+            'currentSprintStartDate' => $currentSprintStartDate,
+            'currentSprintEndDate' => $currentSprintEndDate,
+            'daysElapsed' => $daysElapsed,
+            'daysRemaining' => $daysRemaining,
             'success' => 'Sprint settings updated successfully.'
         ]);
     }
@@ -278,7 +322,7 @@ class SprintSettingsController extends Controller
                 'Sprint reports generated successfully.' : 
                 'Failed to generate sprint reports. Check the logs for details.';
             
-            return view('settings.sprint', [
+            return view('settings.sprint-settings', [
                 'sprintDuration' => $sprintDuration,
                 'sprintStartDay' => $sprintStartDay,
                 'sprintEndTime' => $sprintEndTime,
@@ -307,7 +351,7 @@ class SprintSettingsController extends Controller
             $nextSprintNumber = Sprint::getNextSprintNumber();
             $recentSprints = Sprint::orderBy('sprint_number', 'desc')->take(5)->get();
             
-            return view('settings.sprint', [
+            return view('settings.sprint-settings', [
                 'sprintDuration' => $sprintDuration,
                 'sprintStartDay' => $sprintStartDay,
                 'sprintEndTime' => $sprintEndTime,
@@ -401,7 +445,7 @@ class SprintSettingsController extends Controller
         $nextSprintNumber = Sprint::getNextSprintNumber();
         $recentSprints = Sprint::orderBy('sprint_number', 'desc')->take(5)->get();
         
-        return view('settings.sprint', [
+        return view('settings.sprint-settings', [
             'sprintDuration' => $sprintDuration,
             'sprintStartDay' => $sprintStartDay,
             'sprintEndTime' => $sprintEndTime,

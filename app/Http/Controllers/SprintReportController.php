@@ -77,6 +77,10 @@ class SprintReportController extends Controller
         
         // For non-admin users, filter reports based on their team membership
         if (!auth()->user()->isAdmin()) {
+            // Get the user's name
+            $user = auth()->user();
+            $userName = $user->full_name ?? $user->name;
+            
             $userTeams = $this->getUserTeams();
             
             // Filter the reports collection to only include user's teams
@@ -446,8 +450,9 @@ class SprintReportController extends Controller
 
         if ($this->trelloService->hasValidCredentials()) {
             try {
-                // Get current user's name
-                $userName = auth()->user()->name;
+                // Get current user's full name or name
+                $user = auth()->user();
+                $userName = $user->full_name ?? $user->name;
                 
                 // Get all boards with members
                 $options = [
