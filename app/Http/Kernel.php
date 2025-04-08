@@ -75,7 +75,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
-        'non-admin' => NonAdminMiddleware::class,
+        'non-admin' => \App\Http\Middleware\NonAdminMiddleware::class,
         'cache' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
         'check.approved' => \App\Http\Middleware\CheckApproved::class,
     ];

@@ -166,7 +166,7 @@
                 // Function to load report data
                 function loadReportData() {
                     // AJAX request to get data from report.blade.php
-                    fetch('/report-data')
+                    fetch('{{ route("minor-cases.data") }}')
                         .then(response => response.json())
                         .then(data => {
                             // Process the report data

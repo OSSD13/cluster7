@@ -16,9 +16,8 @@ use App\Http\Controllers\ConfirmController;
 use App\Http\Controllers\CompleteController;
 use App\Http\Controllers\MinorCasesController;
 
-Route::get('/', function () {
-    return redirect()->route('login');
-})->name('home');
+
+Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
@@ -97,7 +96,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
         Route::get('teams/{id}', [TrelloTeamController::class, 'show'])->name('teams.show');
         Route::get('boards/{id}', [TrelloTeamController::class, 'viewBoard'])->name('boards.show');
         Route::get("home", function () {
-            return redirect('dashboard');
+            return view('dashboard');
         })->name('home');
     });
 
