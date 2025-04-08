@@ -12,39 +12,39 @@
             color: black;
             font-size: 12pt;
         }
-        
+
         button, .no-print, #fetch-data-btn {
             display: none !important;
         }
-        
+
         .print-full-width {
             width: 100% !important;
             max-width: 100% !important;
         }
-        
+
         .print-break-inside-avoid {
             break-inside: avoid;
         }
-        
+
         .shadow {
             box-shadow: none !important;
         }
-        
+
         /* Ensure tables display properly when printed */
         table {
             border-collapse: collapse;
             width: 100%;
         }
-        
+
         table, th, td {
             border: 1px solid #ddd;
         }
-        
+
         th, td {
             padding: 8px;
             text-align: left;
         }
-        
+
         .print-only { display: block !important; }
         .no-print { display: none !important; }
     }
@@ -57,7 +57,7 @@
     .hide-scrollbar::-webkit-scrollbar {
         display: none;  /* Chrome, Safari and Opera */
     }
-    
+
     /* Card styling */
     .bug-card {
         transition: all 0.2s ease-in-out;
@@ -67,7 +67,7 @@
         transform: translateY(-4px);
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
-    
+
     /* Priority colors */
     .priority-high {
         border-left-color: #ef4444;
@@ -81,7 +81,7 @@
     .priority-none {
         border-left-color: #d1d5db;
     }
-    
+
     /* Loading spinner */
     .spinner {
         width: 40px;
@@ -91,7 +91,7 @@
         border-top-color: #3b82f6;
         animation: spin 1s ease-in-out infinite;
     }
-    
+
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
@@ -126,7 +126,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Action Menu -->
         <div class="flex space-x-2 items-center">
             <!-- Board/Team Selector -->
@@ -155,7 +155,7 @@
                     <input type="hidden" id="board-selector" value="{{ $boards[0]['id'] }}">
                 </div>
             @endif
-            
+
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open" class="bg-white border border-gray-300 rounded-md px-4 py-2 flex items-center text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -177,7 +177,7 @@
                             @if(auth()->user()->isAdmin())
                             <div class="hidden group-hover:block absolute z-10 -top-2 left-full ml-2 px-3 py-2 bg-gray-800 text-white text-xs rounded shadow-lg w-64">
                                 <span class="relative">
-                                    Sprint reports are saved automatically at the end of each week. 
+                                    Sprint reports are saved automatically at the end of each week.
                                     <a href="{{ route('settings.sprint') }}" class="text-blue-300 hover:underline">Configure in Sprint Settings</a>
                                     <span class="absolute -left-7 top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-800"></span>
                                 </span>
@@ -232,7 +232,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <button id="fetch-data-btn" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -280,7 +280,7 @@
                     Sprint Statistics
                     <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Using Agile Tools Plugin (59d4ef8cfea15a55b0086614)</span>
                 </h2>
-                
+
                 <!-- Date Display -->
                 <div id="sprint-date-range" class="mb-3 text-sm text-gray-500 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -288,10 +288,10 @@
                     </svg>
                     Report Date: {{ $currentDate ?? Carbon\Carbon::now()->format('F d, Y') }}
                 </div>
-                
+
                 <!-- Last Updated Display -->
                 <div id="last-updated" class="mb-3 hidden"></div>
-                
+
                 <!-- Sprint Indicator -->
                 <div class="mb-4 bg-gray-50 p-3 rounded-lg">
                     <div class="flex items-center justify-between mb-2">
@@ -306,7 +306,7 @@
                                     Current Sprint: <span id="current-sprint-number" class="text-primary-600">{{ $currentSprintNumber ?? '-' }}</span>
                                 </h3>
                                 <p class="text-sm text-gray-500">
-                                    <span id="sprint-date-range">{{ $sprintDateRange ?? 'Loading sprint data...' }}</span> 
+                                    <span id="sprint-date-range">{{ $sprintDateRange ?? 'Loading sprint data...' }}</span>
                                     (<span id="sprint-duration">{{ $sprintDurationDisplay ?? '-' }}</span>)
                                 </p>
                                 <p class="text-sm text-gray-500 mt-1">
@@ -325,25 +325,25 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Sprint Timeline Visualization -->
                     <div class="mt-4">
                         <h3 class="text-sm font-medium text-gray-700 mb-2">Sprint Timeline</h3>
                         <div class="relative h-16 rounded-lg overflow-hidden bg-gray-100 shadow-inner">
                             <!-- Progress Background with Gradient -->
                             <div id="sprint-progress-bar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary-400 to-primary-600" style="width: {{ $sprintProgressPercent ?? 0 }}%"></div>
-                            
+
                             <!-- Day Markers - generate markers for each day -->
                             @php
                                 $totalDays = $sprintTotalDays ?? 7;
                                 $markerWidth = 100 / $totalDays;
                             @endphp
-                            
+
                             @for ($i = 1; $i <= $totalDays; $i++)
                                 <div class="absolute top-0 h-2 border-r border-gray-300" style="left: {{ $markerWidth * $i }}%; width: 1px;"></div>
                                 <div class="absolute bottom-1 text-xs text-gray-500 font-medium" style="left: {{ $markerWidth * ($i - 0.5) }}%">{{ $i }}</div>
                             @endfor
-                            
+
                             <!-- Current Day Marker (vertical line and circle) -->
                             @if(($sprintProgressPercent ?? 0) > 0 && ($sprintProgressPercent ?? 0) < 100)
                                 <div class="absolute top-0 h-full" style="left: {{ $sprintProgressPercent ?? 0 }}%">
@@ -353,17 +353,17 @@
                                     </div>
                                 </div>
                             @endif
-                            
+
                             <!-- Sprint Number Badge -->
                             <div class="absolute top-0 right-0 bg-primary-600 text-white px-3 py-1 rounded-bl-md text-xs font-bold shadow-sm">
                                 Sprint {{ $currentSprintNumber ?? '-' }}
                             </div>
-                            
+
                             <!-- Start Date -->
                             <div class="absolute top-7 left-2 text-xs font-medium text-gray-700 bg-white/70 backdrop-blur-sm px-1 py-0.5 rounded">
                                 <span class="text-primary-700">Start:</span> {{ $currentSprintStartDate ?? '-' }}
                             </div>
-                            
+
                             <!-- End Date -->
                             <div class="absolute top-7 right-2 text-xs font-medium text-gray-700 bg-white/70 backdrop-blur-sm px-1 py-0.5 rounded">
                                 <span class="text-primary-700">End:</span> {{ $currentSprintEndDate ?? '-' }}
@@ -371,7 +371,7 @@
                         </div>
                     </div>
                 </div>
-            
+
             <!-- Board Name Display -->
             <div id="board-name-display" class="mb-4 hidden">
                 <div class="flex items-center text-sm text-gray-500 mb-2">
@@ -381,7 +381,7 @@
                     Board: <span id="board-name" class="font-medium"></span>
                     </div>
                 </div>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
                     <div class="bg-gray-50 rounded-lg p-4 text-center">
                         <div class="flex items-center justify-between mb-2">
@@ -523,7 +523,7 @@
                             Total Points: <span id="total-bug-points" class="font-semibold">0</span>
                         </div>
                     </div>
-                    
+
                     <div id="cards-by-list-container" class="hidden relative">
                         <div class="absolute inset-0 flex items-center justify-center" id="cards-loading">
                             <div class="spinner"></div>
@@ -584,72 +584,83 @@
                 Backlog (<span id="backlog-title-count">{{ $backlogData['bugCount'] }}</span>)
             </h2>
             <p class="text-sm text-gray-600 mb-4">These bugs were carried over from previous sprints.</p>
-            
+
             <div class="mt-4">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bug</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sprint</th>
-                            </tr>
-                        </thead>
-                    <tbody class="bg-white divide-y divide-gray-200" id="backlog-table-body">
-                        <!-- Table will be populated by JavaScript -->
-                        </tbody>
-                        <tfoot>
-                            <tr class="bg-gray-100">
-                            <th colspan="4" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Bugs: <span id="filtered-bug-count">{{ $backlogData['allBugs']->count() }}</span></th>
-                            <th colspan="3" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Points: <span id="filtered-bug-points">{{ $backlogData['totalBugPoints'] }}</span></th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            
-            <!-- Pagination Controls -->
-            <div class="flex items-center justify-between mt-4">
-                <div class="flex-1 flex justify-between sm:hidden">
-                    <button id="prev-page-mobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        Previous
-                    </button>
-                    <button id="next-page-mobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        Next
-                    </button>
-                </div>
-                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-gray-700">
-                            Showing <span id="page-start">1</span> to <span id="page-end">20</span> of <span id="total-items">{{ $backlogData['allBugs']->count() }}</span> bugs
-                        </p>
-                    </div>
-                    <div>
-                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                            <button id="prev-page" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                <span class="sr-only">Previous</span>
-                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                            <div id="pagination-numbers" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                                <!-- Pagination numbers will be added by JavaScript -->
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
+                        @foreach($backlogData['allBugs'] as $bug)
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                            <!-- Card Header with Bug ID and Priority -->
+                            <div class="flex justify-between items-center p-4 border-b border-gray-100 ">
+                                <div class="flex items-center">
+                                    <!-- Points in circle -->
+                                    <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center font-bold text-sm mr-3">
+                                        {{ $bug['points'] ?? '-' }}
+                                    </div>
+                                    <!-- Bug ID and Name -->
+                                    <div>
+                                        <a href="{{ $bug['url'] ?? '#' }}" class="text-gray-900 font-medium hover:text-primary-600" target="_blank">{{ $bug['name'] }}</a>
+                                    </div>
+                                </div>
+                                <!-- Sprint badge -->
+                                <div>
+                                    @if(isset($bug['sprint_origin']))
+                                    <span class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                                        Sprint {{ $bug['sprint_origin'] }}
+                                    </span>
+                                    @else
+                                    <span class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                                        Sprint {{ $bug['sprint_number'] ?? '?' }}
+                                    </span>
+                                    @endif
+                                </div>
                             </div>
-                            <button id="next-page" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                <span class="sr-only">Next</span>
-                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                        </nav>
+
+                            <!-- Bug Name/Description/buttom -->
+                            <div class="p-4 grid grid-cols-9">
+
+                                <div class="col-span-8 text-left h-20 overflow-auto ">โค้ดที่คุณให้มาคือการใช้  Tailwind  Tailwind Tailาจอที่ใช้งาน
+                                </div>
+                                <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center ms-3 h-8 w-8 col-start-9">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-pencil-square" viewBox="0 0 16 16 ">
+                                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                                    </svg>
+                                </button>
+
+                                <button type="button" class="text-[#FF0004] bg-[#FFACAE] hover:bg-[#FF7C7E] focus:outline-none font-medium rounded-full px-2 py-2 text-center  h-8 w-8  col-start-11">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                                        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Card Footer with Assignment -->
+                            <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-500">Assign to:</span>
+
+                                    <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-[#BAF3FF] text-[#13A7FD]">
+                                        {{ $bug['team'] ?? '-' }}
+                                    </span>
+
+                                    <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full">
+                                        {{ $bug['assigned'] ?? 'Unassigned' }}
+                                    </span>
+                                </div>
+
+                                <!-- Status indicator -->
+                                <div>
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-[#DDFFEC] text-[#82DF3C]">
+                                        Success
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
                     </div>
                 </div>
-                </div>
-            </div>
-            
+
             <div class="mt-4 text-right">
                 <a href="{{ route('backlog.index') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -673,7 +684,7 @@
         const cardsByListContainer = document.getElementById('cards-by-list-container');
         const planPointsInput = document.getElementById('plan-points');
         let currentBoardId = '';
-        
+
         // Backlog data and pagination
         let allBacklogBugs = @json($backlogData['allBugs'] ?? []);
         let filteredBacklogBugs = [];
@@ -688,45 +699,45 @@
         if (boardSelector && boardSelector.value) {
             currentBoardId = boardSelector.value;
         }
-        
+
         // Initialize backlog table if it exists
         const backlogTableBody = document.getElementById('backlog-table-body');
         if (backlogTableBody) {
             filterBacklogByCurrentTeam();
             renderBacklogTable();
         }
-        
+
         // Initialize data from cached content if available
         @if(isset($boardData))
         // Populate data from cached content
         const cachedData = @json($boardData);
-        
+
         // Store the cached data globally so it can be updated
         window.cachedData = cachedData;
-        
+
         // Update board details
         if (cachedData.boardDetails) {
             updateBoardDetails(cachedData.boardDetails);
         }
-        
+
         // Update last fetched time
         updateLastFetched(true, cachedData.lastFetched);
-        
+
         // Update summary statistics
         if (cachedData.storyPoints) {
             updateSummaryData(cachedData.storyPoints);
         }
-        
+
         // Update member data
         if (cachedData.memberPoints && Array.isArray(cachedData.memberPoints)) {
             buildMemberTable(cachedData.memberPoints);
         }
-        
+
         // Update cards data
         if (cachedData.cardsByList) {
             renderCardsByList(cachedData.cardsByList);
         }
-        
+
         // Show containers
         storyPointsSummary.classList.remove('hidden');
         cardsByListContainer.classList.remove('hidden');
@@ -736,19 +747,19 @@
         boardSelector.addEventListener('change', function() {
             // Update current board ID
             currentBoardId = this.value;
-            
+
             // Reset UI elements
             document.getElementById('points-title').textContent = 'Points from Current Sprint';
             document.getElementById('board-name-display').classList.add('hidden');
             document.getElementById('last-updated').classList.add('hidden');
-            
+
             // Update backlog table with filtered data for the selected team
             if (backlogTableBody) {
                 filterBacklogByCurrentTeam();
                 currentPage = 1;
                 renderBacklogTable();
             }
-            
+
             // Automatically fetch data when selection changes
             if (currentBoardId) {
                 fetchDataWithoutForceRefresh();
@@ -758,40 +769,40 @@
         // Function to filter backlog bugs by the currently selected team
         function filterBacklogByCurrentTeam() {
             if (!allBacklogBugs || allBacklogBugs.length === 0) return;
-            
+
             // Get the selected board's name
             let selectedBoardName = '';
             const selectedOption = boardSelector.options[boardSelector.selectedIndex];
             if (selectedOption) {
                 selectedBoardName = selectedOption.text;
             }
-            
+
             // Filter bugs to only show those from the selected team
             if (selectedBoardName) {
                 filteredBacklogBugs = Object.values(allBacklogBugs).filter(bug => bug.team === selectedBoardName);
             } else {
                 filteredBacklogBugs = Object.values(allBacklogBugs);
             }
-            
+
             // Update counts and totals
             const totalBugs = filteredBacklogBugs.length;
             const totalPoints = filteredBacklogBugs.reduce((sum, bug) => sum + (parseInt(bug.points) || 0), 0);
-            
+
             // Update UI elements
             document.getElementById('filtered-bug-count').textContent = totalBugs;
             document.getElementById('filtered-bug-points').textContent = totalPoints;
             document.getElementById('total-items').textContent = totalBugs;
-            
+
             // Update the count in the heading
             updateBacklogCount(totalBugs);
-            
+
             // Calculate total pages
             totalPages = Math.ceil(totalBugs / itemsPerPage);
-            
+
             // Setup pagination numbers
             setupPagination();
         }
-        
+
         // Function to update backlog count in title
         function updateBacklogCount(count) {
             const backlogTitleCount = document.getElementById('backlog-title-count');
@@ -799,22 +810,22 @@
                 backlogTitleCount.textContent = count;
             }
         }
-        
+
         // Function to render the backlog table with paginated data
         function renderBacklogTable() {
             if (!backlogTableBody) return;
-            
+
             // Clear current table
             backlogTableBody.innerHTML = '';
-            
+
             // Calculate start and end indices for current page
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = Math.min(startIndex + itemsPerPage, filteredBacklogBugs.length);
-            
+
             // Update pagination info
             document.getElementById('page-start').textContent = filteredBacklogBugs.length > 0 ? startIndex + 1 : 0;
             document.getElementById('page-end').textContent = endIndex;
-            
+
             // If no bugs to display
             if (filteredBacklogBugs.length === 0) {
                 const emptyRow = document.createElement('tr');
@@ -826,14 +837,14 @@
                 backlogTableBody.appendChild(emptyRow);
                 return;
             }
-            
+
             // Render visible bugs for current page
             for (let i = startIndex; i < endIndex; i++) {
                 const bug = filteredBacklogBugs[i];
-                
+
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-amber-50';
-                
+
                 // Format priority labels
                 let priorityLabels = '';
                 if (bug.labels && Array.isArray(bug.labels)) {
@@ -849,7 +860,7 @@
                         }
                     });
                 }
-                
+
                 // Format sprint badge
                 let sprintBadge = '';
                 if (bug.sprint_origin) {
@@ -865,7 +876,7 @@
                         </span>
                     `;
                 }
-                
+
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <a href="${bug.url || '#'}" class="text-primary-600 hover:text-primary-900" target="_blank">${bug.id}</a>
@@ -889,11 +900,11 @@
                         ${sprintBadge}
                     </td>
                 `;
-                
+
                 backlogTableBody.appendChild(row);
             }
         }
-        
+
         // Function to setup pagination
         function setupPagination() {
             // Update pagination numbers
@@ -901,13 +912,13 @@
             if (paginationNumbers) {
                 paginationNumbers.innerHTML = `Page ${currentPage} of ${totalPages}`;
             }
-            
+
             // Setup event listeners for pagination buttons
             const prevPage = document.getElementById('prev-page');
             const nextPage = document.getElementById('next-page');
             const prevPageMobile = document.getElementById('prev-page-mobile');
             const nextPageMobile = document.getElementById('next-page-mobile');
-            
+
             if (prevPage) {
                 prevPage.disabled = currentPage === 1;
                 prevPage.classList.toggle('opacity-50', currentPage === 1);
@@ -919,7 +930,7 @@
                     }
                 });
             }
-            
+
             if (nextPage) {
                 nextPage.disabled = currentPage === totalPages;
                 nextPage.classList.toggle('opacity-50', currentPage === totalPages);
@@ -931,7 +942,7 @@
                     }
                 });
             }
-            
+
             // Mobile pagination
             if (prevPageMobile) {
                 prevPageMobile.disabled = currentPage === 1;
@@ -944,7 +955,7 @@
                     }
                 });
             }
-            
+
             if (nextPageMobile) {
                 nextPageMobile.disabled = currentPage === totalPages;
                 nextPageMobile.classList.toggle('opacity-50', currentPage === totalPages);
@@ -957,26 +968,26 @@
                 });
             }
         }
-        
+
         // Function to fetch data with force refresh
         function fetchDataWithForceRefresh() {
             fetchDataWithParam('&force_refresh=true');
         }
-        
+
         // Function to fetch data without force refresh
         function fetchDataWithoutForceRefresh() {
             fetchDataWithParam('');
         }
-        
+
         // Function to fetch data with custom parameter
         function fetchDataWithParam(customParam) {
             // Store the original force refresh parameter
             const originalButton = fetchDataBtn.cloneNode(true);
-            
+
             // Perform the fetch with the custom parameter
             fetchDataBtn.setAttribute('data-custom-param', customParam);
             fetchDataBtn.click();
-            
+
             // Restore the original button
             fetchDataBtn.removeAttribute('data-custom-param');
         }
@@ -1070,7 +1081,7 @@
 
                 // Update board details before anything else
                 updateBoardDetails(data.boardDetails);
-                
+
                 // Update the last updated time
                 updateLastFetched(data.cached, data.lastFetched);
 
@@ -1080,7 +1091,7 @@
                 // Update backlog data if available
                 if (data.backlogData) {
                     allBacklogBugs = data.backlogData.allBugs || [];
-                    
+
                     // Update backlog table
                     if (backlogTableBody) {
                         filterBacklogByCurrentTeam();
@@ -1094,7 +1105,7 @@
                 // Update member data
                 if (data.memberPoints && Array.isArray(data.memberPoints)) {
                     console.log('Member points data received:', data.memberPoints.length, 'members');
-                    
+
                     // Apply any saved extra points to the member data
                     data.memberPoints.forEach(member => {
                         if (currentBoardId && member.id) {
@@ -1105,10 +1116,10 @@
                             }
                         }
                     });
-                    
+
                     // Also update the global cached data
                     window.cachedData = data;
-                    
+
                     buildMemberTable(data.memberPoints);
                 } else {
                     console.warn('No member points data available');
@@ -1128,7 +1139,7 @@
 
                 // Hide loading indicator
                 loadingIndicator.classList.add('hidden');
-                
+
                 // Show success toast
                 if (data.cached) {
                     showToast('Loaded cached data successfully', 'success');
@@ -1141,16 +1152,16 @@
                 loadingIndicator.classList.add('hidden');
 
                 showErrorMessage(error.message || 'Unknown error fetching data');
-                
+
                 // Show error toast
                 showToast('Failed to load data: ' + error.message, 'error');
             });
         });
-        
+
         // Function to update the last fetched time indication
         function updateLastFetched(cached, lastFetched) {
             const lastUpdatedEl = document.getElementById('last-updated');
-            
+
             if (lastUpdatedEl) {
                 lastUpdatedEl.innerHTML = `
                     <div class="flex items-center text-xs text-gray-500">
@@ -1162,7 +1173,7 @@
                     </div>
                 `;
                 lastUpdatedEl.classList.remove('hidden');
-                
+
                 // Add event listener to force refresh link
                 const forceRefreshLink = document.getElementById('force-refresh');
                 if (forceRefreshLink) {
@@ -1260,10 +1271,10 @@
             // Note: We'll update the Actual Point in buildMemberTable when we have the final point total
             // We're still initializing it here to ensure it's reset if needed
             document.getElementById('actual-points').textContent = '0';
-            
+
             // Calculate values for other metrics based on plan points
             const planPoints = parseFloat(planPointsInput.value) || 0;
-            
+
             // Other calculations will be updated once we have the actual point from team data
             document.getElementById('remain-percent').textContent = '0%';
             document.getElementById('percent-complete').textContent = '0%';
@@ -1294,18 +1305,18 @@
             // Build each row with fresh data
             members.forEach(member => {
                 // Check if we have saved extra points for this member
-                const savedExtraPoint = currentBoardId && member.id ? 
+                const savedExtraPoint = currentBoardId && member.id ?
                     parseFloat(localStorage.getItem(`extraPoints_${currentBoardId}_${member.id}`)) || 0 : 0;
-                
+
                 // Extract numeric values safely
                 const pointPersonal = parseFloat(member.pointPersonal || 0);
                 const passPoint = parseFloat(member.passPoint || 0);
                 const bugPoint = parseFloat(member.bugPoint || 0);
                 const cancelPoint = parseFloat(member.cancelPoint || 0);
-                
+
                 // Use saved extra point value if available, otherwise use the one from the data
                 const extraPoint = savedExtraPoint || parseFloat(member.extraPoint || 0);
-                
+
                 // Recalculate final point with the updated extra point
                 const finalPoint = passPoint + extraPoint;
 
@@ -1370,26 +1381,26 @@
 
             // 5. Point Current Sprint (sum of member personal points)
             document.getElementById('current-sprint-points').textContent = totals.personal.toFixed(1);
-            
+
             // 6. Actual Point Current Sprint (sum of final points)
             document.getElementById('actual-current-sprint').textContent = totals.final.toFixed(1);
-            
+
             // Now update the Actual Point using the total final points
             // 2. Actual Point = Final Point + Backlog Point + Extra Point
             // (Backlog and Extra are set to 0 as requested)
             const actualPoints = totals.final + 0 + 0; // Use totals.final instead of completedPoints
             document.getElementById('actual-points').textContent = actualPoints.toFixed(1);
-            
+
             // Now recalculate remaining metrics based on the actual point from team data
             const planPoints = parseFloat(planPointsInput.value) || 0;
-            
+
             // 3. Remain Percent = (Plan Point - Actual Point) / Plan Point * 100
             let remainPercent = 0;
             if (planPoints > 0) {
                 remainPercent = Math.round(((planPoints - actualPoints) / planPoints) * 100);
             }
             document.getElementById('remain-percent').textContent = `${remainPercent}%`;
-            
+
             // 4. Percent = Actual / Plan Point * 100
             let percentComplete = 0;
             if (planPoints > 0) {
@@ -1565,7 +1576,7 @@
                         }
                     }
                 }
-                
+
                 // If no priority label, try to determine by points
                 if (card.points >= 5) {
                     return 'priority-high';
@@ -1574,7 +1585,7 @@
                 } else if (card.points > 0) {
                     return 'priority-low';
                 }
-                
+
                 return 'priority-none';
             }
 
@@ -1583,13 +1594,13 @@
                 const priorityClass = getPriorityClass(card);
                 const cardElement = document.createElement('div');
                 cardElement.className = `bug-card bg-white rounded-lg shadow-md min-w-[300px] max-w-[300px] ${priorityClass}`;
-                
+
                 // Extract member names if available
                 let memberNames = 'Not assigned';
                 let memberAvatars = '';
                 if (card.members && card.members.length > 0) {
                     memberNames = card.members.map(member => member.fullName || member.username).join(', ');
-                    
+
                     // Create member avatars
                     memberAvatars = '<div class="flex -space-x-2 overflow-hidden">';
                     card.members.forEach((member, index) => {
@@ -1602,7 +1613,7 @@
                             `;
                         }
                     });
-                    
+
                     if (card.members.length > 3) {
                         memberAvatars += `
                             <div class="inline-block h-6 w-6 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-bold ring-2 ring-white">
@@ -1610,7 +1621,7 @@
                             </div>
                         `;
                     }
-                    
+
                     memberAvatars += '</div>';
                 } else {
                     memberAvatars = `
@@ -1638,8 +1649,8 @@
 
                 // Create truncated description with expansion on hover
                 const description = card.description || 'No description provided';
-                const truncatedDescription = description.length > 100 ? 
-                    description.substring(0, 100) + '...' : 
+                const truncatedDescription = description.length > 100 ?
+                    description.substring(0, 100) + '...' :
                     description;
 
                 // Build the card HTML
@@ -1653,18 +1664,18 @@
                                 </span>
                             </div>
                         </div>
-                        
+
                         <div class="text-xs text-gray-500 mb-2">
                             From: ${card.listName}
                         </div>
-                        
+
                         ${labelDisplay}
-                        
+
                         <div class="text-sm text-gray-700 mt-2 overflow-hidden hover:overflow-auto flex-grow">
                             <div class="description-content">${truncatedDescription}</div>
                             <div class="description-full hidden">${description}</div>
                         </div>
-                        
+
                         <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
                             <div>
                                 ${memberAvatars}
@@ -1686,7 +1697,7 @@
                 cardElement.querySelector('.description-content').addEventListener('click', function() {
                     const fullDescription = cardElement.querySelector('.description-full');
                     const shortDescription = cardElement.querySelector('.description-content');
-                    
+
                     if (fullDescription.classList.contains('hidden')) {
                         fullDescription.classList.remove('hidden');
                         shortDescription.classList.add('hidden');
@@ -1739,17 +1750,17 @@
 
                 // Recalculate metrics based on the new plan points value
                 const planPoints = parseFloat(this.value) || 0;
-                
+
                 // Get the actual point (which is based on the final points total)
                 const actualPoints = parseFloat(document.getElementById('actual-points').textContent) || 0;
-                
+
                 // Recalculate remain percent
                 let remainPercent = 0;
                 if (planPoints > 0) {
                     remainPercent = Math.round(((planPoints - actualPoints) / planPoints) * 100);
                 }
                 document.getElementById('remain-percent').textContent = `${remainPercent}%`;
-                
+
                 // Recalculate percent complete
                 let percentComplete = 0;
                 if (planPoints > 0) {
@@ -1774,10 +1785,10 @@
                 showToast('No data available to export', 'error');
                 return;
             }
-            
+
             const rows = table.querySelectorAll('tr');
             let csv = [];
-            
+
             // Process header row first
             const headerRow = rows[0];
             const headerCols = headerRow.querySelectorAll('th');
@@ -1786,15 +1797,15 @@
                 headerData.push('"' + col.innerText.trim().replace(/"/g, '""') + '"');
             });
             csv.push(headerData.join(','));
-            
+
             // Process data rows
             for (let i = 1; i < rows.length; i++) {
                 // Skip loading message row if present
                 if (rows[i].querySelector('td[colspan]')) continue;
-                
+
                 const cols = rows[i.querySelectorAll('td')];
                 let rowData = [];
-                
+
                 cols.forEach(col => {
                     // For the member column, just get the name, not the entire HTML
                     if (col.querySelector('.font-medium')) {
@@ -1803,14 +1814,14 @@
                         rowData.push('"' + col.innerText.trim().replace(/"/g, '""') + '"');
                     }
                 });
-                
+
                 csv.push(rowData.join(','));
             }
-            
+
             // Create and download CSV file
             const csvContent = csv.join('\n');
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            
+
             // Create download link
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
@@ -1820,16 +1831,16 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             showToast('Report exported successfully', 'success');
         }
-        
+
         // Function to show a toast notification
         function showToast(message, type = 'info') {
             // Remove any existing toasts
             const existingToasts = document.querySelectorAll('.toast-notification');
             existingToasts.forEach(toast => toast.remove());
-            
+
             // Create toast container if it doesn't exist
             let toastContainer = document.getElementById('toast-container');
             if (!toastContainer) {
@@ -1838,11 +1849,11 @@
                 toastContainer.className = 'fixed bottom-4 right-4 z-50';
                 document.body.appendChild(toastContainer);
             }
-            
+
             // Create toast element
             const toast = document.createElement('div');
             toast.className = 'toast-notification flex items-center p-4 mb-4 rounded shadow-lg max-w-md transition-opacity';
-            
+
             // Set color based on type
             if (type === 'success') {
                 toast.classList.add('bg-green-100', 'text-green-700', 'border-l-4', 'border-green-500');
@@ -1851,11 +1862,11 @@
             } else {
                 toast.classList.add('bg-blue-100', 'text-blue-700', 'border-l-4', 'border-blue-500');
             }
-            
+
             // Set toast content
             toast.innerHTML = `
                 <div class="flex-shrink-0 mr-3">
-                    ${type === 'success' 
+                    ${type === 'success'
                         ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
                         : type === 'error'
                             ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>'
@@ -1867,10 +1878,10 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             `;
-            
+
             // Add to container
             toastContainer.appendChild(toast);
-            
+
             // Auto-remove after 5 seconds
             setTimeout(() => {
                 if (toast.parentElement) {
@@ -1886,13 +1897,13 @@
             document.getElementById('error-container').classList.add('hidden');
             document.getElementById('main-data-container').classList.add('hidden');
             document.getElementById('cards-by-list-container').classList.add('hidden');
-            
+
             // Show loading indicators
             document.getElementById('main-loading').classList.remove('hidden');
-            
+
             // Get role from the data attribute
             const role = document.getElementById('role').dataset.role;
-            
+
             // Make API request
             fetch('{{ url('/trello/data') }}?board_id=' + boardSelector.value)
                 .then(response => {
@@ -1904,13 +1915,13 @@
                 .then(data => {
                     // Hide loading indicators
                     document.getElementById('main-loading').classList.add('hidden');
-                    
+
                     // Render the data
                     renderBoardData(data);
-                    
+
                     // Show the container
                     document.getElementById('main-data-container').classList.remove('hidden');
-                    
+
                     // Fetch bug cards for all users, not just admins
                     fetchBugCards();
                 })
@@ -1919,13 +1930,13 @@
                     showErrorMessage(error.message);
                 });
         }
-        
+
         // Function to fetch bug cards data
         function fetchBugCards() {
             // Show loading indicator
             document.getElementById('cards-loading').classList.remove('hidden');
             document.getElementById('cards-by-list-container').classList.remove('hidden');
-            
+
             // Make API request
             fetch('{{ url('/trello/bug-cards') }}?board_id=' + boardSelector.value)
                 .then(response => {
@@ -1937,7 +1948,7 @@
                 .then(data => {
                     // Hide loading indicator
                     document.getElementById('cards-loading').classList.add('hidden');
-                    
+
                     // Render the cards
                     renderCardsByList(data.listsData);
                 })
@@ -1946,12 +1957,12 @@
                     showErrorMessage(error.message);
                 });
         }
-        
+
         // Initial fetch if a board is selected
         if (boardSelector.value) {
             fetchBoardData();
         }
-        
+
         // Add event listener for board selection change
         boardSelector.addEventListener('change', fetchBoardData);
 
@@ -1979,80 +1990,80 @@
                     document.getElementById('sprint-days-remaining').textContent = '0 days';
                 });
         }
-        
+
         // Function to update sprint information in the UI
         function updateSprintInfo(data) {
             console.log('Updating sprint info with:', data);
-            
+
             // Update sprint number - ensure it's displayed as an integer
             const sprintNumber = data.currentSprintNumber ? parseInt(data.currentSprintNumber) : '-';
             document.getElementById('current-sprint-number').textContent = sprintNumber;
-            
+
             // Update all sprint number instances
             const sprintNumberBadges = document.querySelectorAll('.bg-primary-600.text-white.px-3.py-1.rounded-bl-md.text-xs.font-bold');
             sprintNumberBadges.forEach(badge => {
                 badge.textContent = `Sprint ${sprintNumber}`;
             });
-            
+
             // Update sprint date range
             document.getElementById('sprint-date-range').textContent = data.sprintDateRange || 'Not available';
-            
+
             // Update sprint duration
             document.getElementById('sprint-duration').textContent = data.sprintDurationDisplay || '1 Week';
-            
+
             // Update day counter
             document.getElementById('sprint-day-number').textContent = data.currentSprintDay || '-';
             document.getElementById('sprint-total-days').textContent = data.sprintTotalDays || '7';
-            
+
             // Update days remaining
             const daysRemaining = data.daysRemaining || 0;
             const daysRemainingText = daysRemaining === 1 ? 'day' : 'days';
             document.getElementById('sprint-days-remaining').textContent = `${daysRemaining}`;
-            
+
             // Update week number
             const weekNumberEl = document.getElementById('current-week-number');
             if (weekNumberEl) {
                 weekNumberEl.textContent = data.currentWeekNumber || '-';
             }
-            
+
             // Update next report date
             const nextReportDateEl = document.getElementById('next-report-date');
             if (nextReportDateEl) {
                 nextReportDateEl.textContent = data.nextReportDate || 'Not available';
             }
-            
+
             // Update progress bar width (using ID now)
             const progressBar = document.getElementById('sprint-progress-bar');
             if (progressBar) {
                 progressBar.style.width = `${data.sprintProgressPercent || 0}%`;
             }
-            
+
             // Update start and end dates
             const startDateEl = document.querySelector('.top-7.left-2.text-xs.font-medium');
             if (startDateEl) {
                 const startPrefix = startDateEl.querySelector('span');
                 startDateEl.innerHTML = `<span class="text-primary-700">Start:</span> ${data.currentSprintStartDate || '-'}`;
             }
-            
+
             const endDateEl = document.querySelector('.top-7.right-2.text-xs.font-medium');
             if (endDateEl) {
                 const endPrefix = endDateEl.querySelector('span');
                 endDateEl.innerHTML = `<span class="text-primary-700">End:</span> ${data.currentSprintEndDate || '-'}`;
             }
-            
+
             // Regenerate day markers based on updated total days
             const totalDays = data.sprintTotalDays || 7;
             const markerWidth = 100 / totalDays;
-            
+
             // Find the timeline container
             const timelineContainer = document.querySelector('.relative.h-16.rounded-lg.overflow-hidden.bg-gray-100.shadow-inner');
-            
+
             if (timelineContainer) {
                 // Remove existing day markers
                 timelineContainer.querySelectorAll('.border-r.border-gray-300, .bottom-1.text-xs.text-gray-500').forEach(el => {
                     el.remove();
                 });
-                
+
                 // Add new day markers
                 for (let i = 1; i <= totalDays; i++) {
                     // Add line marker
@@ -2061,7 +2072,7 @@
                     lineMarker.style.left = `${markerWidth * i}%`;
                     lineMarker.style.width = '1px';
                     timelineContainer.appendChild(lineMarker);
-                    
+
                     // Add day number
                     const dayNumber = document.createElement('div');
                     dayNumber.className = 'absolute bottom-1 text-xs text-gray-500 font-medium';
@@ -2069,29 +2080,29 @@
                     dayNumber.textContent = i;
                     timelineContainer.appendChild(dayNumber);
                 }
-                
+
                 // Remove existing day marker if any
                 const existingMarker = timelineContainer.querySelector('.w-0\\.5.h-full.bg-white');
                 if (existingMarker && existingMarker.parentElement) {
                     existingMarker.parentElement.remove();
                 }
-                
+
                 // Add new marker if within the sprint
                 const sprintProgressPercent = data.sprintProgressPercent || 0;
                 const daysElapsed = data.daysElapsed || 0;
-                
+
                 if (sprintProgressPercent > 0 && sprintProgressPercent < 100) {
                     const marker = document.createElement('div');
                     marker.className = 'absolute top-0 h-full';
                     marker.style.left = `${sprintProgressPercent}%`;
-                    
+
                     marker.innerHTML = `
                         <div class="w-0.5 h-full bg-white shadow-md"></div>
                         <div class="absolute -top-1.5 -translate-x-1/2 w-5 h-5 rounded-full bg-white shadow-md border-2 border-primary-600 flex items-center justify-center">
                             <span class="text-primary-700 text-xs font-bold">${daysElapsed}</span>
                         </div>
                     `;
-                    
+
                     timelineContainer.appendChild(marker);
                 }
             }
@@ -2116,7 +2127,7 @@
             } else {
                 showNoMembersMessage();
             }
-            
+
             // Fetch sprint information
             fetchSprintInfo();
         }
@@ -2130,20 +2141,20 @@
                     showToast('Please select a board first', 'error');
                     return;
                 }
-                
+
                 const boardId = boardSelector.value;
                 const boardName = boardSelector.options[boardSelector.selectedIndex].text;
-                
+
                 // Capture the current report data
                 const storyPointsData = document.getElementById('story-points-summary');
                 const bugCardsContainer = document.getElementById('cards-by-list-container');
-                
+
                 // Create structured data for storage
                 const reportData = {
                     board_id: boardId,
                     board_name: boardName
                 };
-                
+
                 if (storyPointsData) {
                     const storyPointsJson = JSON.stringify({
                         summary: {
@@ -2181,10 +2192,10 @@
                             totalFinal: parseFloat(document.getElementById('total-final')?.textContent || '0')
                         }
                     });
-                    
+
                     reportData.story_points_data = storyPointsJson;
                 }
-                
+
                 if (bugCardsContainer) {
                     const bugCardsJson = JSON.stringify({
                         bugCards: Array.from(document.querySelectorAll('.bug-card')).map(card => {
@@ -2193,7 +2204,7 @@
                             const listElement = card.querySelector('.text-xs.text-gray-500');
                             const descriptionElement = card.querySelector('.description-content');
                             const memberElement = card.querySelector('.text-xs.text-gray-500.mt-1');
-                            
+
                             return {
                                 name: nameElement ? nameElement.textContent.trim() : 'Unnamed Card',
                                 points: pointElement ? parseInt(pointElement.textContent) || 0 : 0,
@@ -2206,15 +2217,15 @@
                         bugCount: document.getElementById('bug-count')?.textContent || '0 bugs',
                         totalBugPoints: document.getElementById('total-bug-points')?.textContent || '0'
                     });
-                    
+
                     reportData.bug_cards_data = bugCardsJson;
                 }
-                
+
                 console.log('Saving report data to session:', {
                     hasStoryPoints: !!reportData.story_points_data,
                     hasBugCards: !!reportData.bug_cards_data
                 });
-                
+
                 // Store board selection in session
                 fetch('{{ route("save.board.selection") }}', {
                     method: 'POST',
@@ -2287,26 +2298,26 @@
         saveExtraPoints.addEventListener('click', function() {
             const extraPoints = parseFloat(extraPointsInput.value) || 0;
             const row = document.querySelector(`#team-members-table-body tr:nth-child(${parseInt(currentRowIndex) + 1})`);
-            
+
             if (row) {
                 const extraCell = row.querySelector('td:nth-child(6)');
                 const finalCell = row.querySelector('td:nth-child(7)');
                 const passCell = row.querySelector('td:nth-child(3)');
-                
+
                 // Update extra points cell
                 extraCell.textContent = extraPoints.toFixed(1);
-                
+
                 // Recalculate final points (pass points + extra points)
                 const passPoints = parseFloat(passCell.textContent) || 0;
                 const finalPoints = passPoints + extraPoints;
                 finalCell.textContent = finalPoints.toFixed(1);
-                
+
                 // Save the extra points to localStorage
                 if (currentBoardId && currentMemberId) {
                     // Use a key format that includes both board and member ID
                     const storageKey = `extraPoints_${currentBoardId}_${currentMemberId}`;
                     localStorage.setItem(storageKey, extraPoints);
-                    
+
                     // Also update the cached data if we have it
                     if (window.cachedData && window.cachedData.memberPoints) {
                         const memberIndex = window.cachedData.memberPoints.findIndex(m => m.id === currentMemberId);
@@ -2316,11 +2327,11 @@
                         }
                     }
                 }
-                
+
                 // Update totals
                 updateTotals();
             }
-            
+
             closeExtraPointsModal();
             showToast('Extra points updated successfully', 'success');
         });
@@ -2357,13 +2368,13 @@
             // Update actual points and recalculate percentages for the sprint summary
             document.getElementById('actual-points').textContent = totals.final.toFixed(1);
             document.getElementById('actual-current-sprint').textContent = totals.final.toFixed(1);
-            
+
             // Recalculate percentages
             const planPoints = parseFloat(document.getElementById('plan-points').value) || 0;
             if (planPoints > 0) {
                 const remainPercent = Math.round(((planPoints - totals.final) / planPoints) * 100);
                 const percentComplete = Math.round((totals.final / planPoints) * 100);
-                
+
                 document.getElementById('remain-percent').textContent = `${remainPercent}%`;
                 document.getElementById('percent-complete').textContent = `${percentComplete}%`;
             }
@@ -2378,16 +2389,16 @@
                     showToast('Please select a board first', 'error');
                     return;
                 }
-                
+
                 const boardId = boardSelector.value;
                 const boardName = boardSelector.options[boardSelector.selectedIndex].text;
-                
+
                 // Get the current sprint number
                 let sprintNumber = document.getElementById('current-sprint-number')?.textContent || '1';
-                
+
                 // Default report name
                 let reportName = `Sprint ${sprintNumber} Report - ${boardName}`;
-                
+
                 // Create a modal to let the user name the report
                 const modal = document.createElement('div');
                 modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50';
@@ -2414,25 +2425,25 @@
                         </form>
                     </div>
                 `;
-                
+
                 document.body.appendChild(modal);
-                
+
                 // Handle cancel button
                 document.getElementById('cancel-report').addEventListener('click', function() {
                     document.body.removeChild(modal);
                 });
-                
+
                 // Handle form submission
                 document.getElementById('quick-report-form').addEventListener('submit', function(e) {
                     e.preventDefault();
-                    
+
                     const reportName = document.getElementById('report-name').value;
                     const notes = document.getElementById('report-notes').value;
-                    
+
                     // Capture the current report data
                     const storyPointsData = document.getElementById('story-points-summary');
                     const bugCardsContainer = document.getElementById('cards-by-list-container');
-                    
+
                     // Create structured data for storage
                     const reportData = {
                         board_id: boardId,
@@ -2441,13 +2452,13 @@
                         name: reportName, // Add the 'name' field which is required by the database
                         notes: notes
                     };
-                    
+
                     // Helper function to trim long text fields
                     const trimDescription = (text, maxLength = 1000) => {
                         if (!text) return '';
                         return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
                     };
-                    
+
                     if (storyPointsData) {
                         reportData.story_points_data = JSON.stringify({
                             summary: {
@@ -2486,7 +2497,7 @@
                             }
                         });
                     }
-                    
+
                     if (bugCardsContainer) {
                         reportData.bug_cards_data = JSON.stringify({
                             bugCards: Array.from(document.querySelectorAll('.bug-card')).map(card => {
@@ -2495,7 +2506,7 @@
                                 const listElement = card.querySelector('.text-xs.text-gray-500');
                                 const descriptionElement = card.querySelector('.description-content');
                                 const memberElement = card.querySelector('.text-xs.text-gray-500.mt-1');
-                                
+
                                 return {
                                     name: nameElement ? nameElement.textContent.trim() : 'Unnamed Card',
                                     points: pointElement ? parseInt(pointElement.textContent) || 0 : 0,
@@ -2509,15 +2520,15 @@
                             totalBugPoints: document.getElementById('total-bug-points')?.textContent || '0'
                         });
                     }
-                    
+
                     // Show loading message
                     const saveButton = e.target.querySelector('button[type="submit"]');
                     const originalButtonText = saveButton.textContent;
                     saveButton.disabled = true;
                     saveButton.textContent = 'Saving...';
-                    
+
                     console.log('Saving report with data:', reportData);
-                    
+
                     // Submit directly to savedReports.store endpoint
                     fetch('{{ route("report.save") }}', {
                         method: 'POST',
@@ -2533,7 +2544,7 @@
                         // Check if the response is JSON
                         const contentType = response.headers.get('content-type');
                         console.log('Response content type:', contentType);
-                        
+
                         if (contentType && contentType.includes('application/json')) {
                             return response.json().then(data => {
                                 if (!response.ok) {
@@ -2557,10 +2568,10 @@
                     })
                     .then(data => {
                         document.body.removeChild(modal);
-                        
+
                         if (data.success) {
                             showToast('Report saved successfully!', 'success');
-                            
+
                             // Optionally redirect to saved reports
                             if (confirm('Report saved successfully! View saved reports?')) {
                                 window.location.href = '{{ route("saved-reports.index") }}';
