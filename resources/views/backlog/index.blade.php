@@ -41,38 +41,92 @@
             <div class="ms-60 grid grid-rows-2 gap-1">
                 <div>
                     <!-- Dropdown Teams-->
-                    <form class="flex w-full">
-                         <label for="team" class="text-sm font-medium text-gray-900 pt-2 me-5 ">Team:</label>
-                        <select
-                            id="team" class="h-10 w-full bg-gray-50 border-gray-300 text-gray-900 text-sm rounded-3xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            <option selected class="p-center ">All</option>
-                            <option value="A">Alpha</option>
-                            <option value="B">beta</option>
-                            <option value="D">delta</option>
-                        </select>
-                    </form>
+                    <div class="flex w-full">
+                        <label for="team" class="text-sm font-medium text-gray-900 pt-6 me-4 ">Team:</label>
+                        <div class="relative inline-block w-full text-left py-3.5">
+                            <button id="teamDropdownButton"
+                                class="flex items-center px-4 py-2 bg-white border rounded-[100px] shadow-md w-[400px] justify-between hover:bg-gray-200">
+                                <span id="selectedTeam" class="block w-full px-6">All</span>
+                                <svg class="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div id="teamDropdownMenu"
+                                class="hidden absolute right-0 mt-2 bg-white border rounded-[15px] w-[400px] shadow-lg overflow-hidden dropdown-menu">
+                                <ul class="text-gray-700">
+                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="all">All</a></li>
+                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="Team Alpha">Team Alpha</a></li>
+                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="Team Beta">Team Beta</a></li>
+                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="Team Charlie">Team Charlie</a></li>  
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <span>
                     <!-- Dropdown Year and Sprint -->
-                    <form class="flex h-10">
-                        <label for="year" class="text-sm font-medium text-gray-900 pt-2 me-5">Year:</label>
-                        <select
-                            id="year" class="ms-2 w-40 bg-gray-50 border-gray-300 text-gray-900 text-sm rounded-3xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            <option selected class="p-center ">2025</option>
-                            <option value="A">2024</option>
-                            <option value="B">2023</option>
-                            <option value="D">2022</option>
-                        </select>
-                        <label for="sprint" class="text-sm font-medium text-gray-900 pt-2 ps-5 me-5">Sprint:</label>
-                        <select
-                            id="sprint" class=" bg-gray-50 border-gray-300 text-gray-900 text-sm rounded-3xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                            <option selected class="p-center " value="1 ~ 10">1 ~ 10</option>
-                            <option value="11 ~ 20">11 ~ 20</option>
-                            <option value="21 ~ 30">21 ~ 30</option>
-                            <option value="31 ~ 40">31 ~ 40</option>
-                        </select>
-                    </form>
+                    <div class="flex h-10">
+                        <!--Dropdown Year -->
+                        <label for="year" class="text-sm font-medium text-gray-900 flex items-center me-5">Year:</label>
+                        <div class="relative inline-block text-left ">
+                            <button id="yearDropdownButton"
+                                class="flex items-center px-4 py-2 bg-white border rounded-[100px] shadow-md w-32 justify-between hover:bg-gray-200">
+                                <span id="selectedYear" class="block px-6">2025</span>
+                                <svg class="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                <!-- Dropdown Menu -->
+                        <div id="yearDropdownMenu"
+                            class="hidden absolute right-0 mt-2 w-32 bg-white border rounded-[15px] shadow-lg overflow-hidden dropdown-menu">
+                            <ul class="text-gray-700">
+                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2025</a></li>
+                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2024</a></li>
+                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2023</a></li>
+                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2022</a></li>
+                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2021</a></li>
+                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">2020</a></li>
+                            </ul>
+                        </div>
+            </div>
+            <!--Dropdown Sprint -->
+                        <label for="sprint" class="text-sm font-medium text-gray-900 flex items-center ps-5 me-5">Sprint:</label>
+                        <div class="relative inline-block text-left">
+                <button id="sprintDropdownButton"
+                    class="flex items-center px-4 py-2 bg-white border rounded-[100px] shadow-md w-48 justify-between hover:bg-gray-200">
+                    <span id="selectedSprint" class="block px-6">1 ~ 10</span>
+                    <svg class="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div id="sprintDropdownMenu"
+                    class="hidden absolute right-0 mt-2 w-48 bg-white border rounded-[15px] shadow-lg overflow-hidden dropdown-menu">
+                    <ul class="text-gray-700">
+                        <li><a href="#" class="block px-12 py-2 hover:bg-gray-200 border-b">1 ~ 10</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">11 ~ 20</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">21 ~ 30</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">31 ~ 40</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">41 ~ 50</a></li>
+                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">51 ~ 52</a></li>
+                    </ul>
+                </div>
+            </div>
+</div>
 
                 </span>
             </div>
@@ -82,7 +136,7 @@
         </p>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
             @foreach($allBugs as $bug)
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow bug-card" data-team="{{ $bug['team'] ?? 'all' }}">
                 <!-- Card Header with Bug ID and Priority -->
                 <div class="flex justify-between items-center p-4 border-b border-gray-100 ">
                     <div class="flex items-center">
@@ -112,7 +166,7 @@
                 <!-- Bug Name/Description/buttom -->
                 <div class="p-4 grid grid-cols-9">
 
-                    <div class="col-span-8 text-left h-20 overflow-auto ">โค้ดที่คุณให้มาคือการใช้  Tailwind  Tailwind Tailาจอที่ใช้งาน
+                    <div class="col-span-8 text-left h-20 overflow-auto ">โค้ดที่คุณให้มาคือการใช้ Tailwind Tailwind Tailาจอที่ใช้งาน
                     </div>
                     <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center ms-3 h-8 w-8 col-start-9">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-pencil-square" viewBox="0 0 16 16 ">
@@ -156,171 +210,52 @@
 </div>
 
 
-
-<!-- By Sprint Tab Content -->
-<div id="by-sprint-content" class="tab-content hidden">
-    <div class="space-y-8">
-        @foreach($bugsBySprint as $sprintNumber => $bugs)
-        <div class="bg-white shadow rounded-lg p-6">
-            <h2 class="text-xl font-semibold mb-4">
-                Sprint {{ $sprintNumber }} Backlog
-                <span class="ml-2 text-sm bg-amber-100 text-amber-800 py-1 px-2 rounded-full">
-                    {{ $bugs->count() }} {{ Str::plural('bug', $bugs->count()) }}
-                    ({{ $bugs->sum('points') }} {{ Str::plural('point', $bugs->sum('points')) }})
-                </span>
-            </h2>
-
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bug</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Origin</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($bugs as $bug)
-                        <tr class="hover:bg-amber-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <a href="{{ $bug['url'] ?? '#' }}" class="text-primary-600 hover:text-primary-900" target="_blank">{{ $bug['id'] }}</a>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ $bug['name'] }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                @if(isset($bug['labels']) && is_array($bug['labels']))
-                                @foreach($bug['labels'] as $label)
-                                @if($label !== 'Backlog')
-                                <span class="px-2 py-1 text-xs font-medium rounded-full 
-                                                                {{ $label === 'High' ? 'bg-red-100 text-red-800' : 
-                                                                  ($label === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 
-                                                                   'bg-green-100 text-green-800') }}">
-                                    {{ $label }}
-                                </span>
-                                @endif
-                                @endforeach
-                                @else
-                                <span class="text-gray-400">-</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $bug['assigned'] ?? 'Unassigned' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $bug['points'] ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $bug['team'] ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                @if(isset($bug['sprint_origin']))
-                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                                    Sprint {{ $bug['sprint_origin'] }}
-                                </span>
-                                @else
-                                <span class="text-gray-400">-</span>
-                                @endif
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        @endforeach
-    </div>
-</div>
-</div>
-
-<!-- By Team Tab Content -->
-<div id="by-team-content" class="tab-content hidden">
-    <div class="space-y-8">
-        @foreach($bugsByTeam as $teamName => $bugs)
-        <div class="bg-white shadow rounded-lg p-6">
-            <h2 class="text-xl font-semibold mb-4">
-                {{ $teamName }} Backlog
-                <span class="ml-2 text-sm bg-amber-100 text-amber-800 py-1 px-2 rounded-full">
-                    {{ $bugs->count() }} {{ Str::plural('bug', $bugs->count()) }}
-                    ({{ $bugs->sum('points') }} {{ Str::plural('point', $bugs->sum('points')) }})
-                </span>
-            </h2>
-
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bug</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sprint</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Origin</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($bugs as $bug)
-                        <tr class="hover:bg-amber-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <a href="{{ $bug['url'] ?? '#' }}" class="text-primary-600 hover:text-primary-900" target="_blank">{{ $bug['id'] }}</a>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ $bug['name'] }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                @if(isset($bug['labels']) && is_array($bug['labels']))
-                                @foreach($bug['labels'] as $label)
-                                @if($label !== 'Backlog')
-                                <span class="px-2 py-1 text-xs font-medium rounded-full 
-                                                                {{ $label === 'High' ? 'bg-red-100 text-red-800' : 
-                                                                  ($label === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 
-                                                                   'bg-green-100 text-green-800') }}">
-                                    {{ $label }}
-                                </span>
-                                @endif
-                                @endforeach
-                                @else
-                                <span class="text-gray-400">-</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $bug['assigned'] ?? 'Unassigned' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $bug['points'] ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                                    Sprint {{ $bug['sprint_number'] ?? '?' }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                @if(isset($bug['sprint_origin']))
-                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                                    Sprint {{ $bug['sprint_origin'] }}
-                                </span>
-                                @else
-                                <span class="text-gray-400">-</span>
-                                @endif
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        @endforeach
-    </div>
-</div>
 @endif
 </div>
 
+<style>
+            .hidden {
+                display: none;
+                opacity: 0;
+                transform: translateY(-10px);
+                transition: opacity 0.3s ease, transform 0.3s ease;
+            }
 
+            .block {
+                display: block;
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            .sprint-with-data {
+                display: block !important;
+            }
+
+            .sprint-date {
+                display: block;
+                width: 100%;
+                text-align: center;
+            }
+            
+            /* Fix for dropdown positioning */
+            .dropdown-menu {
+                z-index: 50;
+                position: absolute;
+            }
+            
+            /* Ensure dropdowns don't overlap */
+            #teamDropdownMenu {
+                z-index: 50;
+            }
+            
+            #yearDropdownMenu {
+                z-index: 49;
+            }
+            
+            #sprintDropdownMenu {
+                z-index: 48;
+            }
+        </style>
 
 <script>
     function showTab(tabId) {
@@ -342,25 +277,75 @@
         document.getElementById('tab-' + tabId).classList.remove('border-transparent', 'text-gray-500');
         document.getElementById('tab-' + tabId).classList.add('border-primary-500', 'text-primary-600');
     }
+
+    function setupDropdown(buttonId, menuId, selectedId) {
+        document.getElementById(buttonId).addEventListener("click", function() {
+            document.getElementById(menuId).classList.toggle("hidden");
+        });
+
+        document.querySelectorAll(`#${menuId} a`).forEach(item => {
+            item.addEventListener("click", function(e) {
+                e.preventDefault(); // Prevent default link behavior
+                document.getElementById(selectedId).textContent = this.textContent;
+                document.getElementById(menuId).classList.add("hidden");
+
+                // Update displayed items based on selected filters
+                if (menuId === "sprintDropdownMenu") {
+                    updateDisplayedSprints();
+                } else if (menuId === "teamDropdownMenu") {
+                    filterByTeam(this.getAttribute('data-team'));
+                }
+            });
+        });
+
+        document.addEventListener("click", function(event) {
+            const dropdown = document.getElementById(menuId);
+            const button = document.getElementById(buttonId);
+            if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.add("hidden");
+            }
+        });
+    }
+    
+    // Setup both dropdowns
+    setupDropdown("yearDropdownButton", "yearDropdownMenu", "selectedYear");
+    setupDropdown("sprintDropdownButton", "sprintDropdownMenu", "selectedSprint");
+    setupDropdown("teamDropdownButton", "teamDropdownMenu", "selectedTeam");
+
+
     // Update displayed sprints based on filters
     function updateDisplayedSprints() {
-                    const sprintRange = document.getElementById('Sprint').textContent;
+        const sprintRange = document.getElementById('selectedSprint').textContent;
 
-                    // Parse sprint range (e.g., "Sprint 1 ~ 10" to [1, 10])
-                    const rangeMatch = sprintRange.match(/Sprint (\d+) ~ (\d+)/);
-                    const startSprint = rangeMatch ? parseInt(rangeMatch[1]) : 1;
-                    const endSprint = rangeMatch ? parseInt(rangeMatch[2]) : 10;
+        // Parse sprint range (e.g., "Sprint 1 ~ 10" to [1, 10])
+        const rangeMatch = sprintRange.match(/Sprint (\d+) ~ (\d+)/);
+        const startSprint = rangeMatch ? parseInt(rangeMatch[1]) : 1;
+        const endSprint = rangeMatch ? parseInt(rangeMatch[2]) : 10;
 
-                    // Show/hide sprints based on range
-                    document.querySelectorAll('.sprint-block').forEach(sprintBlock => {
-                        const sprintNumber = parseInt(sprintBlock.dataset.sprintNumber);
+        // Show/hide sprints based on range
+        document.querySelectorAll('.sprint-block').forEach(sprintBlock => {
+            const sprintNumber = parseInt(sprintBlock.dataset.sprintNumber);
 
-                        if (sprintNumber >= startSprint && sprintNumber <= endSprint) {
-                            sprintBlock.style.display = 'block';
-                        } else {
-                            sprintBlock.style.display = 'none';
-                        }
-                    });
-                }
+            if (sprintNumber >= startSprint && sprintNumber <= endSprint) {
+                sprintBlock.style.display = 'block';
+            } else {
+                sprintBlock.style.display = 'none';
+            }
+        });
+    }
+
+    function filterByTeam(selectedTeam) {
+        const bugCards = document.querySelectorAll('.bug-card');
+        
+        bugCards.forEach(card => {
+            const cardTeam = card.getAttribute('data-team');
+            
+            if (selectedTeam === 'all' || cardTeam === selectedTeam) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
 </script>
 @endsection
