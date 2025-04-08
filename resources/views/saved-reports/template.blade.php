@@ -621,20 +621,24 @@
       if (!window.storyPointsData || !window.storyPointsData.totalPoints) {
         console.log('Using imported data instead of server data');
         // Notify the backend about this by posting a message
-        fetch('{{ route("trello.log") }}', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-          },
-          body: JSON.stringify({
-            message: 'Using client-side data for print',
-            data: {
-              hasStoryPointsData: !!window.storyPointsData,
-              hasCachedData: !!window.cachedData
-            }
-          })
-        }).catch(err => console.error('Error logging:', err));
+        try {
+          fetch('{{ route("trello.log") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+              message: 'Using client-side data for print',
+              data: {
+                hasStoryPointsData: !!window.storyPointsData,
+                hasCachedData: !!window.cachedData
+              }
+            })
+          }).catch(err => console.error('Error logging to server:', err));
+        } catch (error) {
+          console.error('Could not log to server, but continuing execution:', error);
+        }
       }
     }
   } catch (error) {

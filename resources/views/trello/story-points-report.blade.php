@@ -5,6 +5,7 @@
 @section('page-title', 'Story Points Report')
 
 @section('content')
+    <link rel="stylesheet" href="{{ asset('css/print-report.css') }}" media="print">
     <style>
         @media print {
             body {
@@ -1498,6 +1499,187 @@
             if (printReportBtn) {
                 printReportBtn.addEventListener('click', function() {
                     window.print();
+                });
+            }
+
+            // Add export to CSV functionality to the export button
+            const exportCsvBtn = document.getElementById('export-csv-btn');
+            if (exportCsvBtn) {
+                exportCsvBtn.addEventListener('click', function() {
+                    // Create a form to submit the data directly to our export endpoint
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route("export.to.csv") }}';
+                    form.target = '_blank'; // Open in new window/tab
+
+                    // Add CSRF token
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+
+                    // Add board name
+                    const boardNameInput = document.createElement('input');
+                    boardNameInput.type = 'hidden';
+                    boardNameInput.name = 'board_name';
+                    boardNameInput.value = boardSelector.options[boardSelector.selectedIndex].text;
+                    form.appendChild(boardNameInput);
+
+                    // Add sprint info
+                    const sprintInput = document.createElement('input');
+                    sprintInput.type = 'hidden';
+                    sprintInput.name = 'sprint';
+                    sprintInput.value = document.getElementById('points-title').textContent || 'Current Sprint';
+                    form.appendChild(sprintInput);
+
+                    // Add story points data
+                    const storyPointsInput = document.createElement('input');
+                    storyPointsInput.type = 'hidden';
+                    storyPointsInput.name = 'story_points_data';
+                    storyPointsInput.value = JSON.stringify(window.cachedData?.storyPoints || {});
+                    form.appendChild(storyPointsInput);
+
+                    // Add bug cards data
+                    const bugCardsInput = document.createElement('input');
+                    bugCardsInput.type = 'hidden';
+                    bugCardsInput.name = 'bug_cards_data';
+                    bugCardsInput.value = JSON.stringify(window.cachedData?.cardsByList || {});
+                    form.appendChild(bugCardsInput);
+
+                    // Add form to document, submit it, and remove it
+                    document.body.appendChild(form);
+                    form.submit();
+                    document.body.removeChild(form);
+                });
+            }
+
+            // Function to show a save dialog
+            function showSaveDialog(callback) {
+                // Create a modal dialog
+                const dialog = document.createElement('div');
+                dialog.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50';
+                dialog.id = 'save-export-dialog';
+
+                dialog.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-xl p-6 w-96 max-w-full">
+                        <h3 class="text-lg font-semibold mb-4">Save Report For Export</h3>
+                        <p class="text-sm text-gray-600 mb-4">Enter a name for this report to save it before exporting.</p>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Report Name</label>
+                            <input type="text" id="export-report-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="My Sprint Report">
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button id="cancel-export" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">Cancel</button>
+                            <button id="confirm-export" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md">Save & Export</button>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(dialog);
+
+                // Focus the input field
+                document.getElementById('export-report-name').focus();
+
+                // Handle cancel
+                document.getElementById('cancel-export').addEventListener('click', function() {
+                    dialog.remove();
+                });
+
+                // Handle confirm
+                document.getElementById('confirm-export').addEventListener('click', function() {
+                    const reportName = document.getElementById('export-report-name').value.trim();
+                    if (reportName) {
+                        dialog.remove();
+                        callback(reportName);
+                    } else {
+                        // Show error if no name provided
+                        alert('Please enter a name for the report');
+                    }
+                });
+
+                // Handle enter key
+                document.getElementById('export-report-name').addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        const reportName = this.value.trim();
+                        if (reportName) {
+                            dialog.remove();
+                            callback(reportName);
+                        } else {
+                            alert('Please enter a name for the report');
+                        }
+                    }
+                });
+            }
+
+            // Function to save the report and export to template
+            function saveReportAndExport(reportName) {
+                // Get all the necessary data
+                const boardId = boardSelector.value;
+                const boardName = boardSelector.options[boardSelector.selectedIndex].text;
+
+                // Check if we have data to save
+                if (!window.cachedData) {
+                    showToast('No data available to export', 'error');
+                    return;
+                }
+
+                // Create a loading indicator
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30';
+                loadingOverlay.innerHTML = `
+                    <div class="bg-white rounded-lg p-4">
+                        <div class="spinner"></div>
+                        <p class="mt-2 text-sm text-gray-600">Saving report...</p>
+                    </div>
+                `;
+                document.body.appendChild(loadingOverlay);
+
+                // Create a form data object
+                const formData = new FormData();
+                formData.append('report_name', reportName);
+                formData.append('name', reportName);
+                formData.append('board_id', boardId);
+                formData.append('board_name', boardName);
+                formData.append('notes', 'Generated for export');
+                formData.append('story_points_data', JSON.stringify(window.cachedData.storyPoints || {}));
+                formData.append('bug_cards_data', JSON.stringify(window.cachedData.cardsByList || {}));
+
+                // Send the data to the server
+                fetch('{{ route("report.save") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Remove loading overlay
+                    loadingOverlay.remove();
+
+                    if (data.success) {
+                        // Redirect to the export template URL with the saved report ID
+                        const savedReportId = data.savedReportId || data.id;
+                        if (savedReportId) {
+                            window.location.href = `{{ url('/saved-reports') }}/${savedReportId}/export-template`;
+                        } else {
+                            // If we can't get the ID, redirect to the saved reports page
+                            window.location.href = '{{ route("saved-reports.index") }}';
+                        }
+                    } else {
+                        showToast('Error saving report: ' + (data.error || 'Unknown error'), 'error');
+                    }
+                })
+                .catch(error => {
+                    loadingOverlay.remove();
+                    console.error('Error saving report:', error);
+                    showToast('Error saving report: ' + error.message, 'error');
                 });
             }
 

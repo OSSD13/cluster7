@@ -201,7 +201,8 @@ class SavedReportController extends Controller
                     return response()->json([
                         'success' => true,
                         'message' => 'Report saved successfully and added to current sprint',
-                        'redirect' => route('saved-reports.index')
+                        'redirect' => route('saved-reports.index'),
+                        'savedReportId' => $savedReport->id
                     ]);
                 }
                 
@@ -383,5 +384,253 @@ class SavedReportController extends Controller
             'reports' => $reports,
             'success' => 'Report deleted successfully.'
         ]);
+    }
+
+    /**
+     * Export the saved report using the template view.
+     *
+     * @param SavedReport $savedReport
+     * @return \Illuminate\Http\Response
+     */
+    public function exportTemplate(SavedReport $savedReport)
+    {
+        // Verify ownership
+        if ($savedReport->user_id !== auth()->id() && !auth()->user()->is_admin) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Prepare the report data for the template
+        $reportData = $savedReport->report_data;
+        
+        // Decode JSON data if stored as strings
+        $storyPointsData = null;
+        $bugCardsData = null;
+        
+        if (isset($reportData['story_points_data'])) {
+            $storyPointsData = $reportData['story_points_data'];
+            if (is_string($storyPointsData)) {
+                $storyPointsData = json_decode($storyPointsData, true);
+            }
+        }
+        
+        if (isset($reportData['bug_cards_data'])) {
+            $bugCardsData = $reportData['bug_cards_data'];
+            if (is_string($bugCardsData)) {
+                $bugCardsData = json_decode($bugCardsData, true);
+            }
+        }
+        
+        // Format the report for the template
+        $report = [
+            'author' => auth()->user()->name,
+            'date_start' => $reportData['date_start'] ?? now()->format('Y-m-d'),
+            'date_finish' => $reportData['date_finish'] ?? now()->addDays(7)->format('Y-m-d'),
+            'sprint' => $reportData['sprint'] ?? 'Current Sprint',
+            'last_update' => $reportData['last_update'] ?? now()->format('Y-m-d H:i'),
+            'team_name' => $reportData['board_name'] ?? 'Development Team',
+            'plan_point' => $storyPointsData['totalPoints'] ?? 0,
+            'actual_point' => $storyPointsData['totalCompletedPoints'] ?? 0,
+            'remain' => $storyPointsData['todo'] ?? 0,
+            'percent' => $storyPointsData['percentComplete'] ?? 0,
+            'current_sprint_point' => $storyPointsData['totalPoints'] ?? 0,
+            'current_sprint_actual_point' => $storyPointsData['totalCompletedPoints'] ?? 0,
+            'developers' => $this->formatDevelopersData($reportData),
+            'backlog' => $this->formatBacklogData($reportData),
+            'logo' => env('APP_URL') . '/images/logo.png',
+            // Add other fields needed by the template
+        ];
+        
+        // Convert the report to an object to match the expected structure in the template
+        $reportObject = json_decode(json_encode($report));
+        
+        // Render the template view
+        return view('saved-reports.template', ['report' => $reportObject]);
+    }
+    
+    /**
+     * Export current report data directly to CSV template without saving first.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function exportToCsv(Request $request)
+    {
+        // Log the input data for debugging
+        \Log::info('ExportToCsv input data:', [
+            'has_story_points_data' => $request->has('story_points_data'),
+            'story_points_data_length' => $request->input('story_points_data') ? strlen($request->input('story_points_data')) : 0,
+            'has_bug_cards_data' => $request->has('bug_cards_data'),
+            'bug_cards_data_length' => $request->input('bug_cards_data') ? strlen($request->input('bug_cards_data')) : 0,
+        ]);
+        
+        // Extract data from request
+        $storyPointsData = $request->input('story_points_data');
+        if (is_string($storyPointsData)) {
+            $storyPointsData = json_decode($storyPointsData, true);
+        }
+        
+        $bugCardsData = $request->input('bug_cards_data');
+        if (is_string($bugCardsData)) {
+            $bugCardsData = json_decode($bugCardsData, true);
+        }
+        
+        // Create a temporary report structure for the template
+        $reportData = [
+            'board_name' => $request->input('board_name', 'Development Team'),
+            'bug_cards_data' => $bugCardsData,
+            'story_points_data' => $storyPointsData
+        ];
+        
+        // Format the report for the template
+        $report = [
+            'author' => auth()->user()->name,
+            'date_start' => now()->format('Y-m-d'),
+            'date_finish' => now()->addDays(7)->format('Y-m-d'),
+            'sprint' => $request->input('sprint', 'Current Sprint'),
+            'last_update' => now()->format('Y-m-d H:i'),
+            'team_name' => $request->input('board_name', 'Development Team'),
+            'plan_point' => $storyPointsData['totalPoints'] ?? 0,
+            'actual_point' => $storyPointsData['totalCompletedPoints'] ?? 0,
+            'remain' => $storyPointsData['todo'] ?? 0,
+            'percent' => $storyPointsData['percentComplete'] ?? 0,
+            'current_sprint_point' => $storyPointsData['totalPoints'] ?? 0,
+            'current_sprint_actual_point' => $storyPointsData['totalCompletedPoints'] ?? 0,
+            'developers' => $this->formatDevelopersData($reportData),
+            'backlog' => $this->formatBacklogData($reportData),
+            'logo' => env('APP_URL') . '/images/logo.png',
+        ];
+        
+        // Convert the report to an object to match the expected structure
+        $reportObject = json_decode(json_encode($report));
+        
+        // Render the template view
+        return view('saved-reports.template', ['report' => $reportObject]);
+    }
+    
+    /**
+     * Format developers data for the template.
+     *
+     * @param array $reportData
+     * @return array
+     */
+    private function formatDevelopersData($reportData)
+    {
+        $developers = [];
+        
+        // If we have developers data in the report, use it
+        if (isset($reportData['developers']) && is_array($reportData['developers'])) {
+            // Convert each array item to an object if it's not already
+            $devObjects = [];
+            foreach ($reportData['developers'] as $dev) {
+                $devObjects[] = is_array($dev) ? (object)$dev : $dev;
+            }
+            return $devObjects;
+        }
+        
+        // Otherwise, create sample data from bug cards if available
+        if (isset($reportData['bug_cards_data']) && is_array($reportData['bug_cards_data'])) {
+            $devMap = [];
+            
+            // Process each list in bug cards data
+            foreach ($reportData['bug_cards_data'] as $list => $listData) {
+                // Check if this is a list with cards
+                if (isset($listData['cards']) && is_array($listData['cards'])) {
+                    foreach ($listData['cards'] as $card) {
+                        // Check if card has members
+                        if (isset($card['members']) && is_array($card['members'])) {
+                            foreach ($card['members'] as $member) {
+                                // Get member name
+                                $memberName = $member['fullName'] ?? $member['username'] ?? 'Unknown';
+                                
+                                if (!isset($devMap[$memberName])) {
+                                    $devMap[$memberName] = [
+                                        'name' => $memberName,
+                                        'point_personal' => 0,
+                                        'test_pass' => 0,
+                                        'bug' => 0,
+                                        'final_pass_point' => 0,
+                                        'cancel' => 0,
+                                        'sum_final' => 0,
+                                        'remark' => '',
+                                        'day_off' => 'No'
+                                    ];
+                                }
+                                
+                                // Count the bug
+                                $devMap[$memberName]['bug']++;
+                            }
+                        } else {
+                            // If no members assigned, count as 'Unassigned'
+                            if (!isset($devMap['Unassigned'])) {
+                                $devMap['Unassigned'] = [
+                                    'name' => 'Unassigned',
+                                    'point_personal' => 0,
+                                    'test_pass' => 0,
+                                    'bug' => 0,
+                                    'final_pass_point' => 0,
+                                    'cancel' => 0,
+                                    'sum_final' => 0,
+                                    'remark' => '',
+                                    'day_off' => 'No'
+                                ];
+                            }
+                            $devMap['Unassigned']['bug']++;
+                        }
+                    }
+                }
+            }
+            
+            // Convert all developer arrays to objects
+            foreach ($devMap as $name => $data) {
+                $developers[] = (object)$data;
+            }
+        }
+        
+        // If still empty, return at least one developer
+        if (empty($developers)) {
+            $developers[] = (object)[
+                'name' => auth()->user()->name,
+                'point_personal' => 0,
+                'test_pass' => 0,
+                'bug' => 0,
+                'final_pass_point' => 0,
+                'cancel' => 0,
+                'sum_final' => 0,
+                'remark' => '',
+                'day_off' => 'No'
+            ];
+        }
+        
+        return $developers;
+    }
+    
+    /**
+     * Format backlog data for the template.
+     *
+     * @param array $reportData
+     * @return array
+     */
+    private function formatBacklogData($reportData)
+    {
+        $backlog = [];
+        
+        // If we have backlog data in the report, use it
+        if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
+            return $reportData['backlog'];
+        }
+        
+        // Otherwise, create a sample backlog entry
+        $backlog[] = (object)[
+            'sprint' => 'Current',
+            'personal' => auth()->user()->name,
+            'point_all' => 0,
+            'test_pass' => 0,
+            'bug' => 0,
+            'cancel' => 0,
+            'extra_personal' => '',
+            'extra_point' => 0
+        ];
+        
+        return $backlog;
     }
 }

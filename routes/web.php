@@ -54,6 +54,8 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     // Saved Reports Routes
     Route::resource('/saved-reports', SavedReportController::class);
     Route::post('/save-report', [SavedReportController::class, 'store'])->name('report.save');
+    Route::get('/saved-reports/{savedReport}/export-template', [SavedReportController::class, 'exportTemplate'])->name('saved-reports.export-template');
+    Route::post('/export-to-csv', [SavedReportController::class, 'exportToCsv'])->name('export.to.csv');
 
     // Minor Cases Routes
     Route::get('/minorcases', [MinorCasesController::class, 'index'])->name('minorcases');
@@ -110,6 +112,9 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
         Route::get("home", function () {
             return view('dashboard');
         })->name('home');
+        
+        // Add route for trello.log
+        Route::post('log', [TrelloController::class, 'logMessage'])->name('log');
     });
 
     // Non-admin routes
@@ -177,3 +182,5 @@ Route::get('/confirm', [ConfirmController::class, 'index'])->name('confirm');
 
 // routes/web.php
 Route::get('/complete', [CompleteController::class, 'index'])->name('complete');
+
+

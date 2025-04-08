@@ -1,0 +1,111 @@
+/* Dark Mode Styles for Cluster7 Application */
+
+/* Base dark theme colors */
+:root.dark-theme {
+    --bg-color: #121212;
+    --bg-secondary: #1e1e1e;
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+    --border-color: #2c2c2c;
+    --primary-color: #13A7FD;
+    --hover-color: #0c8ad8;
+    --card-bg: #1e1e1e;
+    --sidebar-bg: #1a1a1a;
+    --input-bg: #2c2c2c;
+    --input-text: #e0e0e0;
+    --success-bg: #0d2e14;
+    --success-text: #4ade80;
+    --error-bg: #3d1616;
+    --error-text: #f87171;
+}
+
+/* Apply dark theme to body and main elements */
+.dark-theme body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+}
+
+/* Sidebar styles */
+.dark-theme .bg-white {
+    background-color: var(--sidebar-bg);
+}
+
+.dark-theme .border-gray-200 {
+    border-color: var(--border-color);
+}
+
+.dark-theme .text-gray-500 {
+    color: var(--text-secondary);
+}
+
+.dark-theme .text-gray-900 {
+    color: var(--text-primary);
+}
+
+/* Main content area */
+.dark-theme .bg-gray-50 {
+    background-color: var(--bg-color);
+}
+
+/* Card elements */
+.dark-theme .bg-gray-100 {
+    background-color: var(--card-bg);
+}
+
+/* Alert boxes */
+.dark-theme .bg-green-100 {
+    background-color: var(--success-bg);
+}
+
+.dark-theme .text-green-700 {
+    color: var(--success-text);
+}
+
+.dark-theme .bg-red-100 {
+    background-color: var(--error-bg);
+}
+
+.dark-theme .text-red-700 {
+    color: var(--error-text);
+}
+
+/* Form elements */
+.dark-theme input,
+.dark-theme select,
+.dark-theme textarea {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--border-color);
+}
+
+/* Tables */
+.dark-theme table {
+    color: var(--text-primary);
+}
+
+.dark-theme tbody tr:nth-child(even) {
+    background-color: var(--bg-secondary);
+}
+
+/* Tooltip dark styles */
+.dark-theme .tooltip .tooltip-text {
+    background-color: rgba(50, 50, 50, 0.95);
+}
+
+/* SVG icons */
+.dark-theme svg {
+    fill: currentColor;
+}
+
+/* Role badge adjustments */
+.dark-theme .bg-red-100 {
+    background-color: rgba(220, 38, 38, 0.2);
+}
+
+.dark-theme .bg-blue-100 {
+    background-color: rgba(37, 99, 235, 0.2);
+}
+
+.dark-theme .bg-green-100 {
+    background-color: rgba(34, 197, 94, 0.2);
+}

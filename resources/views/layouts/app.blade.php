@@ -8,7 +8,9 @@
     <title>{{ config('app.name', 'Laravel') }} - @yield('title', 'Dashboard')</title>
     <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.2/dist/alpine.min.js" defer></script>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Dark Mode JS (separate file for easy removal) -->
+    <script src="{{ asset('build/assets/dark-mode.js') }}" defer></script>
+    @vite(['resources/css/app.css', 'resources/css/dark-mode.css', 'resources/js/app.js', 'resources/js/dark-mode.js'])
     <style>
         .sidebar-button {
             max-width: 90%;
@@ -82,19 +84,34 @@
                 <div class="flex items-center" :class="sidebarOpen ? 'flex' : 'hidden'">
                     <img src="{{ asset('Frame_25.png') }}" class="h-15 w-15">
                 </div>
-                <button
-                    @click="sidebarOpen = !sidebarOpen"
-                    class="p-2 rounded-lg hover:bg-[#13A7FD focus:outline-none">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4 transition-transform duration-300"
-                        :class="sidebarOpen ? 'transform rotate-180' : ''"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                    </svg>
-                </button>
+                <div class="flex items-center">
+                    <!-- Dark Mode Toggle Button -->
+                    <button id="dark-mode-toggle" class="p-2 rounded-lg hover:bg-gray-200 focus:outline-none mr-2">
+                        <!-- Moon Icon (Light Mode) -->
+                        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <!-- Sun Icon (Dark Mode) -->
+                        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
+
+                    <!-- Sidebar Toggle Button -->
+                    <button
+                        @click="sidebarOpen = !sidebarOpen"
+                        class="p-2 rounded-lg hover:bg-[#13A7FD focus:outline-none">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4 transition-transform duration-300"
+                            :class="sidebarOpen ? 'transform rotate-180' : ''"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- Profile Section -->
