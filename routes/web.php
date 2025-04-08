@@ -114,7 +114,9 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     Route::get('/sprints', [\App\Http\Controllers\SprintReportController::class, 'index'])->name('sprints.index');
     Route::get('/sprints/{sprint}', [\App\Http\Controllers\SprintReportController::class, 'showSprint'])->name('sprints.show');
     Route::get('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'showReport'])->name('sprint-reports.show');
-    Route::delete('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'delete'])->name('sprint-reports.delete');
+    Route::delete('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'delete'])
+        ->middleware(\App\Http\Middleware\AdminMiddleware::class)
+        ->name('sprint-reports.delete');
     Route::get('reports', [\App\Http\Controllers\SprintReportController::class, 'getUserReports'])->name('reports');
 
     // Backlog Routes

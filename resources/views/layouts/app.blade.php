@@ -117,12 +117,12 @@
                         Bug Backlog
                     </div>
                 </a>
-            
-
+        
                 <div class="px-4 py-2 mt-4 mb-2">
                     <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Reports</p>
                 </div>
 
+                @if(!auth()->user()->isAdmin())
                 <a href="{{ route('reports') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('reports') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -131,7 +131,7 @@
                        Reports
                     </div>
                 </a>
-
+                @endif
                 <a href="{{ route('story.points.report') }}" class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('story.points.report') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -140,7 +140,6 @@
                         Current Sprint Report
                     </div>
                 </a>
-
         
 <!-- Sprint Reports - Available for admin -->
                 @if(auth()->user()->isAdmin())

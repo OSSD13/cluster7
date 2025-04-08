@@ -126,42 +126,32 @@ class TrelloTeamController extends Controller
             // For non-admin users, filter the teams to show only the ones they are a direct member of
             if (!auth()->user()->isAdmin()) {
                 $currentUserName = auth()->user()->name;
-                
-                // First, identify which boards the user is directly a member of
-                $userDirectBoards = [];
-                $seenTeams = []; // Track unique teams by name
+                $filteredTeams = [];
+                $seenTeamNames = []; // Track team names we've already added
                 
                 foreach ($teams as $team) {
-                    $isDirectMember = false;
+                    // Skip if we've already added a team with this name
+                    if (in_array(strtolower($team['name']), $seenTeamNames)) {
+                        continue;
+                    }
                     
-                    // Check if the current user is specifically listed as a member of this board
+                    // Check if user is a member of this team
                     if (isset($team['members']) && is_array($team['members'])) {
                         foreach ($team['members'] as $member) {
                             if (isset($member['fullName']) && $member['fullName'] === $currentUserName) {
-                                $isDirectMember = true;
-                                // Only add if we haven't seen this team name before
-                                if (!in_array($team['name'], $seenTeams)) {
-                                    $userDirectBoards[] = $team['id'];
-                                    $seenTeams[] = $team['name'];
-                                }
+                                // Add team to filtered list and mark name as seen
+                                $filteredTeams[] = $team;
+                                $seenTeamNames[] = strtolower($team['name']);
                                 break;
                             }
                         }
                     }
                 }
                 
-                // Now filter to only include boards where user is a direct member
-                $teams = array_values(array_filter($teams, function($team) use ($userDirectBoards) {
-                    return in_array($team['id'], $userDirectBoards);
-                }));
-                
-                // If no direct board memberships were found, the array will be empty
-                if (empty($teams)) {
-                    // Could leave empty, showing "No teams found" message
-                    // Or could add logic here to include workspace-level access if needed
-                }
+                // Replace original teams array with filtered one
+                $teams = $filteredTeams;
             }
-            
+            // Sort teams by name
             return view('trello.teams.index', compact('teams', 'organizations'));
         } catch (\Exception $e) {
             Log::error('Error connecting to Trello API: ' . $e->getMessage());
@@ -324,7 +314,7 @@ class TrelloTeamController extends Controller
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function allBoards()
-    {
+    {          
         if (!$this->trelloService->hasValidCredentials()) {
             return redirect()->route('trello.settings.index')
                 ->with('error', 'Trello API credentials are not configured. Please set them up first.');

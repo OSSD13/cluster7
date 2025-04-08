@@ -448,15 +448,14 @@ class SprintReportController extends Controller
     public function delete($reportId)
     {
         try {
+            // Check if user is an admin can delete reports
+            // If not, redirect back with an error message
+            if (!auth()->user()->isAdmin()) {
+                return redirect()->back()->with('error', 'Access denied. Only administrators can delete reports.');
+            }
             $report = SprintReport::findOrFail($reportId);
-            
-            // Check if user has permission to delete this report
-            // For now, we'll allow any authenticated user to delete reports
-            // In a production environment, you might want to add role-based permissions
-            
             $sprintId = $report->sprint_id;
             $report->delete();
-            
             return redirect()->route('sprints.show', $sprintId)
                 ->with('success', 'Report deleted successfully.');
         } catch (\Exception $e) {

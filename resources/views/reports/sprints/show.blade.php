@@ -159,13 +159,17 @@
                                                 {{ $report->is_auto_generated ? 'Auto' : 'Manual' }}
                                             </span>
                                         </td>
+                                        <!-- Actions -->
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('sprint-reports.show', $report->id) }}" class="text-primary-600 hover:text-primary-900 mr-3">View</a>
+                                            <!--if user is admin show edit and delete-->
+                                            @if(auth()->user()->isAdmin())
                                             <form action="{{ route('sprint-reports.delete', $report->id) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this report?')">Delete</button>
                                             </form>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
