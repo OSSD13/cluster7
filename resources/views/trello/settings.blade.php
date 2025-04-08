@@ -201,15 +201,15 @@
 </div>
 <!-- Connection Test Result Modal -->
 <div id="connection-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
-    <div class="modal-overlay fixed inset-0 bg-black opacity-50"></div>
+    <div class="fixed inset-0 bg-black bg-opacity-50"></div>
 
-    <div class="modal-container bg-white w-full max-w-md mx-auto rounded-lg shadow-lg z-50 overflow-y-auto">
-        <div class="modal-content py-4 text-left px-6">
+    <div class="bg-white w-full max-w-md mx-auto rounded-lg shadow-lg z-50 overflow-y-auto">
+        <div class="p-6">
             <!-- Modal Header -->
             <div class="flex justify-between items-center pb-3 border-b">
                 <h3 class="text-xl font-semibold text-gray-900" id="modal-title">Testing Connection...</h3>
-                <button id="close-modal-button" class="modal-close cursor-pointer z-50">
-                    <svg class="fill-current text-gray-500 hover:text-gray-800" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
+                <button id="close-modal-button" class="text-gray-500 hover:text-gray-800">
+                    <svg class="fill-current" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
                         <path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"></path>
                     </svg>
                 </button>
@@ -253,7 +253,7 @@
 
             <!-- Modal Footer -->
             <div class="border-t border-gray-200 pt-3 flex justify-end">
-                <button id="modal-close-btn" class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md">
+                <button id="modal-close-btn" class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-300">
                     Close
                 </button>
             </div>
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const apiTokenInput = document.getElementById('trello_api_token');
 
     const loadingIndicator = document.getElementById('loading-indicator');
-    // const successResult = document.getElementById('success-result');
+    const successResult = document.getElementById('success-result');
     const errorResult = document.getElementById('error-result');
     const modalTitle = document.getElementById('modal-title');
     const successMessage = document.getElementById('success-message');
@@ -282,6 +282,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const userInfo = document.getElementById('user-info');
     const showDebugBtn = document.getElementById('show-debug-btn');
     const debugInfo = document.getElementById('debug-info');
+    const boardsContainer = document.getElementById('boards-container');
+    const boardsList = document.getElementById('boards-list');
 
     function openModal() {
         modal.classList.remove('hidden');
@@ -290,6 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
         successResult.classList.add('hidden');
         errorResult.classList.add('hidden');
         debugInfo.classList.add('hidden');
+        boardsContainer.classList.add('hidden');
         modalTitle.textContent = 'Testing Connection...';
     }
 
@@ -309,11 +312,11 @@ document.addEventListener('DOMContentLoaded', function() {
         openModal();
 
         // Send the API request to test the connection
-        fetch('{{ url(route('trello.test-connection')) }}', {
+        fetch('{{ route('trello.test-connection') }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({
                 trello_api_key: apiKey,
@@ -332,9 +335,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Display boards if available
                 if (data.boards && data.boards.length > 0) {
-                    const boardsContainer = document.getElementById('boards-container');
-                    const boardsList = document.getElementById('boards-list');
-
                     boardsContainer.classList.remove('hidden');
                     boardsList.innerHTML = '';
 
@@ -350,11 +350,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 errorMessage.textContent = data.message;
 
                 // Show debug info if available
-                if (data.debug_info) {
-                    const debugInfo = document.getElementById('debug-info');
+                if (data.details) {
                     const debugContent = document.getElementById('debug-content');
                     debugInfo.classList.remove('hidden');
-                    debugContent.textContent = JSON.stringify(data.debug_info, null, 2);
+                    debugContent.textContent = JSON.stringify(data.details, null, 2);
                 }
             }
         })
