@@ -15,6 +15,9 @@ use App\Http\Controllers\BacklogController;
 use App\Http\Controllers\ConfirmController;
 use App\Http\Controllers\CompleteController;
 use App\Http\Controllers\MinorCasesController;
+use Illuminate\Support\Facades\Http;
+use App\Models\Setting;
+use App\Http\Controllers\MinorCaseController;
 
 
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
@@ -56,8 +59,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     Route::post('/save-report', [SavedReportController::class, 'store'])->name('report.save');
 
     // Minor Cases Routes
-    Route::get('/minorcases', [MinorCasesController::class, 'index'])->name('minorcases');
-    Route::get('/report-data', [MinorCasesController::class, 'getMinorCasesData'])->name('minor-cases.data');
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/minorcases', [App\Http\Controllers\MinorCasesController::class, 'index'])->name('minorcases');
+        Route::get('/minor-cases/data', [App\Http\Controllers\MinorCasesController::class, 'getMinorCasesData'])->name('minor-cases.data');
+    });
     
     // Admin Only Routes
     Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
@@ -165,3 +170,97 @@ Route::get('/confirm', [ConfirmController::class, 'index'])->name('confirm');
 
 // routes/web.php
 Route::get('/complete', [CompleteController::class, 'index'])->name('complete');
+
+// Test Trello API route
+Route::get('/test-trello-api', function () {
+    return view('trello.api-test');
+});
+
+// Trello API test endpoints
+Route::prefix('trello-api-test')->name('trello.api.test.')->group(function () {
+    Route::get('/connection', function () {
+        $trelloService = app(App\Services\TrelloService::class);
+        $result = $trelloService->testConnection();
+        
+        return response()->json([
+            'success' => $result['success'] ?? false,
+            'message' => $result['message'] ?? 'Connection test failed',
+            'user' => $result['user'] ?? null,
+        ]);
+    })->name('connection');
+    
+    Route::get('/boards', function () {
+        $trelloService = app(App\Services\TrelloService::class);
+        
+        try {
+            $boards = $trelloService->getBoards(
+                ['name', 'desc', 'url', 'idOrganization', 'closed', 'shortUrl'],
+                [
+                    'filter' => 'open',
+                    'organization' => true,
+                    'organization_fields' => 'name,displayName'
+                ]
+            );
+            
+            return response()->json([
+                'success' => true,
+                'boards' => $boards
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching boards: ' . $e->getMessage()
+            ], 500);
+        }
+    })->name('boards');
+    
+    Route::get('/board/{boardId}/cards', function ($boardId) {
+        $trelloService = app(App\Services\TrelloService::class);
+        
+        try {
+            $response = Http::withOptions(['verify' => false])->get($trelloService->getBaseUrl() . "boards/{$boardId}/cards", [
+                'key' => Setting::get('trello_api_key'),
+                'token' => Setting::get('trello_api_token'),
+                'fields' => 'id,name,desc,idList,labels',
+                'members' => 'true',
+                'member_fields' => 'id,fullName,username',
+                'limit' => 10
+            ]);
+            
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'cards' => $response->json()
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch cards: ' . $response->status()
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching cards: ' . $e->getMessage()
+            ], 500);
+        }
+    })->name('board.cards');
+});
+
+// Add direct routes for minor cases
+Route::get('/api/minor-cases', [App\Http\Controllers\MinorCaseController::class, 'index']);
+Route::post('/api/minor-cases', [App\Http\Controllers\MinorCaseController::class, 'store']);
+Route::put('/api/minor-cases/{id}', [App\Http\Controllers\MinorCaseController::class, 'update']);
+Route::delete('/api/minor-cases/{id}', [App\Http\Controllers\MinorCaseController::class, 'destroy']);
+
+// Add a route for boards
+Route::get('/api/boards', function () {
+    $trelloService = app(App\Services\TrelloService::class);
+    
+    try {
+        $boards = $trelloService->getBoards(['id', 'name']);
+        return response()->json($boards);
+    } catch (\Exception $e) {
+        return response()->json([]);
+    }
+});

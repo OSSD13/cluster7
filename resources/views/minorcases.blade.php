@@ -106,114 +106,90 @@
 
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                // Fixed year for sprint date ranges
-                const SPRINT_YEAR = 2025;
-
-                // Function to get date range for a sprint
-                function getSprintDateRange(sprintNumber) {
-                    const sprintStartDate = new Date(SPRINT_YEAR, 0, 1); // Jan 1 of fixed year
-
-                    // Calculate the start date (each sprint is 1 week, starting from Jan 1)
-                    const startDay = (sprintNumber - 1) * 7 + 1;
-                    sprintStartDate.setDate(startDay);
-
-                    // Calculate the end date (5 days later for a work week)
-                    const sprintEndDate = new Date(sprintStartDate);
-                    sprintEndDate.setDate(sprintStartDate.getDate() + 4);
-
-                    // Format dates
-                    const options = {
-                        day: 'numeric',
-                        month: 'long',
-                    };
-                    const startDateStr = sprintStartDate.getDate();
-                    const endDateStr = sprintEndDate.toLocaleDateString('en-GB', options);
-
-                    return `${startDateStr} - ${endDateStr} ${SPRINT_YEAR}`;
-                }
-
-                // Function to toggle dropdown menu visibility
-                function setupDropdown(buttonId, menuId, selectedId) {
-                    document.getElementById(buttonId).addEventListener("click", function() {
-                        document.getElementById(menuId).classList.toggle("hidden");
-                    });
-
-                    document.querySelectorAll(`#${menuId} a`).forEach(item => {
-                        item.addEventListener("click", function() {
-                            document.getElementById(selectedId).textContent = this.textContent;
-                            document.getElementById(menuId).classList.add("hidden");
-
-                            // Only update displayed sprints when sprint range changes
-                            if (menuId === "sprintDropdownMenu") {
-                                updateDisplayedSprints();
-                            }
-                        });
-                    });
-
-                    document.addEventListener("click", function(event) {
-                        const dropdown = document.getElementById(menuId);
-                        const button = document.getElementById(buttonId);
-                        if (!button.contains(event.target) && !dropdown.contains(event.target)) {
-                            dropdown.classList.add("hidden");
-                        }
-                    });
-                }
-
-                // Setup both dropdowns
-                setupDropdown("yearDropdownButton", "yearDropdownMenu", "selectedYear");
-                setupDropdown("sprintDropdownButton", "sprintDropdownMenu", "selectedSprint");
-
-                // Function to load report data
-                function loadReportData() {
-                    // AJAX request to get data from report.blade.php
+                // Load minor cases data from API
+                function loadMinorCases() {
+                    // Show loading indicator
+                    const sprintContainer = document.getElementById('sprintContainer');
+                    sprintContainer.innerHTML = `
+                        <div class="bg-white rounded-lg p-4 mb-4 flex items-center justify-center">
+                            <div class="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500 mr-2"></div>
+                            <span>Loading minor cases...</span>
+                        </div>
+                    `;
+                    
                     fetch('{{ route("minor-cases.data") }}')
                         .then(response => response.json())
                         .then(data => {
-                            // Process the report data
-                            populateSprintsFromReport(data);
+                            // Process the data
+                            console.log('Loaded minor cases:', data);
+                            populateSprintsFromData(data);
                         })
                         .catch(error => {
-                            console.error('Error loading report data:', error);
-                            // Still load some demo data even if report data fails
-                            loadDemoData();
+                            console.error('Error loading minor cases data:', error);
+                            // Show error message
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'bg-red-100 text-red-700 p-4 rounded-lg mb-4';
+                            errorDiv.innerHTML = `
+                                <p class="font-bold">Error Loading Data</p>
+                                <p>${error.message}</p>
+                            `;
+                            document.getElementById('sprintContainer').innerHTML = '';
+                            document.getElementById('sprintContainer').appendChild(errorDiv);
                         });
                 }
 
-                // Populate sprints with data from report
-                function populateSprintsFromReport(reportData) {
-                    const sprintContainer = document.getElementById("sprintContainer");
-                    sprintContainer.innerHTML = '';
+                // Edit minor case
+                function editMinorCase(id) {
+                    // Get the minor case details
+                    fetch(`/api/minor-cases/${id}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Minor case to edit:', data);
+                            // Populate form fields with data
+                            document.getElementById('minor-case-id').value = data.id;
+                            document.getElementById('minor-case-board-id').value = data.board_id;
+                            document.getElementById('minor-case-sprint').value = data.sprint;
+                            document.getElementById('minor-case-card').value = data.card;
+                            document.getElementById('minor-case-description').value = data.description || '';
+                            document.getElementById('minor-case-member').value = data.member;
+                            document.getElementById('minor-case-points').value = data.points;
+                            
+                            // Show modal
+                            document.getElementById('minor-case-modal').classList.remove('hidden');
+                            document.getElementById('minor-case-modal-title').textContent = 'Edit Minor Case';
+                        })
+                        .catch(error => {
+                            console.error('Error loading minor case details:', error);
+                            alert('Error loading minor case details: ' + error.message);
+                        });
+                }
 
-                    // Group data by sprint
-                    const sprintGroups = {};
-
-                    reportData.forEach(item => {
-                        if (!sprintGroups[item.sprint_number]) {
-                            sprintGroups[item.sprint_number] = [];
-                        }
-                        sprintGroups[item.sprint_number].push(item);
-                    });
-
-                    // Sort sprint numbers in descending order (highest first)
-                    const sortedSprintNumbers = Object.keys(sprintGroups).sort((a, b) => b - a);
-
-                    // Create sprint sections for each group in descending order
-                    sortedSprintNumbers.forEach(sprintNumber => {
-                        const sprintItems = sprintGroups[sprintNumber];
-                        const sprintDiv = createSprintDiv(sprintNumber, sprintItems);
-                        sprintContainer.appendChild(sprintDiv);
-                    });
-
-                    // Set up event listeners for the newly created elements
-                    setupSprintEventListeners();
-
-                    // Set report-linked sprints to always be visible
-                    document.querySelectorAll('.sprint-from-report').forEach(sprintContent => {
-                        sprintContent.classList.add('sprint-with-data');
-                    });
-
-                    // Update displayed sprints based on filters
-                    updateDisplayedSprints();
+                // Delete minor case
+                function deleteMinorCase(id) {
+                    if (confirm('Are you sure you want to delete this minor case?')) {
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                        
+                        fetch(`/api/minor-cases/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to delete minor case');
+                            }
+                            // Reload data after successful deletion
+                            loadMinorCases();
+                            // Show success message
+                            alert('Minor case deleted successfully');
+                        })
+                        .catch(error => {
+                            console.error('Error deleting minor case:', error);
+                            alert('Error deleting minor case: ' + error.message);
+                        });
+                    }
                 }
 
                 // Create a sprint div with data
@@ -222,36 +198,37 @@
                     sprintDiv.className = "bg-blue-100 rounded-lg p-3 mb-3 sprint-block";
                     sprintDiv.dataset.sprintNumber = sprintNumber;
 
-                    // Determine if this sprint has data
-                    const hasData = sprintItems && sprintItems.length > 0;
-                    const dataClass = hasData ? "sprint-from-report" : "";
-
-                    // Get the date range for this sprint (always using fixed year)
+                    // Get the date range
                     const dateRange = getSprintDateRange(parseInt(sprintNumber));
 
                     sprintDiv.innerHTML = `
-            <div class="sprint-header flex justify-between items-center cursor-pointer text-blue-700 font-bold text-lg" >
-                <span>Sprint #${sprintNumber} <span class="sprint-date text-sm text-center font-normal">${dateRange}</span></span>
-                <span class="collapse-icon">▲</span>
-            </div>
-            <div class="sprint-content mt-2 bg-white p-3 rounded-lg shadow-md style="display: block;" ${dataClass}">
-                <table class="w-full border-collapse border border-gray-300">
-                    <thead>
-                        <tr class="bg-blue-200">
-                            <th class="border border-gray-300 px-4 py-2">Number</th>
-                            <th class="border border-gray-300 px-4 py-2">Card Detail</th>
-                            <th class="border border-gray-300 px-4 py-2">Description</th>
-                            <th class="border border-gray-300 px-4 py-2">Member</th>
-                            <th class="border border-gray-300 px-4 py-2">Point</th>
-                            <th class="border border-gray-300 px-4 py-2 w-54">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="card-list">
-                        ${hasData ? renderCardRows(sprintItems) : '<tr class="text-gray-500 italic no-data"><td colspan="6" class="text-center py-2">No data available</td></tr>'}
-                    </tbody>
-                </table>
-            </div>
-        `;
+                        <div class="sprint-header flex justify-between items-center cursor-pointer text-blue-700 font-bold text-lg">
+                            <span>Sprint #${sprintNumber} <span class="sprint-date text-sm text-center font-normal">${dateRange}</span></span>
+                            <span class="collapse-icon">▲</span>
+                        </div>
+                        <div class="sprint-content mt-2 bg-white p-3 rounded-lg shadow-md">
+                            <table class="w-full border-collapse border border-gray-300">
+                                <thead>
+                                    <tr class="bg-blue-200">
+                                        <th class="border border-gray-300 px-4 py-2">Sprint</th>
+                                        <th class="border border-gray-300 px-4 py-2">Card</th>
+                                        <th class="border border-gray-300 px-4 py-2">Description</th>
+                                        <th class="border border-gray-300 px-4 py-2">Member</th>
+                                        <th class="border border-gray-300 px-4 py-2">Points</th>
+                                        <th class="border border-gray-300 px-4 py-2 w-54">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="card-list">
+                                    ${sprintItems.length > 0 ? renderCardRows(sprintItems) : '<tr class="text-gray-500 italic no-data"><td colspan="6" class="text-center py-2">No data available</td></tr>'}
+                                </tbody>
+                            </table>
+                            <div class="mt-4">
+                                <button class="add-case-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded" data-sprint="${sprintNumber}">
+                                    Add Minor Case
+                                </button>
+                            </div>
+                        </div>
+                    `;
 
                     return sprintDiv;
                 }
@@ -259,27 +236,47 @@
                 // Render card rows from sprint items
                 function renderCardRows(items) {
                     return items.map(item => `
-            <tr>
-                <td class="border border-gray-300 px-4 py-2 text-center">#${item.number || ''}</td>
-                <td class="border border-gray-300 px-4 py-2 text-center">${item.card_detail || ''}</td>
-                <td class="border border-gray-300 px-4 py-2 text-center" style="width: 40%;">${item.description || ''}</td>
-                <td class="border border-gray-300 px-4 py-2 text-center"><span class="bg-green-50 text-green-600 text-xs px-2 py-1 rounded mr-2">${item.teamName || ''}</span>${item.member || ''}</td>
-                <td class="border border-gray-300 px-4 py-2 text-center">${item.point || ''}</td>
-                <td class="border border-gray-300 px-4 py-2 text-center">
-                    <button class="edit-btn bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded mr-1">
-                        <svg class="h-5 w-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                    </button>
-                    <button class="delete-btn bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
-                        <svg class="h-5 w-5 text-red-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+                        <tr data-id="${item.id}">
+                            <td class="border border-gray-300 px-4 py-2 text-center">${item.sprint_number || ''}</td>
+                            <td class="border border-gray-300 px-4 py-2">${item.card || ''}</td>
+                            <td class="border border-gray-300 px-4 py-2" style="max-width: 400px;">
+                                <div class="max-h-28 overflow-y-auto">
+                                    ${item.description || 'No description'}
+                                </div>
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2 text-center">${item.member || ''}</td>
+                            <td class="border border-gray-300 px-4 py-2 text-center">${parseFloat(item.points || 0).toFixed(1)}</td>
+                            <td class="border border-gray-300 px-4 py-2 text-center">
+                                <div class="flex justify-center space-x-2">
+                                    <button class="edit-btn bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded mr-1" data-id="${item.id}">
+                                        <svg class="h-5 w-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </svg>
+                                    </button>
+                                    <button class="delete-btn bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded" data-id="${item.id}">
+                                        <svg class="h-5 w-5 text-red-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Calculate sprint date range
+                function getSprintDateRange(sprintNumber) {
+                    const currentYear = new Date().getFullYear();
+                    const startDate = new Date(currentYear, 0, 1);
+                    startDate.setDate(startDate.getDate() + (sprintNumber - 1) * 7);
+                    
+                    const endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6);
+                    
+                    return `${startDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} - ${endDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}`;
                 }
 
                 // Set up event listeners for sprint elements
@@ -290,14 +287,7 @@
                             const content = header.nextElementSibling;
                             const icon = header.querySelector('.collapse-icon');
 
-                            // Don't hide if it has the class for having data from report
-                            if (content.classList.contains('sprint-from-report')) {
-                                // Only allow toggling the icon
-                                icon.textContent = icon.textContent === '▲' ? '▼' : '▲';
-                                return;
-                            }
-
-                            if (content.style.display === 'none' || content.style.display === '') {
+                            if (content.style.display === 'none') {
                                 content.style.display = 'block';
                                 icon.textContent = '▲';
                             } else {
@@ -307,282 +297,225 @@
                         });
                     });
 
-                    // Setup edit buttons
-                    document.querySelectorAll(".edit-btn").forEach(button => {
-                        button.addEventListener("click", function() {
-                            let row = this.closest("tr");
-                            let cells = row.querySelectorAll("td:not(:last-child)");
-
-                            // Store original SVG content
-                            const originalSvgContent = `<svg class="h-5 w-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24"
-         xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
-         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>`;
-
-                            // Check if we're in edit mode by looking for inputs
-                            const isEditing = row.querySelector("input") !== null;
-
-                            if (!isEditing) {
-                                // Switch to edit mode
-                                cells.forEach(cell => {
-                                    let value = cell.textContent.trim();
-                                    // For the first cell, remove the # symbol if present
-                                    if (cell === cells[0] && value.startsWith('#')) {
-                                        value = value.substring(1);
-                                    }
-                                    cell.innerHTML =
-                                        `<input type="text" value="${value}" class="border p-1 w-full">`;
-                                });
-                                this.innerHTML = "Save";
-                            } else {
-                                // Save edited values
-                                cells.forEach((cell, index) => {
-                                    let input = cell.querySelector("input");
-                                    if (input) {
-                                        // For the first cell, add the # symbol back
-                                        if (index === 0) {
-                                            cell.textContent = `#${input.value}`;
-                                        } else {
-                                            if (index === 3) {
-                                                const [team, ...memberParts] = input.value
-                                                    .split(' ');
-                                                const member = memberParts.join(' ');
-                                                cell.innerHTML =
-                                                    `<span class="bg-green-50 text-green-600 text-xs px-2 py-1 rounded mr-2">${team}</span>${member}`;
-                                            } else {
-                                                cell.textContent = input.value;
-                                            }
-                                        }
-                                    }
-                                });
-                                // Restore original SVG icon
-                                this.innerHTML = originalSvgContent;
-                            }
+                    // Edit button handlers
+                    document.querySelectorAll('.edit-btn').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const id = this.dataset.id;
+                            editMinorCase(id);
                         });
                     });
 
-                    // Setup delete buttons
-                    document.querySelectorAll(".delete-btn").forEach(button => {
-                        button.addEventListener("click", function() {
-                            let row = this.closest("tr");
-                            if (confirm("Are you sure you want to delete this row?")) {
-                                row.remove();
-
-                                // Check if this was the last row and update "no data" message if needed
-                                const tbody = this.closest("tbody");
-                                if (tbody.querySelectorAll("tr").length === 0) {
-                                    tbody.innerHTML =
-                                        '<tr class="text-gray-500 italic no-data"><td colspan="6" class="text-center py-2">No data available</td></tr>';
-                                }
-                            }
+                    // Delete button handlers
+                    document.querySelectorAll('.delete-btn').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const id = this.dataset.id;
+                            deleteMinorCase(id);
                         });
                     });
 
-                    // Add card logic for forms
-                    document.querySelectorAll('.sprint-content form').forEach(form => {
-                        form.addEventListener('submit', (e) => {
-                            e.preventDefault();
+                    // Add case button handlers
+                    document.querySelectorAll('.add-case-btn').forEach(button => {
+                        button.addEventListener('click', function() {
+                            // Reset form
+                            document.getElementById('minor-case-form').reset();
+                            document.getElementById('minor-case-id').value = '';
+                            document.getElementById('minor-case-sprint').value = this.dataset.sprint;
+                            
+                            // Show modal with title
+                            document.getElementById('minor-case-modal').classList.remove('hidden');
+                            document.getElementById('minor-case-modal-title').textContent = 'Add Minor Case';
+                        });
+                    });
+                }
 
-                            const inputs = form.querySelectorAll('input');
-                            const values = Array.from(inputs).map(input => input.value.trim());
-
-                            if (values.some(val => !val)) return;
-
-                            const tbody = form.nextElementSibling.querySelector('.card-list');
-
-                            // Remove "No data" row
-                            const noData = tbody.querySelector('.no-data');
-                            if (noData) noData.remove();
-
-                            const row = document.createElement('tr');
-
-                            // Add data cells
-                            values.forEach((val, index) => {
-                                const td = document.createElement('td');
-                                td.className = "border border-gray-300 px-4 py-2 text-center";
-                                td.textContent = index === 0 ? `#${val}` : val;
-                                row.appendChild(td);
-                            });
-
-                            // Add action buttons
-                            const actionCell = document.createElement('td');
-                            actionCell.className = "border border-gray-300 px-4 py-2 text-center";
-                            actionCell.innerHTML = `
-                    <button class="edit-btn bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded mr-1">
-                        <svg class="h-5 w-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                    </button>
-                    <button class="delete-btn bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
-                        <svg class="h-5 w-5 text-red-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                    </button>
-                `;
-                            row.appendChild(actionCell);
-
-                            tbody.appendChild(row);
-
-                            // Set up event listeners for the new buttons
-                            const editBtn = actionCell.querySelector('.edit-btn');
-                            const deleteBtn = actionCell.querySelector('.delete-btn');
-
-                            // Store original SVG content
-                            const originalSvgContent = editBtn.innerHTML;
-
-                            editBtn.addEventListener('click', function() {
-                                let cells = row.querySelectorAll("td:not(:last-child)");
-
-                                // Check if we're in edit mode by looking for inputs
-                                const isEditing = row.querySelector("input") !== null;
-
-                                if (!isEditing) {
-                                    // Switch to edit mode
-                                    cells.forEach(cell => {
-                                        let value = cell.textContent.trim();
-                                        // For the first cell, remove the # symbol if present
-                                        if (cell === cells[0] && value.startsWith(
-                                                '#')) {
-                                            value = value.substring(1);
-                                        }
-                                        cell.innerHTML =
-                                            `<input type="text" value="${value}" class="border p-1 w-full">`;
+                // Add minor case form handler
+                const minorCaseForm = document.getElementById('minor-case-form');
+                if (minorCaseForm) {
+                    minorCaseForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        
+                        const id = document.getElementById('minor-case-id').value;
+                        const boardId = document.getElementById('minor-case-board-id').value;
+                        const sprint = document.getElementById('minor-case-sprint').value;
+                        const card = document.getElementById('minor-case-card').value;
+                        const description = document.getElementById('minor-case-description').value;
+                        const member = document.getElementById('minor-case-member').value;
+                        const points = document.getElementById('minor-case-points').value;
+                        
+                        const data = {
+                            board_id: boardId,
+                            sprint: sprint,
+                            card: card,
+                            description: description,
+                            member: member,
+                            points: parseFloat(points)
+                        };
+                        
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                        const url = id ? `/api/minor-cases/${id}` : '/api/minor-cases';
+                        const method = id ? 'PUT' : 'POST';
+                        
+                        fetch(url, {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                if (response.status === 422) {
+                                    return response.json().then(data => {
+                                        throw new Error(Object.values(data.errors).flat().join('\n'));
                                     });
-                                    this.innerHTML = "Save";
-                                } else {
-                                    // Save edited values
-                                    cells.forEach((cell, index) => {
-                                        let input = cell.querySelector("input");
-                                        if (input) {
-                                            // For the first cell, add the # symbol back
-                                            if (index === 0) {
-                                                cell.textContent = `#${input.value}`;
-                                            } else {
-                                                if (index === 3) {
-                                                    const [team, ...memberParts] = input
-                                                        .value.split(' ');
-                                                    const member = memberParts.join(
-                                                        ' ');
-                                                    cell.innerHTML =
-                                                        `<span class="bg-green-50 text-green-600 text-xs px-2 py-1 rounded mr-2">${team}</span>${member}`;
-                                                } else {
-                                                    cell.textContent = input.value;
-                                                }
-                                            }
-                                        }
-                                    });
-                                    // Restore original SVG icon
-                                    this.innerHTML = originalSvgContent;
                                 }
-                            });
-
-                            form.reset();
+                                throw new Error(`Failed to ${id ? 'update' : 'add'} minor case`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Reset form and close modal
+                            minorCaseForm.reset();
+                            document.getElementById('minor-case-modal').classList.add('hidden');
+                            
+                            // Reload data
+                            loadMinorCases();
+                            
+                            // Show success message
+                            alert(`Minor case ${id ? 'updated' : 'added'} successfully`);
+                        })
+                        .catch(error => {
+                            console.error(`Error ${id ? 'updating' : 'adding'} minor case:`, error);
+                            alert(`Error ${id ? 'updating' : 'adding'} minor case: ${error.message}`);
                         });
                     });
                 }
 
-                // Update displayed sprints based on filters
-                function updateDisplayedSprints() {
-                    const sprintRange = document.getElementById('selectedSprint').textContent;
-
-                    // Parse sprint range (e.g., "Sprint 1 ~ 10" to [1, 10])
-                    const rangeMatch = sprintRange.match(/Sprint (\d+) ~ (\d+)/);
-                    const startSprint = rangeMatch ? parseInt(rangeMatch[1]) : 1;
-                    const endSprint = rangeMatch ? parseInt(rangeMatch[2]) : 10;
-
-                    // Show/hide sprints based on range
-                    document.querySelectorAll('.sprint-block').forEach(sprintBlock => {
-                        const sprintNumber = parseInt(sprintBlock.dataset.sprintNumber);
-
-                        if (sprintNumber >= startSprint && sprintNumber <= endSprint) {
-                            sprintBlock.style.display = 'block';
-                        } else {
-                            sprintBlock.style.display = 'none';
-                        }
+                // Close modal button
+                const cancelMinorCaseBtn = document.getElementById('cancel-minor-case');
+                if (cancelMinorCaseBtn) {
+                    cancelMinorCaseBtn.addEventListener('click', function() {
+                        document.getElementById('minor-case-modal').classList.add('hidden');
                     });
                 }
 
-                // Function to load demo data if report data is not available
-                function loadDemoData() {
-                    const demoData = [{
-                            sprint_number: 13,
-                            data: [{
-                                    number: '1',
-                                    card_detail: 'Update UI',
-                                    description: 'Update login page',
-                                    member: 'John',
-                                    teamName: 'Alhpa',
-                                    point: 3
-                                },
-                                {
-                                    number: '2',
-                                    card_detail: 'Fix bug',
-                                    description: 'This page displays all backlog bugs from previous sprints',
-                                    member: 'Sarah',
-                                    teamName: 'Alhpa',
-                                    point: 2
-                                }
-                            ]
-                        },
-                        {
-                            sprint_number: 1,
-                            data: [{
-                                number: '1',
-                                card_detail: 'New feature',
-                                description: 'Add dashboard',
-                                member: 'Mike',
-                                teamName: 'Alhpa',
-                                point: 5
-                            }]
-                        },
-                        {
-                            sprint_number: 3,
-                            data: [{
-                                number: '1',
-                                card_detail: 'New feature',
-                                description: 'Add dashboard',
-                                member: 'Mike',
-                                teamName: 'Alhpa',
-                                point: 5
-                            }]
-                        },
-                        {
-                            sprint_number: 14,
-                            data: [{
-                                number: '1',
-                                card_detail: 'New feature',
-                                description: 'Add dashboard',
-                                member: 'Mike',
-                                teamName: 'Alhpa',
-                                point: 5
-                            }]
-                        }
-                    ];
+                // Populate sprints with data
+                function populateSprintsFromData(data) {
+                    const sprintContainer = document.getElementById('sprintContainer');
+                    sprintContainer.innerHTML = '';
 
-                    const formattedData = [];
-                    demoData.forEach(sprint => {
-                        sprint.data.forEach(item => {
-                            formattedData.push({
-                                sprint_number: sprint.sprint_number,
-                                number: item.number,
-                                card_detail: item.card_detail,
-                                description: item.description,
-                                teamName: item.teamName,
-                                member: item.member,
-                                point: item.point
-                            });
-                        });
+                    // Group data by sprint
+                    const sprintGroups = {};
+
+                    data.forEach(item => {
+                        if (!sprintGroups[item.sprint_number]) {
+                            sprintGroups[item.sprint_number] = [];
+                        }
+                        sprintGroups[item.sprint_number].push(item);
                     });
 
-                    populateSprintsFromReport(formattedData);
+                    // Sort sprint numbers in descending order (highest first)
+                    const sortedSprintNumbers = Object.keys(sprintGroups).sort((a, b) => b - a);
+
+                    // Create sprint sections for each group
+                    sortedSprintNumbers.forEach(sprintNumber => {
+                        const sprintItems = sprintGroups[sprintNumber];
+                        sprintContainer.appendChild(createSprintDiv(sprintNumber, sprintItems));
+                    });
+
+                    // Set up event handlers
+                    setupSprintEventListeners();
                 }
 
-                // Initialize by loading report data
-                loadReportData();
+                // Load data on page load
+                loadMinorCases();
             });
         </script>
     </div>
+
+    <!-- Minor Case Modal -->
+    <div id="minor-case-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 id="minor-case-modal-title" class="text-lg leading-6 font-medium text-gray-900">Add Minor Case</h3>
+                <div class="mt-2 px-7 py-3">
+                    <form id="minor-case-form" class="space-y-4">
+                        <input type="hidden" id="minor-case-id">
+                        
+                        <div class="flex flex-col">
+                            <label for="minor-case-board-id" class="text-left mb-1">Board ID</label>
+                            <select id="minor-case-board-id" class="border rounded px-3 py-2" required>
+                                <option value="">Select a board</option>
+                                <!-- Boards will be populated dynamically -->
+                            </select>
+                        </div>
+                        
+                        <div class="flex flex-col">
+                            <label for="minor-case-sprint" class="text-left mb-1">Sprint</label>
+                            <input type="text" id="minor-case-sprint" class="border rounded px-3 py-2" required>
+                        </div>
+                        
+                        <div class="flex flex-col">
+                            <label for="minor-case-card" class="text-left mb-1">Card</label>
+                            <input type="text" id="minor-case-card" class="border rounded px-3 py-2" required>
+                        </div>
+                        
+                        <div class="flex flex-col">
+                            <label for="minor-case-description" class="text-left mb-1">Description</label>
+                            <textarea id="minor-case-description" class="border rounded px-3 py-2" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="flex flex-col">
+                            <label for="minor-case-member" class="text-left mb-1">Member</label>
+                            <input type="text" id="minor-case-member" class="border rounded px-3 py-2" required>
+                        </div>
+                        
+                        <div class="flex flex-col">
+                            <label for="minor-case-points" class="text-left mb-1">Points</label>
+                            <input type="number" id="minor-case-points" class="border rounded px-3 py-2" step="0.1" min="0" required value="0">
+                        </div>
+                        
+                        <div class="flex justify-end mt-4 space-x-4">
+                            <button type="button" id="cancel-minor-case" class="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400">Cancel</button>
+                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load available boards for dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const boardSelect = document.getElementById('minor-case-board-id');
+            
+            fetch('/api/boards')
+                .then(response => response.json())
+                .then(data => {
+                    // Fallback if API not available - use a default board
+                    if (!data || !data.length) {
+                        boardSelect.innerHTML = '<option value="6429c8bd5c54e0050731a095">Default Board</option>';
+                        return;
+                    }
+                    
+                    // Populate boards dropdown
+                    data.forEach(board => {
+                        const option = document.createElement('option');
+                        option.value = board.id;
+                        option.textContent = board.name;
+                        boardSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading boards:', error);
+                    // Fallback
+                    boardSelect.innerHTML = '<option value="6429c8bd5c54e0050731a095">Default Board</option>';
+                });
+        });
+    </script>
 @endsection

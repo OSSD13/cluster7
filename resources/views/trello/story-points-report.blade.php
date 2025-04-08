@@ -754,9 +754,11 @@
                             <div class="mb-4">
                                 <label for="minor-case-member"
                                     class="block text-sm font-medium text-gray-700">Member</label>
-                                <input type="text" id="minor-case-member"
+                                <select id="minor-case-member"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     required>
+                                    <option value="">Select a member</option>
+                                </select>
                             </div>
                             <div class="mb-4">
                                 <label for="minor-case-points" class="block text-sm font-medium text-gray-700">Personal
@@ -899,6 +901,12 @@
                 </div>
         </div>
         <script>
+            // Define showToast function before it's used
+            window.showToast = function(message, type = 'info') {
+                // Simple alert as a fallback
+                alert(message);
+            };
+            
             document.addEventListener('DOMContentLoaded', function() {
                 // Get backlog elements
                 const backlogCards = document.querySelectorAll('.backlog-bug-card');
@@ -979,27 +987,126 @@
                 return boardSelector ? boardSelector.value : '';
             };
 
-            // Load saved minor cases from localStorage
-            const loadMinorCases = () => {
-                const boardId = getCurrentBoardId();
-                if (!boardId) return [];
+            // Function to load minor cases from server
+            async function loadMinorCasesFromServer() {
+                try {
+                    // Show loading indicator
+                    minorCasesTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <div class="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500 mr-2"></div>
+                                Loading minor cases...
+                            </td>
+                        </tr>
+                    `;
+                    
+                    const boardId = getCurrentBoardId();
+                    if (!boardId) {
+                        console.warn('No board ID available');
+                        renderMinorCasesTable([]);
+                        return;
+                    }
 
-                const savedCases = localStorage.getItem(`minorCases_${boardId}`);
-                return savedCases ? JSON.parse(savedCases) : [];
-            };
-
-            // Save minor cases to localStorage
-            const saveMinorCases = (cases) => {
-                const boardId = getCurrentBoardId();
-                if (boardId) {
-                    localStorage.setItem(`minorCases_${boardId}`, JSON.stringify(cases));
+                    const response = await fetch(`/api/minor-cases?board_id=${encodeURIComponent(boardId)}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const minorCases = await response.json();
+                    console.log('Loaded minor cases:', minorCases);
+                    
+                    renderMinorCasesTable(minorCases.data || []);
+                } catch (error) {
+                    console.error('Error loading minor cases:', error);
+                    alert('Error loading minor cases: ' + error.message);
+                    renderMinorCasesTable([]); // Render empty table on error
                 }
-            };
+            }
 
-            // Render minor cases table
-            const renderMinorCasesTable = () => {
-                const minorCases = loadMinorCases();
+            // Save minor case
+            minorCaseForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
 
+                const id = document.getElementById('minor-case-id').value;
+                const sprint = document.getElementById('minor-case-sprint').value;
+                const card = document.getElementById('minor-case-card').value;
+                const description = document.getElementById('minor-case-description').value;
+                const member = document.getElementById('minor-case-member').value;
+                const points = document.getElementById('minor-case-points').value;
+                const boardId = getCurrentBoardId();
+
+                if (!boardId) {
+                    alert('Error: No board selected');
+                    return;
+                }
+
+                try {
+                    let response;
+                    const data = {
+                        board_id: boardId,
+                        sprint,
+                        card,
+                        description,
+                        member,
+                        points: parseFloat(points)
+                    };
+
+                    if (id) {
+                        // Edit existing case
+                        response = await fetch(`/api/minor-cases/${id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                    } else {
+                        // Add new case
+                        response = await fetch('/api/minor-cases', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                    }
+
+                    const responseData = await response.json();
+
+                    if (!response.ok) {
+                        // Handle validation errors
+                        if (response.status === 422 && responseData.errors) {
+                            const errors = Object.values(responseData.errors || {}).flat();
+                            throw new Error(errors.join('\n'));
+                        }
+                        throw new Error('Failed to save minor case');
+                    }
+
+                    // Refresh the minor cases list
+                    await loadMinorCasesFromServer();
+                    
+                    // Close the modal and reset form
+                    minorCaseModal.classList.add('hidden');
+                    minorCaseForm.reset();
+                    
+                    // Show success message
+                    alert(id ? 'Minor case updated successfully' : 'Minor case created successfully');
+                } catch (error) {
+                    console.error('Error saving minor case:', error);
+                    alert('Error saving minor case: ' + error.message);
+                }
+            });
+
+            // Modify the renderMinorCasesTable function to handle empty data
+            const renderMinorCasesTable = (minorCases) => {
+                // Ensure minorCases is an array
+                minorCases = Array.isArray(minorCases) ? minorCases : [];
+                
                 // Update count and total points
                 minorCaseCountSpan.textContent = `${minorCases.length} cases`;
 
@@ -1008,17 +1115,36 @@
                     totalPoints += parseFloat(caseItem.points) || 0;
                 });
 
-                totalMinorPointsSpan.textContent = totalPoints.toFixed(1);
-                minorCaseTotalPoints.textContent = totalPoints.toFixed(1);
+                if (totalMinorPointsSpan) {
+                    totalMinorPointsSpan.textContent = totalPoints.toFixed(1);
+                }
+                if (minorCaseTotalPoints) {
+                    minorCaseTotalPoints.textContent = totalPoints.toFixed(1);
+                }
 
                 // Clear table except for the "no cases" row
                 const rows = minorCasesTableBody.querySelectorAll('tr:not(#no-minor-cases-row)');
                 rows.forEach(row => row.remove());
+
                 // Show/hide "no cases" row
                 if (minorCases.length === 0) {
-                    noMinorCasesRow.style.display = '';
+                    if (noMinorCasesRow) {
+                        noMinorCasesRow.style.display = '';
+                    } else {
+                        // Create the "no cases" row if it doesn't exist
+                        const noDataRow = document.createElement('tr');
+                        noDataRow.id = 'no-minor-cases-row';
+                        noDataRow.innerHTML = `
+                            <td colspan="6" class="py-4 px-4 text-center text-gray-500">
+                                No minor cases found
+                            </td>
+                        `;
+                        minorCasesTableBody.appendChild(noDataRow);
+                    }
                 } else {
-                    noMinorCasesRow.style.display = 'none';
+                    if (noMinorCasesRow) {
+                        noMinorCasesRow.style.display = 'none';
+                    }
 
                     // Add each case to the table
                     minorCases.forEach((caseItem, index) => {
@@ -1027,23 +1153,23 @@
                         row.dataset.id = caseItem.id;
 
                         row.innerHTML = `
-                            <td class="py-3 px-4 border-b">${caseItem.sprint}</td>
-                            <td class="py-3 px-4 border-b">${caseItem.card}</td>
+                            <td class="py-3 px-4 border-b">${caseItem.sprint || ''}</td>
+                            <td class="py-3 px-4 border-b">${caseItem.card || ''}</td>
                             <td class="py-3 px-4 border-b">
                                 <div class="max-h-20 overflow-y-auto">
                                     ${caseItem.description || 'No description'}
                                 </div>
                             </td>
-                            <td class="py-3 px-4 border-b">${caseItem.member}</td>
-                            <td class="py-3 px-4 border-b text-center">${parseFloat(caseItem.points).toFixed(1)}</td>
+                            <td class="py-3 px-4 border-b">${caseItem.member || ''}</td>
+                            <td class="py-3 px-4 border-b text-center">${parseFloat(caseItem.points || 0).toFixed(1)}</td>
                             <td class="py-3 px-4 border-b text-center">
                                 <div class="flex justify-center space-x-2">
-                                    <button class="edit-minor-case text-blue-500 hover:text-blue-700" data-index="${index}">
+                                    <button class="edit-minor-case text-blue-500 hover:text-blue-700" data-id="${caseItem.id}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    <button class="delete-minor-case text-red-500 hover:text-red-700" data-index="${index}">
+                                    <button class="delete-minor-case text-red-500 hover:text-red-700" data-id="${caseItem.id}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -1056,6 +1182,71 @@
                     });
                 }
             };
+
+            // Function to populate member dropdown based on team members
+            function populateMemberDropdown() {
+                const memberSelect = document.getElementById('minor-case-member');
+                const teamMembersData = window.teamMembersData || [];
+                
+                console.log('Populating member dropdown with data:', teamMembersData);
+                
+                // Clear existing options except the first one
+                while (memberSelect.options.length > 1) {
+                    memberSelect.remove(1);
+                }
+
+                // If no members data, try to get it from another source
+                if (!teamMembersData.length) {
+                    // Try to get members from the member table
+                    const memberTable = document.getElementById('team-members-table-body');
+                    if (memberTable) {
+                        const memberRows = memberTable.querySelectorAll('tr');
+                        console.log('Trying to get members from table, found rows:', memberRows.length);
+                        
+                        memberRows.forEach(row => {
+                            const memberNameCell = row.querySelector('td:first-child');
+                            if (memberNameCell) {
+                                const memberNameDiv = memberNameCell.querySelector('.font-medium');
+                                if (memberNameDiv) {
+                                    const memberName = memberNameDiv.textContent.trim();
+                                    if (memberName && memberName !== 'Unknown') {
+                                        const option = document.createElement('option');
+                                        option.value = memberName;
+                                        option.textContent = memberName;
+                                        memberSelect.appendChild(option);
+                                        console.log('Added member from table:', memberName);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    // Add team members to dropdown from the global data
+                    teamMembersData.forEach(member => {
+                        if (member.fullName && member.fullName !== 'Unknown') {  // Use fullName instead of name
+                            const option = document.createElement('option');
+                            option.value = member.fullName;
+                            option.textContent = member.fullName;
+                            memberSelect.appendChild(option);
+                            console.log('Added member from global data:', member.fullName);
+                        }
+                    });
+                }
+                
+                // Sort options alphabetically (excluding the first "Select a member" option)
+                const options = Array.from(memberSelect.options).slice(1);
+                options.sort((a, b) => a.text.localeCompare(b.text));
+                
+                // Remove all options except the first one
+                while (memberSelect.options.length > 1) {
+                    memberSelect.remove(1);
+                }
+                
+                // Add sorted options back
+                options.forEach(option => memberSelect.add(option));
+                
+                console.log('Final dropdown options count:', memberSelect.options.length);
+            }
 
             // Open modal to add new minor case
             addMinorCaseBtn.addEventListener('click', function() {
@@ -1070,6 +1261,9 @@
                     document.getElementById('minor-case-sprint').value = currentSprintEl.textContent;
                 }
 
+                // Populate member dropdown
+                populateMemberDropdown();
+
                 minorCaseModal.classList.remove('hidden');
             });
 
@@ -1078,76 +1272,53 @@
                 minorCaseModal.classList.add('hidden');
             });
 
-            // Save minor case
-            minorCaseForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const id = document.getElementById('minor-case-id').value;
-                const sprint = document.getElementById('minor-case-sprint').value;
-                const card = document.getElementById('minor-case-card').value;
-                const description = document.getElementById('minor-case-description').value;
-                const member = document.getElementById('minor-case-member').value;
-                const points = document.getElementById('minor-case-points').value;
-
-                const minorCases = loadMinorCases();
-
-                if (id) {
-                    // Edit existing case
-                    const index = minorCases.findIndex(c => c.id === id);
-                    if (index !== -1) {
-                        minorCases[index] = {
-                            id,
-                            sprint,
-                            card,
-                            description,
-                            member,
-                            points
-                        };
-                    }
-                } else {
-                    // Add new case
-                    const newId = Date.now().toString();
-                    minorCases.push({
-                        id: newId,
-                        sprint,
-                        card,
-                        description,
-                        member,
-                        points
-                    });
-                }
-
-                saveMinorCases(minorCases);
-                renderMinorCasesTable();
-                minorCaseModal.classList.add('hidden');
-            });
-
             // Edit and delete event handlers (using event delegation)
             minorCasesTableBody.addEventListener('click', function(e) {
-                const target = e.target.closest('.edit-minor-case, .delete-minor-case');
-                if (!target) return;
-
-                const index = parseInt(target.dataset.index);
-                const minorCases = loadMinorCases();
-
-                if (target.classList.contains('edit-minor-case')) {
-                    // Edit case
+                const editBtn = e.target.closest('.edit-minor-case');
+                const deleteBtn = e.target.closest('.delete-minor-case');
+                
+                if (editBtn) {
+                    const index = parseInt(editBtn.dataset.index);
+                    const minorCases = loadMinorCases();
                     const caseToEdit = minorCases[index];
+                    
                     if (caseToEdit) {
-                        document.getElementById('minor-case-modal-title').textContent = 'Edit Minor Case';
+                    document.getElementById('minor-case-modal-title').textContent = 'Edit Minor Case';
                         document.getElementById('minor-case-id').value = caseToEdit.id;
                         document.getElementById('minor-case-sprint').value = caseToEdit.sprint;
                         document.getElementById('minor-case-card').value = caseToEdit.card;
-                        document.getElementById('minor-case-description').value = caseToEdit.description ||
-                            '';
-                        document.getElementById('minor-case-member').value = caseToEdit.member;
-                        document.getElementById('minor-case-points').value = caseToEdit.points;
-
-                        minorCaseModal.classList.remove('hidden');
+                        document.getElementById('minor-case-description').value = caseToEdit.description || '';
+                    
+                    // Populate member dropdown before setting the value
+                    populateMemberDropdown();
+                    
+                    const memberSelect = document.getElementById('minor-case-member');
+                    
+                    // If the member doesn't exist in the dropdown, add it
+                    let memberExists = false;
+                    for (let i = 0; i < memberSelect.options.length; i++) {
+                            if (memberSelect.options[i].value === caseToEdit.member) {
+                            memberExists = true;
+                            break;
+                        }
                     }
-                } else if (target.classList.contains('delete-minor-case')) {
-                    // Delete case
+                    
+                        if (!memberExists && caseToEdit.member) {
+                        const option = document.createElement('option');
+                            option.value = caseToEdit.member;
+                            option.textContent = caseToEdit.member;
+                        memberSelect.appendChild(option);
+                    }
+                    
+                        memberSelect.value = caseToEdit.member;
+                        document.getElementById('minor-case-points').value = caseToEdit.points;
+                    
+                    minorCaseModal.classList.remove('hidden');
+                    }
+                } else if (deleteBtn) {
+                    const index = parseInt(deleteBtn.dataset.index);
                     if (confirm('Are you sure you want to delete this minor case?')) {
+                        const minorCases = loadMinorCases();
                         minorCases.splice(index, 1);
                         saveMinorCases(minorCases);
                         renderMinorCasesTable();
@@ -1158,11 +1329,43 @@
             // Listen for board selector changes to reload minor cases
             const boardSelector = document.getElementById('board-selector');
             if (boardSelector) {
-                boardSelector.addEventListener('change', renderMinorCasesTable);
+                boardSelector.addEventListener('change', loadMinorCasesFromServer);
             }
 
-            // Initial render
-            renderMinorCasesTable();
+            // Initial render - load data from server instead of just rendering an empty table
+            loadMinorCasesFromServer();
+
+            // Add delete functionality
+            minorCasesTableBody.addEventListener('click', async function(e) {
+                const deleteBtn = e.target.closest('.delete-minor-case');
+                if (deleteBtn) {
+                    const id = deleteBtn.dataset.id;
+                    if (confirm('Are you sure you want to delete this minor case?')) {
+                        try {
+                            const response = await fetch(`/api/minor-cases/${id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json'
+                                }
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+
+                            // Refresh the minor cases list
+                            await loadMinorCasesFromServer();
+                            
+                            // Show success message
+                            alert('Minor case deleted successfully');
+                        } catch (error) {
+                            console.error('Error deleting minor case:', error);
+                            alert('Error deleting minor case: ' + error.message);
+                        }
+                    }
+                }
+            });
         });
     </script>
     <script>
@@ -1513,148 +1716,153 @@
             }
 
             // Add event listener to fetch data button
-            fetchDataBtn.addEventListener('click', function() {
-                const boardId = boardSelector.value;
-                if (!boardId) return;
+            if (fetchDataBtn) {
+                fetchDataBtn.addEventListener('click', function() {
+                    const boardId = boardSelector.value;
+                    if (!boardId) return;
 
-                // Update current board ID
-                currentBoardId = boardId;
+                    // Update current board ID
+                    currentBoardId = boardId;
 
-                console.clear(); // Clear console for better debugging
-                console.log('Fetching data for board ID:', boardId);
+                    console.clear(); // Clear console for better debugging
+                    console.log('Fetching data for board ID:', boardId);
 
-                // Show loading toast notification
-                showToast('Loading data from Trello...', 'info');
+                    // Show loading toast notification
+                    showToast('Loading data from Trello...', 'info');
 
-                // Clear any previous error messages
-                document.querySelectorAll('.api-error-message').forEach(el => el.remove());
+                    // Clear any previous error messages
+                    document.querySelectorAll('.api-error-message').forEach(el => el.remove());
 
-                // IMPORTANT: Completely destroy and recreate the table before fetching new data
-                recreateTeamMembersTable();
+                    // IMPORTANT: Completely destroy and recreate the table before fetching new data
+                    recreateTeamMembersTable();
 
-                // Reset all other data
-                clearAllData();
+                    // Reset all other data
+                    clearAllData();
 
-                // Show loading indicator
-                loadingIndicator.classList.remove('hidden');
-                storyPointsSummary.classList.add('hidden');
-                cardsByListContainer.classList.add('hidden');
+                    // Show loading indicator
+                    loadingIndicator.classList.remove('hidden');
+                    storyPointsSummary.classList.add('hidden');
+                    cardsByListContainer.classList.add('hidden');
 
-                // Force browser to make a fresh request with random parameter
-                const timestamp = Date.now();
-                const randomStr = Math.random().toString(36).substring(7);
+                    // Force browser to make a fresh request with random parameter
+                    const timestamp = Date.now();
+                    const randomStr = Math.random().toString(36).substring(7);
 
-                // Check if we're using a custom parameter or the default Refresh Now button
-                const customParam = this.getAttribute('data-custom-param');
-                const forceRefreshParam = customParam !== null ? customParam : '&force_refresh=true';
+                    // Check if we're using a custom parameter or the default Refresh Now button
+                    const customParam = this.getAttribute('data-custom-param');
+                    const forceRefreshParam = customParam !== null ? customParam : '&force_refresh=true';
 
-                fetch(`{{ url('/trello/data') }}?board_id=${boardId}&_nocache=${timestamp}-${randomStr}${forceRefreshParam}`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Cache-Control': 'no-cache, no-store, must-revalidate',
-                            'Pragma': 'no-cache',
-                            'Expires': '0',
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        cache: 'no-store'
-                    })
-                    .then(response => {
-                        console.log('Response status:', response.status);
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('New API response received:', data);
-
-                        if (data.error) {
-                            throw new Error(data.error);
-                        }
-
-                        // Update board details before anything else
-                        updateBoardDetails(data.boardDetails);
-
-                        // Update the last updated time
-                        updateLastFetched(data.cached, data.lastFetched);
-
-                        // Update summary statistics
-                        updateSummaryData(data.storyPoints);
-
-                        // Update backlog data if available
-                        if (data.backlogData) {
-                            allBacklogBugs = data.backlogData.allBugs || [];
-
-                            // Update backlog table
-                            if (backlogTableBody) {
-                                filterBacklogByCurrentTeam();
-                                renderBacklogTable();
-                            } else {
-                                // If no backlog table exists but we have backlog data, update the count
-                                updateBacklogCount(allBacklogBugs.length);
+                    fetch(`{{ url('/trello/data') }}?board_id=${boardId}&_nocache=${timestamp}-${randomStr}${forceRefreshParam}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                'Pragma': 'no-cache',
+                                'Expires': '0',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            cache: 'no-store'
+                        })
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
                             }
-                        }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('New API response received:', data);
 
-                        // Update member data
-                        if (data.memberPoints && Array.isArray(data.memberPoints)) {
-                            console.log('Member points data received:', data.memberPoints.length,
-                                'members');
+                            if (data.error) {
+                                throw new Error(data.error);
+                            }
 
-                            // Apply any saved extra points to the member data
-                            data.memberPoints.forEach(member => {
-                                if (currentBoardId && member.id) {
-                                    const savedExtraPoint = parseFloat(localStorage.getItem(
-                                        `extraPoints_${currentBoardId}_${member.id}`)) || 0;
-                                    if (savedExtraPoint > 0) {
-                                        member.extraPoint = savedExtraPoint;
-                                        member.finalPoint = parseFloat(member.passPoint || 0) +
-                                            savedExtraPoint;
-                                    }
+                            // Update board details before anything else
+                            updateBoardDetails(data.boardDetails);
+
+                            // Update the last updated time
+                            updateLastFetched(data.cached, data.lastFetched);
+
+                            // Update summary statistics
+                            updateSummaryData(data.storyPoints);
+
+                            // Update backlog data if available
+                            if (data.backlogData) {
+                                allBacklogBugs = data.backlogData.allBugs || [];
+
+                                // Update backlog table
+                                if (backlogTableBody) {
+                                    filterBacklogByCurrentTeam();
+                                    renderBacklogTable();
+                                } else {
+                                    // If no backlog table exists but we have backlog data, update the count
+                                    updateBacklogCount(allBacklogBugs.length);
                                 }
-                            });
+                            }
 
-                            // Also update the global cached data
-                            window.cachedData = data;
+                            // Update member data
+                            if (data.memberPoints && Array.isArray(data.memberPoints)) {
+                                console.log('Member points data received:', data.memberPoints.length, 'members');
 
-                            buildMemberTable(data.memberPoints);
-                        } else {
-                            console.warn('No member points data available');
-                            showNoMembersMessage();
-                        }
+                                // Apply any saved extra points to the member data
+                                data.memberPoints.forEach(member => {
+                                    if (currentBoardId && member.id) {
+                                        const savedExtraPoint = parseFloat(localStorage.getItem(
+                                            `extraPoints_${currentBoardId}_${member.id}`)) || 0;
+                                        if (savedExtraPoint > 0) {
+                                            member.extraPoint = savedExtraPoint;
+                                            member.finalPoint = parseFloat(member.passPoint || 0) +
+                                                savedExtraPoint;
+                                        }
+                                    }
+                                });
 
-                        // Update cards data
-                        if (data.cardsByList) {
-                            renderCardsByList(data.cardsByList);
-                        } else {
-                            showNoCardsMessage();
-                        }
+                                // Store member data globally for the dropdown - log it first
+                                console.log('Setting window.teamMembersData with:', data.memberPoints);
+                                window.teamMembersData = data.memberPoints;
 
-                        // Show all containers now that we have data
-                        storyPointsSummary.classList.remove('hidden');
-                        cardsByListContainer.classList.remove('hidden');
+                                // Also update the global cached data
+                                window.cachedData = data;
 
-                        // Hide loading indicator
-                        loadingIndicator.classList.add('hidden');
+                                buildMemberTable(data.memberPoints);
+                            } else {
+                                console.warn('No member points data available');
+                                showNoMembersMessage();
+                            }
 
-                        // Show success toast
-                        if (data.cached) {
-                            showToast('Loaded cached data successfully', 'success');
-                        } else {
-                            showToast('Data refreshed successfully from Trello', 'success');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Fetch failed:', error);
-                        loadingIndicator.classList.add('hidden');
+                            // Update cards data
+                            if (data.cardsByList) {
+                                renderCardsByList(data.cardsByList);
+                            } else {
+                                showNoCardsMessage();
+                            }
 
-                        showErrorMessage(error.message || 'Unknown error fetching data');
+                            // Show all containers now that we have data
+                            storyPointsSummary.classList.remove('hidden');
+                            cardsByListContainer.classList.remove('hidden');
 
-                        // Show error toast
-                        showToast('Failed to load data: ' + error.message, 'error');
-                    });
-            });
+                            // Hide loading indicator
+                            loadingIndicator.classList.add('hidden');
+
+                            // Show success toast
+                            if (data.cached) {
+                                showToast('Loaded cached data successfully', 'success');
+                            } else {
+                                showToast('Data refreshed successfully from Trello', 'success');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Fetch failed:', error);
+                            loadingIndicator.classList.add('hidden');
+
+                            showErrorMessage(error.message || 'Unknown error fetching data');
+
+                            // Show error toast
+                            showToast('Failed to load data: ' + error.message, 'error');
+                        });
+                });
+            }
 
             // Function to update the last fetched time indication
             function updateLastFetched(cached, lastFetched) {

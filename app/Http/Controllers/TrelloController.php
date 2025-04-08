@@ -912,7 +912,7 @@ class TrelloController extends Controller
     private function fetchBoards($apiKey, $apiToken)
     {
         try {
-            $response = Http::get($this->getTrelloApiBaseUrl() . 'members/me/boards', [
+            $response = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . 'members/me/boards', [
                 'key'    => $apiKey,
                 'token'  => $apiToken,
                 'fields' => 'name,url,idOrganization',
