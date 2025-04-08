@@ -187,7 +187,7 @@
                     if (teams.length > 0) {
                         // Convert team name to a slug for use as ID
                         const firstTeamSlug = teams[0].replace(/[^a-z0-9]/gi, '-').toLowerCase();
-                        showTeamReports(firstTeamSlug);
+                        showTeamReports(firstTeamSlug); 
                     }
                 });
                 
