@@ -12,8 +12,6 @@ services:
             - LOG_LEVEL=debug
         networks:
             - laravel-net
-        volumes:
-            - .:/var/www/html
 networks:
     laravel-net:
         driver: bridge

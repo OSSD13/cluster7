@@ -29,6 +29,7 @@ class TrelloController extends Controller
             // Add debugging to help identify the issue
             \Log::info('Starting fetchStoryPoints', [
                 'board_id' => $request->input('board_id'),
+                'user' => auth()->user()->name,
                 'timestamp' => now()->toDateTimeString(),
             ]);
 
@@ -51,7 +52,11 @@ class TrelloController extends Controller
             }
 
             // Important: Log the actual board ID being used
-            \Log::info('Fetching data for board ID: ' . $boardId);
+            \Log::info('Fetching data for board ID: ' . $boardId, [
+                'user' => auth()->user()->name,
+                'user_id' => auth()->id(),
+                'is_admin' => auth()->user()->isAdmin() ? 'Yes' : 'No'
+            ]);
 
             // More direct approach with simpler structure and better error handling
             $cards = [];
@@ -491,9 +496,10 @@ class TrelloController extends Controller
                 if (count($allBoards) > 0) {
                     $defaultBoardId = $allBoards[0]['id'];
                 }
-            
+            } else {
                 // For testers and developers, filter boards they are members of
                 $userName = auth()->user()->name;
+                $userBoards = [];
 
                 foreach ($allBoards as $board) {
                     // Fetch board members
@@ -508,9 +514,17 @@ class TrelloController extends Controller
                     }
                 }
 
-                // If user has boards, select the first one by default
+                // For non-admin users, allow all their teams to be visible
+                // And ensure the defaultBoardId is set to the first board
                 if (count($userBoards) > 0) {
                     $defaultBoardId = $userBoards[0]['id'];
+                    \Log::info('Setting default board for user: ' . $userName, [
+                        'defaultBoardId' => $defaultBoardId,
+                        'boardName' => $userBoards[0]['name'],
+                        'totalBoards' => count($userBoards)
+                    ]);
+                } else {
+                    \Log::warning('No boards found for user: ' . $userName);
                 }
             }
             
@@ -521,7 +535,8 @@ class TrelloController extends Controller
             $currentDate = Carbon::now()->format('F d, Y');
             
             // Get backlog data from BacklogController
-            $backlogController = new \App\Http\Controllers\BacklogController();
+            $trelloService = app()->make(\App\Services\TrelloService::class); // Resolve TrelloService from the container
+            $backlogController = new \App\Http\Controllers\BacklogController($trelloService);
             $backlogData = $backlogController->getBacklogData();
 
             return view('trello.story-points-report', array_merge([

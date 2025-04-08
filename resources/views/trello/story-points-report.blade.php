@@ -206,7 +206,7 @@
                 </svg>
                 As an admin, you can access all available Trello boards. Data will be loaded automatically.
             </div>
-            
+            <!-- Board Selector -->
             @if(count($boards) > 0)
                 <div class="mb-4">
                     <select id="board-selector" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50">
@@ -222,27 +222,18 @@
                     No Trello boards available. Please configure your Trello API settings first.
                 </div>
             @endif
-        @elseif($singleTeam)
+        @elseif(!auth()->user()->isAdmin() )
             <h2 class="text-lg font-semibold mb-4">Your Team</h2>
             <div class="mb-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                You are a member of: <span class="font-medium">{{ $boards[0]['name'] }}</span>
-                <span class="block mt-1 text-xs">Data is being loaded automatically.</span>
-            </div>
-            <!-- Hidden board selector with default selection -->
-            <input type="hidden" id="board-selector" value="{{ $boards[0]['id'] }}">
-        @else
-            <h2 class="text-lg font-semibold mb-4">Your Teams</h2>
-            <div class="mb-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                You are a member of multiple teams. Data will be loaded automatically for the selected team.
+                You are a member of multiple teams.
+                <span class="block mt-1 text-xs">Please select a team from the dropdown below.</span>
             </div>
             
             <div class="mb-4">
+                <!-- Show board selector for any user with multiple boards -->
                 <select id="board-selector" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50">
                     @foreach($boards as $board)
                         <option value="{{ $board['id'] }}" {{ $board['id'] == $defaultBoardId ? 'selected' : '' }}>
@@ -250,6 +241,44 @@
                         </option>
                     @endforeach
                 </select>
+            </div>
+        @elseif(count($boards) == 1)
+            <h2 class="text-lg font-semibold mb-4">Your Team</h2>
+            <div class="mb-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                You are a member of: <span class="font-medium">{{ $boards[0]['name'] }}</span>
+                <span class="block mt-1 text-xs">Data is being loaded automatically.</span>
+            </div> 
+            
+            <!-- Hidden board selector pre-set to the single available board -->
+            <input type="hidden" id="board-selector" value="{{ $boards[0]['id'] }}">
+        
+        @else
+            <h2 class="text-lg font-semibold mb-4">Your Team</h2>
+            <div class="mb-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Your primary team is: <span class="font-medium"></span>
+                <span class="block mt-1 text-xs">Data is being loaded automatically for your team.</span>
+            </div>
+            
+            <div class="mb-4">
+                <!-- Only show first board for non-admin users -->
+                @if(auth()->user()->isAdmin())
+                <select id="board-selector" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50">
+                    @foreach($boards as $board)
+                        <option value="{{ $board['id'] }}" {{ $board['id'] == $defaultBoardId ? 'selected' : '' }}>
+                            {{ $board['name'] }}
+                        </option>
+                    @endforeach
+                </select>
+                @else
+                <!-- Hidden board selector with first board automatically selected -->
+                <input type="hidden" id="board-selector" >
+                @endif
             </div>
         @endif
     </div>
@@ -635,6 +664,10 @@
         // Set the current board ID from the selector's value
         if (boardSelector && boardSelector.value) {
             currentBoardId = boardSelector.value;
+        } else if (boardSelector && {{ count($boards) > 0 ? 'true' : 'false' }}) {
+            // For hidden input case, set it to the default board ID
+            currentBoardId = '{{ $defaultBoardId ?? '' }}';
+            boardSelector.value = currentBoardId;
         }
 
         // When the board selector changes, auto-fetch data

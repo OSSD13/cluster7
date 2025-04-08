@@ -14,6 +14,7 @@ use App\Http\Controllers\SprintReportController;
 use App\Http\Controllers\BacklogController;
 use App\Http\Controllers\ConfirmController;
 use App\Http\Controllers\CompleteController;
+use App\Http\Controllers\MinorCasesController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -55,9 +56,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     Route::resource('/saved-reports', SavedReportController::class);
     Route::post('/save-report', [SavedReportController::class, 'store'])->name('report.save');
 
-    Route::get('/minorcases', function () {
-        return view('minorcases');
-    })->name('minorcases');
+    // Minor Cases Routes
+    Route::get('/minorcases', [MinorCasesController::class, 'index'])->name('minorcases');
+    Route::get('/report-data', [MinorCasesController::class, 'getMinorCasesData'])->name('minor-cases.data');
+    
     // Admin Only Routes
     Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
         // Admin User Management Routes
@@ -75,14 +77,8 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
             Route::post('settings', [TrelloSettingsController::class, 'update'])->name('settings.update');
             Route::post('test-connection', [TrelloSettingsController::class, 'testApiConnection'])->name('test-connection');
 
-            // Trello Teams (using boards as teams)
-            Route::get('teams', [TrelloTeamController::class, 'index'])->name('teams.index');
+            // Admin-only refresh feature
             Route::get('teams/refresh', [TrelloTeamController::class, 'refresh'])->name('teams.refresh');
-            Route::get('teams/{id}', [TrelloTeamController::class, 'show'])->name('teams.show');
-            Route::get('boards/{id}', [TrelloTeamController::class, 'viewBoard'])->name('boards.show');
-            Route::get("home", function () {
-                return redirect('dashboard');
-            })->name('home');
         });
 
         // Sprint Settings
@@ -94,7 +90,19 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
         });
     });
 
+    // Trello Teams - Accessible to all authenticated users
+    Route::middleware(['auth'])->prefix('trello')->name('trello.')->group(function () {
+        // Trello Teams (using boards as teams)
+        Route::get('teams', [TrelloTeamController::class, 'index'])->name('teams.index');
+        Route::get('teams/{id}', [TrelloTeamController::class, 'show'])->name('teams.show');
+        Route::get('boards/{id}', [TrelloTeamController::class, 'viewBoard'])->name('boards.show');
+        Route::get("home", function () {
+            return redirect('dashboard');
+        })->name('home');
+    });
+
     // Non-admin routes
+    Route::get('sprint', [SprintSettingsController::class, 'index'])->name('sprint');
     Route::middleware([\App\Http\Middleware\NonAdminMiddleware::class])->group(function () {
         Route::get('my-teams', [TrelloTeamController::class, 'myTeams'])->name('my-teams.index');
         Route::get('my-teams/{id}/profile', [TrelloTeamController::class, 'generateTeamProfile'])->name('my-teams.profile');
@@ -106,7 +114,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     Route::get('/sprints', [\App\Http\Controllers\SprintReportController::class, 'index'])->name('sprints.index');
     Route::get('/sprints/{sprint}', [\App\Http\Controllers\SprintReportController::class, 'showSprint'])->name('sprints.show');
     Route::get('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'showReport'])->name('sprint-reports.show');
-    Route::delete('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'delete'])->name('sprint-reports.delete');
+    Route::delete('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'delete'])
+        ->middleware(\App\Http\Middleware\AdminMiddleware::class)
+        ->name('sprint-reports.delete');
+    Route::get('reports', [\App\Http\Controllers\SprintReportController::class, 'getUserReports'])->name('reports');
 
     // Backlog Routes
     Route::get('/backlog', [\App\Http\Controllers\BacklogController::class, 'index'])->name('backlog.index');
