@@ -60,7 +60,7 @@
                                 <ul class="text-gray-700">
                                     <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="all">All</a></li>
                                     @php
-                                        $teams = $allBugs->pluck('team')->unique()->filter()->values()->toArray();
+                                    $teams = $allBugs->pluck('team')->unique()->filter()->values()->toArray();
                                     @endphp
                                     @foreach($teams as $team)
                                     <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="{{ $team }}">{{ $team }}</a></li>
@@ -88,49 +88,53 @@
                                 </svg>
                             </button>
 
-                <!-- Dropdown Menu -->
-                        <div id="yearDropdownMenu"
-                            class="hidden absolute right-0 mt-2 w-32 bg-white border rounded-[15px] shadow-lg overflow-hidden dropdown-menu">
-                            <ul class="text-gray-700">
-                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2025</a></li>
-                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2024</a></li>
-                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2023</a></li>
-                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2022</a></li>
-                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2021</a></li>
-                                <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">2020</a></li>
-                            </ul>
+                            <!-- Dropdown Menu -->
+                            <div id="yearDropdownMenu"
+                                class="hidden absolute right-0 mt-2 w-32 bg-white border rounded-[15px] shadow-lg overflow-hidden dropdown-menu">
+                                <ul class="text-gray-700">
+                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2025</a></li>
+                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2024</a></li>
+                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2023</a></li>
+                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2022</a></li>
+                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2021</a></li>
+                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">2020</a></li>
+                                </ul>
+                            </div>
                         </div>
-            </div>
-            <!--Dropdown Sprint -->
+                        <!--Dropdown Sprint -->
                         <label for="sprint" class="text-sm font-medium text-gray-900 flex items-center ps-5 me-5">Sprint:</label>
                         <div class="relative inline-block text-left">
-                <button id="sprintDropdownButton"
-                    class="flex items-center px-4 py-2 bg-white border rounded-[100px] shadow-md w-48 justify-between hover:bg-gray-200">
-                    <span id="selectedSprint" class="block w-full px-6">1 ~ 10</span>
-                    <svg class="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </button>
+                            <button id="sprintDropdownButton"
+                                class="flex items-center px-4 py-2 bg-white border rounded-[100px] shadow-md w-48 justify-between hover:bg-gray-200">
+                                <span id="selectedSprint" class="block w-full px-6">1 ~ 10</span>
+                                <svg class="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
 
-                <!-- Dropdown Menu -->
-                <div id="sprintDropdownMenu"
-                    class="hidden absolute right-0 mt-2 w-48 bg-white border rounded-[15px] shadow-lg overflow-hidden dropdown-menu">
-                    <ul class="text-gray-700">
-                        <li><a href="#" class="block px-12 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="1-10">1 ~ 10</a></li>
-                        <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="11-20">11 ~ 20</a></li>
-                        <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="21-30">21 ~ 30</a></li>
-                        <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="31-40">31 ~ 40</a></li>
-                        <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="41-50">41 ~ 50</a></li>
-                        <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200" data-sprint-range="51-52">51 ~ 52</a></li>
-                    </ul>
-                </div>
-            </div>
-</div>
+                            <!-- Dropdown Menu -->
+                            <div id="sprintDropdownMenu"
+                                class="hidden absolute right-0 mt-2 w-48 bg-white border rounded-[15px] shadow-lg overflow-hidden dropdown-menu">
+                                <ul class="text-gray-700">
+                                    <li><a href="#" class="block px-12 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="1-10">1 ~ 10</a></li>
+                                    <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="11-20">11 ~ 20</a></li>
+                                    <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="21-30">21 ~ 30</a></li>
+                                    <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="31-40">31 ~ 40</a></li>
+                                    <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200 border-b" data-sprint-range="41-50">41 ~ 50</a></li>
+                                    <li><a href="#" class="block px-11 py-2 text-center hover:bg-gray-200" data-sprint-range="51-52">51 ~ 52</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
 
                 </span>
+            </div>
+            <!-- Pagination Links -->
+            <div class="mt-6 pt-7">
+                {{ $allBugs->links('pagination::tailwind') }}
             </div>
         </div>
         <p class=" text-left ms-5 mt-2 mb-8 text-sm text-gray-600">
@@ -206,8 +210,8 @@
                     </div>
                 </div>
             </div>
-            @endforeach
         </div>
+        @endforeach
     </div>
 </div>
 
@@ -216,52 +220,50 @@
 </div>
 
 <style>
-            .hidden {
-                display: none;
-                opacity: 0;
-                transform: translateY(-10px);
-                transition: opacity 0.3s ease, transform 0.3s ease;
-            }
+    .hidden {
+        display: none;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
 
-            .block {
-                display: block;
-                opacity: 1;
-                transform: translateY(0);
-            }
+    .block {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+    }
 
-            .sprint-with-data {
-                display: block !important;
-            }
+    .sprint-with-data {
+        display: block !important;
+    }
 
-            .sprint-date {
-                display: block;
-                width: 100%;
-                text-align: center;
-            }
-            
-            /* Fix for dropdown positioning */
-            .dropdown-menu {
-                z-index: 50;
-                position: absolute;
-            }
-            
-            /* Ensure dropdowns don't overlap */
-            #teamDropdownMenu {
-                z-index: 50;
-            }
-            
-            #yearDropdownMenu {
-                z-index: 49;
-            }
-            
-            #sprintDropdownMenu {
-                z-index: 48;
-            }
-        </style>
+    .sprint-date {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Fix for dropdown positioning */
+    .dropdown-menu {
+        z-index: 50;
+        position: absolute;
+    }
+
+    /* Ensure dropdowns don't overlap */
+    #teamDropdownMenu {
+        z-index: 50;
+    }
+
+    #yearDropdownMenu {
+        z-index: 49;
+    }
+
+    #sprintDropdownMenu {
+        z-index: 48;
+    }
+</style>
 
 <script>
-    
-
     function setupDropdown(buttonId, menuId, selectedId) {
         document.getElementById(buttonId).addEventListener("click", function() {
             document.getElementById(menuId).classList.toggle("hidden");
@@ -291,7 +293,7 @@
             }
         });
     }
-    
+
     // Setup both dropdowns
     setupDropdown("yearDropdownButton", "yearDropdownMenu", "selectedYear");
     setupDropdown("sprintDropdownButton", "sprintDropdownMenu", "selectedSprint");
@@ -323,11 +325,11 @@
         const bugCards = document.querySelectorAll('.bug-card');
         const selectedTeamText = document.getElementById('selectedTeam').textContent;
         const selectedSprintRange = document.getElementById('selectedSprint').textContent;
-        
+
         // Extract sprint range from the selected sprint text
         let startSprint = 1;
         let endSprint = 52;
-        
+
         if (selectedSprintRange !== 'All') {
             const sprintMatch = selectedSprintRange.match(/(\d+)\s*~\s*(\d+)/);
             if (sprintMatch) {
@@ -335,24 +337,24 @@
                 endSprint = parseInt(sprintMatch[2]);
             }
         }
-        
+
         bugCards.forEach(card => {
             const cardTeam = card.getAttribute('data-team');
             const cardSprint = parseInt(card.getAttribute('data-sprint')) || 999;
-            
+
             const teamMatch = selectedTeam === 'all' || cardTeam === selectedTeam;
             const sprintMatch = cardSprint >= startSprint && cardSprint <= endSprint;
-            
+
             if (teamMatch && sprintMatch) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
             }
         });
-        
+
         // Update the count of visible bugs
         updateBugCount();
-        
+
         // Automatically sort bugs by sprint after filtering
         sortBugsBySprint();
     }
@@ -361,28 +363,28 @@
         const bugCards = document.querySelectorAll('.bug-card');
         const [startSprint, endSprint] = sprintRange.split('-').map(Number);
         const selectedTeam = document.getElementById('selectedTeam').textContent;
-        
+
         bugCards.forEach(card => {
             const cardSprint = parseInt(card.getAttribute('data-sprint'));
             const cardTeam = card.getAttribute('data-team');
-            
+
             const sprintMatch = !isNaN(cardSprint) && cardSprint >= startSprint && cardSprint <= endSprint;
             const teamMatch = selectedTeam === 'All' || cardTeam === selectedTeam;
-            
+
             if (sprintMatch && teamMatch) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
             }
         });
-        
+
         // Update the count of visible bugs
         updateBugCount();
-        
+
         // Automatically sort bugs by sprint after filtering
         sortBugsBySprint();
     }
-    
+
     function updateBugCount() {
         const visibleBugs = document.querySelectorAll('.bug-card[style="display: block"]').length;
         const totalPoints = Array.from(document.querySelectorAll('.bug-card[style="display: block"]'))
@@ -391,45 +393,79 @@
                 const points = pointsElement ? parseInt(pointsElement.textContent.trim()) || 0 : 0;
                 return sum + points;
             }, 0);
-            
+
         // Update the bug count display
         const bugCountElement = document.getElementById('bugCountDisplay');
         if (bugCountElement) {
             bugCountElement.textContent = `${visibleBugs} ${visibleBugs === 1 ? 'bug' : 'bugs'} (${totalPoints} ${totalPoints === 1 ? 'point' : 'points'})`;
         }
     }
-    
+
     // Initialize the bug count display and sort bugs automatically
     document.addEventListener('DOMContentLoaded', function() {
         updateBugCount();
-        
+
         // Automatically sort bugs by sprint when page loads
         sortBugsBySprint();
     });
-    
+
     function sortBugsBySprint() {
         const bugContainer = document.querySelector('.grid.grid-cols-1.gap-4.md\\:grid-cols-2.lg\\:grid-cols-2');
         const bugCards = Array.from(document.querySelectorAll('.bug-card'));
-        
+
         // Sort bug cards by sprint number
         bugCards.sort((a, b) => {
             const sprintA = parseInt(a.getAttribute('data-sprint')) || 999;
             const sprintB = parseInt(b.getAttribute('data-sprint')) || 999;
             return sprintA - sprintB;
         });
-        
+
         // Clear the container
         bugCards.forEach(card => {
             card.remove();
         });
-        
+
         // Add sorted cards back to the container
         bugCards.forEach(card => {
             bugContainer.appendChild(card);
         });
-        
+
         // Update the count of visible bugs
         updateBugCount();
     }
+
+    function showSprint(sprintNumber) {
+        // Hide all sprint contents
+        document.querySelectorAll('.sprint-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+
+        // Show the selected sprint content
+        const sprintContent = document.getElementById('sprint-' + sprintNumber + '-content');
+        if (sprintContent) {
+            sprintContent.classList.remove('hidden');
+        }
+    }
+
+    // Function to refresh the page
+    function refreshPage() {
+        window.location.reload(); // Reload the current page
+    }
+
+    // Function to show the selected sprint content
+    function showSprint(sprintNumber) {
+        // Hide all sprint contents
+        document.querySelectorAll('.sprint-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+
+        // Show the selected sprint content
+        const sprintContent = document.getElementById('sprint-' + sprintNumber + '-content');
+        if (sprintContent) {
+            sprintContent.classList.remove('hidden');
+        }
+    }
 </script>
+
+
 @endsection
