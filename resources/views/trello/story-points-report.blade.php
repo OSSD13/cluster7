@@ -1546,6 +1546,13 @@
                     bugCardsInput.name = 'bug_cards_data';
                     bugCardsInput.value = JSON.stringify(window.cachedData?.cardsByList || {});
                     form.appendChild(bugCardsInput);
+                    
+                    // Add member points data
+                    const memberPointsInput = document.createElement('input');
+                    memberPointsInput.type = 'hidden';
+                    memberPointsInput.name = 'member_points_data';
+                    memberPointsInput.value = JSON.stringify(window.cachedData?.memberPoints || []);
+                    form.appendChild(memberPointsInput);
 
                     // Add form to document, submit it, and remove it
                     document.body.appendChild(form);

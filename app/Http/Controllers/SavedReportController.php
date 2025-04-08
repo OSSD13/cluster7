@@ -405,6 +405,7 @@ class SavedReportController extends Controller
         // Decode JSON data if stored as strings
         $storyPointsData = null;
         $bugCardsData = null;
+        $memberPointsData = null;
         
         if (isset($reportData['story_points_data'])) {
             $storyPointsData = $reportData['story_points_data'];
@@ -420,6 +421,57 @@ class SavedReportController extends Controller
             }
         }
         
+        if (isset($reportData['member_points_data'])) {
+            $memberPointsData = $reportData['member_points_data'];
+            if (is_string($memberPointsData)) {
+                $memberPointsData = json_decode($memberPointsData, true);
+            }
+        }
+        
+        // Extract developer data and map fields correctly
+        $developers = [];
+        
+        // If we have member points data from the report, use it
+        if (!empty($memberPointsData) && is_array($memberPointsData)) {
+            foreach ($memberPointsData as $member) {
+                $developers[] = (object)[
+                    'name' => $member['fullName'] ?? $member['username'] ?? 'Unknown',
+                    'point_personal' => $member['pointPersonal'] ?? 0,
+                    'test_pass' => $member['passPoint'] ?? 0,
+                    'bug' => $member['bugPoint'] ?? 0,
+                    'final_pass_point' => $member['finalPoint'] ?? 0,
+                    'cancel' => $member['cancelPoint'] ?? 0,
+                    'sum_final' => $member['finalPoint'] ?? 0,
+                    'remark' => '',
+                    'day_off' => 'No'
+                ];
+            }
+        } else {
+            // If no specific member points data, use the formatDevelopersData method
+            $developers = $this->formatDevelopersData([
+                'board_name' => $reportData['board_name'] ?? 'Development Team',
+                'bug_cards_data' => $bugCardsData,
+                'story_points_data' => $storyPointsData
+            ]);
+        }
+        
+        // Calculate sums for the totals row
+        $sumPointPersonal = 0;
+        $sumTestPass = 0;
+        $sumBug = 0;
+        $sumFinalPassPoint = 0;
+        $sumCancel = 0;
+        $sumFinal = 0;
+        
+        foreach ($developers as $dev) {
+            $sumPointPersonal += $dev->point_personal;
+            $sumTestPass += $dev->test_pass;
+            $sumBug += $dev->bug;
+            $sumFinalPassPoint += $dev->final_pass_point;
+            $sumCancel += $dev->cancel;
+            $sumFinal += $dev->sum_final;
+        }
+        
         // Format the report for the template
         $report = [
             'author' => auth()->user()->name,
@@ -428,16 +480,21 @@ class SavedReportController extends Controller
             'sprint' => $reportData['sprint'] ?? 'Current Sprint',
             'last_update' => $reportData['last_update'] ?? now()->format('Y-m-d H:i'),
             'team_name' => $reportData['board_name'] ?? 'Development Team',
-            'plan_point' => $storyPointsData['totalPoints'] ?? 0,
-            'actual_point' => $storyPointsData['totalCompletedPoints'] ?? 0,
+            'plan_point' => $storyPointsData['totalPoints'] ?? $storyPointsData['total'] ?? 0,
+            'actual_point' => $storyPointsData['totalCompletedPoints'] ?? $storyPointsData['completed'] ?? 0,
             'remain' => $storyPointsData['todo'] ?? 0,
             'percent' => $storyPointsData['percentComplete'] ?? 0,
-            'current_sprint_point' => $storyPointsData['totalPoints'] ?? 0,
-            'current_sprint_actual_point' => $storyPointsData['totalCompletedPoints'] ?? 0,
-            'developers' => $this->formatDevelopersData($reportData),
+            'current_sprint_point' => $storyPointsData['totalPoints'] ?? $storyPointsData['total'] ?? 0,
+            'current_sprint_actual_point' => $storyPointsData['totalCompletedPoints'] ?? $storyPointsData['completed'] ?? 0,
+            'developers' => $developers,
             'backlog' => $this->formatBacklogData($reportData),
             'logo' => env('APP_URL') . '/images/logo.png',
-            // Add other fields needed by the template
+            'sum_point_personal' => $sumPointPersonal,
+            'sum_test_pass' => $sumTestPass,
+            'sum_bug' => $sumBug,
+            'sum_final_pass_point' => $sumFinalPassPoint,
+            'sum_cancel' => $sumCancel,
+            'sum_final' => $sumFinal
         ];
         
         // Convert the report to an object to match the expected structure in the template
@@ -474,12 +531,63 @@ class SavedReportController extends Controller
             $bugCardsData = json_decode($bugCardsData, true);
         }
         
+        // Get memberPoints data from cachedData if available
+        $memberPointsData = [];
+        
+        if ($request->has('member_points_data')) {
+            $memberPointsData = $request->input('member_points_data');
+            if (is_string($memberPointsData)) {
+                $memberPointsData = json_decode($memberPointsData, true);
+            }
+        }
+        
         // Create a temporary report structure for the template
         $reportData = [
             'board_name' => $request->input('board_name', 'Development Team'),
             'bug_cards_data' => $bugCardsData,
-            'story_points_data' => $storyPointsData
+            'story_points_data' => $storyPointsData,
+            'member_points_data' => $memberPointsData
         ];
+        
+        // Extract developer data and map fields correctly
+        $developers = [];
+        
+        // If we have member points data from the report, use it
+        if (!empty($memberPointsData) && is_array($memberPointsData)) {
+            foreach ($memberPointsData as $member) {
+                $developers[] = (object)[
+                    'name' => $member['fullName'] ?? $member['username'] ?? 'Unknown',
+                    'point_personal' => $member['pointPersonal'] ?? 0,
+                    'test_pass' => $member['passPoint'] ?? 0,
+                    'bug' => $member['bugPoint'] ?? 0,
+                    'final_pass_point' => $member['finalPoint'] ?? 0,
+                    'cancel' => $member['cancelPoint'] ?? 0,
+                    'sum_final' => $member['finalPoint'] ?? 0,
+                    'remark' => '',
+                    'day_off' => 'No'
+                ];
+            }
+        } else {
+            // If no specific member points data, use the formatDevelopersData method
+            $developers = $this->formatDevelopersData($reportData);
+        }
+        
+        // Calculate sums for the totals row
+        $sumPointPersonal = 0;
+        $sumTestPass = 0;
+        $sumBug = 0;
+        $sumFinalPassPoint = 0;
+        $sumCancel = 0;
+        $sumFinal = 0;
+        
+        foreach ($developers as $dev) {
+            $sumPointPersonal += $dev->point_personal;
+            $sumTestPass += $dev->test_pass;
+            $sumBug += $dev->bug;
+            $sumFinalPassPoint += $dev->final_pass_point;
+            $sumCancel += $dev->cancel;
+            $sumFinal += $dev->sum_final;
+        }
         
         // Format the report for the template
         $report = [
@@ -489,15 +597,21 @@ class SavedReportController extends Controller
             'sprint' => $request->input('sprint', 'Current Sprint'),
             'last_update' => now()->format('Y-m-d H:i'),
             'team_name' => $request->input('board_name', 'Development Team'),
-            'plan_point' => $storyPointsData['totalPoints'] ?? 0,
-            'actual_point' => $storyPointsData['totalCompletedPoints'] ?? 0,
+            'plan_point' => $storyPointsData['totalPoints'] ?? $storyPointsData['total'] ?? 0,
+            'actual_point' => $storyPointsData['totalCompletedPoints'] ?? $storyPointsData['completed'] ?? 0,
             'remain' => $storyPointsData['todo'] ?? 0,
             'percent' => $storyPointsData['percentComplete'] ?? 0,
-            'current_sprint_point' => $storyPointsData['totalPoints'] ?? 0,
-            'current_sprint_actual_point' => $storyPointsData['totalCompletedPoints'] ?? 0,
-            'developers' => $this->formatDevelopersData($reportData),
+            'current_sprint_point' => $storyPointsData['totalPoints'] ?? $storyPointsData['total'] ?? 0,
+            'current_sprint_actual_point' => $storyPointsData['totalCompletedPoints'] ?? $storyPointsData['completed'] ?? 0,
+            'developers' => $developers,
             'backlog' => $this->formatBacklogData($reportData),
             'logo' => env('APP_URL') . '/images/logo.png',
+            'sum_point_personal' => $sumPointPersonal,
+            'sum_test_pass' => $sumTestPass,
+            'sum_bug' => $sumBug,
+            'sum_final_pass_point' => $sumFinalPassPoint,
+            'sum_cancel' => $sumCancel,
+            'sum_final' => $sumFinal
         ];
         
         // Convert the report to an object to match the expected structure
