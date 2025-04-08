@@ -28,7 +28,6 @@ class TrelloTeamController extends Controller
         // Only require authentication, not admin privileges
         $this->middleware('auth');
         // Apply admin middleware only for refresh method
-        $this->middleware(\App\Http\Middleware\AdminMiddleware::class)->only(['refresh']);
         $this->trelloService = $trelloService;
     }
     
@@ -60,31 +59,6 @@ class TrelloTeamController extends Controller
             ]);
         }
         
-        // Test connection before proceeding
-        $connectionTest = $this->trelloService->testConnection();
-        if (!$connectionTest['success']) {
-            \Log::error('Trello API connection test failed', ['details' => $connectionTest]);
-            
-            // Use direct routing instead of redirect
-            $apiKey = \App\Models\Setting::where('key', 'trello_api_key')->first();
-            $apiToken = \App\Models\Setting::where('key', 'trello_api_token')->first();
-            $boardId = \App\Models\Setting::where('key', 'trello_board_id')->first();
-            
-            $connectionStatus = [
-                'success' => false,
-                'message' => $connectionTest['message'],
-                'details' => $connectionTest
-            ];
-            
-            return view('trello.settings', [
-                'trelloApiKey' => $apiKey ? $apiKey->value : null,
-                'trelloApiToken' => $apiToken ? $apiToken->value : null,
-                'boardId' => $boardId ? $boardId->value : null,
-                'connectionStatus' => $connectionStatus,
-                'error' => 'Failed to connect to Trello API: ' . $connectionTest['message']
-            ]);
-        }
-        
         try {
             // Fetch organizations (workspaces) with caching
             $organizations = $this->trelloService->getOrganizations();
@@ -100,81 +74,21 @@ class TrelloTeamController extends Controller
                 $options
             );
             
-            // Process each team (board) to get member details and registration status
-            foreach ($teams as &$team) {
-                // Get board members
-                $teamMembers = [];
-                $trelloMembers = $this->trelloService->getBoardMembers($team['id']);
-                
-                // Process each member
-                foreach ($trelloMembers as $trelloMember) {
-                    // Skip this specific user - don't add to the members list at all
-                    if ($trelloMember['fullName'] === 'มกุล ๗') {
-                        continue;
-                    }
-                    
-                    $member = [
-                        'id' => $trelloMember['id'],
-                        'fullName' => $trelloMember['fullName'],
-                        'username' => $trelloMember['username'],
-                        'avatarUrl' => isset($trelloMember['avatarHash']) ? 
-                            $this->trelloService->getAvatarUrl($trelloMember['id'], $trelloMember['avatarHash']) : null,
-                        'email' => null,
-                        'isRegistered' => false
-                    ];
-                    
-                    // Try to get email with caching
-                    $member['email'] = $this->trelloService->getMemberEmail($trelloMember['id']);
-                    
-                    // Check if member exists in our system (by name)
-                    $systemUser = User::where('name', $trelloMember['fullName'])->first();
-                    if ($systemUser) {
-                        $member['isRegistered'] = true;
-                        $member['email'] = $systemUser->email; // Use system email if user is registered
-                        $member['role'] = $systemUser->role; // Add the user's role from database
-                    }
-                    
-                    $teamMembers[] = $member;
-                }
-                
-                // Add members to team
-                $team['members'] = $teamMembers;
-                
-                // If the team belongs to an organization, get the organization details
-                if (isset($team['idOrganization']) && !empty($team['idOrganization'])) {
-                    foreach ($organizations as $org) {
-                        if ($org['id'] == $team['idOrganization']) {
-                            $team['organization'] = [
-                                'id' => $org['id'],
-                                'name' => $org['name'],
-                                'displayName' => $org['displayName'] ?? $org['name'],
-                                'logoHash' => $org['logoHash'] ?? null
-                            ];
-                            break;
-                        }
-                    }
-                }
-            }
+            // Process each team to add registration status
+            $teams = $this->processTeamMembers($teams);
             
-            // For non-admin users, filter the teams to show only the ones they are a direct member of
+            // For non-admin users, filter the teams to show only the ones they are a member of
             if (!auth()->user()->isAdmin()) {
                 $currentUserName = auth()->user()->name;
                 $filteredTeams = [];
-                $seenTeamNames = []; // Track team names we've already added
                 
                 foreach ($teams as $team) {
-                    // Skip if we've already added a team with this name
-                    if (in_array(strtolower($team['name']), $seenTeamNames)) {
-                        continue;
-                    }
-                    
                     // Check if user is a member of this team
                     if (isset($team['members']) && is_array($team['members'])) {
                         foreach ($team['members'] as $member) {
                             if (isset($member['fullName']) && $member['fullName'] === $currentUserName) {
-                                // Add team to filtered list and mark name as seen
+                                // Add team to filtered list
                                 $filteredTeams[] = $team;
-                                $seenTeamNames[] = strtolower($team['name']);
                                 break;
                             }
                         }
@@ -184,7 +98,12 @@ class TrelloTeamController extends Controller
                 // Replace original teams array with filtered one
                 $teams = $filteredTeams;
             }
+            
             // Sort teams by name
+            usort($teams, function($a, $b) {
+                return strcmp($a['name'], $b['name']);
+            });
+            
             return view('trello.teams.index', compact('teams', 'organizations'));
         } catch (\Exception $e) {
             Log::error('Error connecting to Trello API: ' . $e->getMessage());
@@ -377,11 +296,7 @@ class TrelloTeamController extends Controller
             
             // Process each member
             foreach ($trelloMembers as $trelloMember) {
-                // Skip this specific user - don't add to the members list at all
-                if ($trelloMember['fullName'] === 'มกุล ๗') {
-                    continue;
-                }
-                
+                // Skip this specific user - don't add to the members list at al
                 $member = [
                     'id' => $trelloMember['id'],
                     'fullName' => $trelloMember['fullName'],
@@ -496,40 +411,85 @@ class TrelloTeamController extends Controller
     }
     
     /**
+     * Process team members to add registration status
+     *
+     * @param array $teams
+     * @return array
+     */
+    private function processTeamMembers($teams)
+    {
+        try {
+            foreach ($teams as &$team) {
+                if (isset($team['members']) && is_array($team['members'])) {
+                    foreach ($team['members'] as &$member) {
+                        // Initialize all required member fields
+                        $member = array_merge([
+                            // Fix problem Refresh Data eror
+                            'isRegistered' => false,
+                            'role' => null,
+                            'fullName' => $member['fullName'] ?? '',
+                            'username' => $member['username'] ?? '',
+                            'avatarHash' => $member['avatarHash'] ?? null
+                        ], $member);
+                        
+                        // Check if user exists in our system
+                        $systemUser = User::where('name', $member['fullName'])->first();
+                        
+                        if ($systemUser) {
+                            $member['isRegistered'] = true;
+                            $member['role'] = $systemUser->role;
+                        }
+                        
+                        // Log member data for debugging
+                        \Log::info('Processed member', [
+                            'fullName' => $member['fullName'],
+                            'isRegistered' => $member['isRegistered'],
+                            'role' => $member['role']
+                        ]);
+                    }
+                }
+            }
+            return $teams;
+        } catch (\Exception $e) {
+            \Log::error('Error in processTeamMembers: ' . $e->getMessage());
+            return $teams;
+        }
+    }
+
+    /**
      * Refresh Trello teams data
      *
      * @return \Illuminate\View\View
      */
+    // Fix problem Refresh Data eror
     public function refresh()
     {
-        if (!$this->trelloService->hasValidCredentials()) {
-            // Use direct routing instead of redirect
-            $apiKey = \App\Models\Setting::where('key', 'trello_api_key')->first();
-            $apiToken = \App\Models\Setting::where('key', 'trello_api_token')->first();
-            $boardId = \App\Models\Setting::where('key', 'trello_board_id')->first();
-            
-            $connectionStatus = [
-                'success' => false,
-                'message' => 'Not tested',
-                'details' => []
-            ];
-            
-            return view('trello.settings', [
-                'trelloApiKey' => $apiKey ? $apiKey->value : null,
-                'trelloApiToken' => $apiToken ? $apiToken->value : null,
-                'boardId' => $boardId ? $boardId->value : null,
-                'connectionStatus' => $connectionStatus,
-                'error' => 'Trello API credentials are not configured. Please set them up first.'
-            ]);
-        }
-        
         try {
-            // Clear cache for Trello data to force fresh retrieval
+            // Check if Trello credentials are valid
+            if (!$this->trelloService->hasValidCredentials()) {
+                \Log::error('Trello credentials are not valid');
+                return redirect()->route('trello.teams.index')
+                    ->with('error', 'Trello API credentials are not configured. Please set them up first.');
+            }
+
+            // Test connection before proceeding 
+            $connectionTest = $this->trelloService->testConnection();
+            if (!$connectionTest['success']) {
+                \Log::error('Trello connection test failed', ['details' => $connectionTest]);
+                return redirect()->route('trello.teams.index')
+                    ->with('error', 'Failed to connect to Trello: ' . $connectionTest['message']);
+            }
+
+            // Clear cache for Trello data
             $this->trelloService->clearCache();
             
-            // Use direct routing instead of redirect
+            // Get organizations
             $organizations = $this->trelloService->getOrganizations();
-            
+            if (empty($organizations)) {
+                \Log::warning('No organizations found');
+            }
+
+            // Get boards with members
             $options = [
                 'members' => true,
                 'member_fields' => 'fullName,username,avatarHash'
@@ -539,7 +499,22 @@ class TrelloTeamController extends Controller
                 ['name', 'desc', 'url', 'idOrganization', 'closed', 'shortUrl'],
                 $options
             );
-            
+
+            if (empty($teams)) {
+                \Log::warning('No teams found');
+                return redirect()->route('trello.teams.index')
+                    ->with('error', 'No teams found. Please check your Trello access permissions.');
+            }
+
+            // Process team members
+            $teams = $this->processTeamMembers($teams);
+
+            // Log success
+            \Log::info('Successfully refreshed Trello data', [
+                'teams_count' => count($teams),
+                'organizations_count' => count($organizations)
+            ]);
+
             return view('trello.teams.index', [
                 'teams' => $teams,
                 'organizations' => $organizations,
@@ -547,20 +522,13 @@ class TrelloTeamController extends Controller
             ]);
                 
         } catch (\Exception $e) {
-            Log::error('Error refreshing Trello data: ' . $e->getMessage());
-            
-            // Use direct routing instead of redirect
-            $organizations = $this->trelloService->getOrganizations();
-            $teams = $this->trelloService->getBoards(
-                ['name', 'desc', 'url', 'idOrganization', 'closed', 'shortUrl'],
-                ['members' => true, 'member_fields' => 'fullName,username,avatarHash']
-            );
-            
-            return view('trello.teams.index', [
-                'teams' => $teams,
-                'organizations' => $organizations,
-                'error' => 'Error refreshing Trello data: ' . $e->getMessage()
+            \Log::error('Error refreshing Trello data', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
+
+            return redirect()->route('trello.teams.index')
+                ->with('error', 'Error refreshing Trello data: ' . $e->getMessage());
         }
     }
 }
