@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Laravel') }} - @yield('title', 'Dashboard')</title>
-    
+
     <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.2/dist/alpine.min.js" defer></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -204,6 +204,62 @@
                 <a href="{{ route('story.points.report') }}"
                     class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('story.points.report') ? 'active' : '' }}"
                     :class="sidebarOpen ? '' : 'flex justify-center'">
+                </a>
+                <!-- Trello Teams - Available for all users -->
+                <a href="{{ route('trello.teams.index') }}"
+                    class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('trello.teams.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        Trello teams
+                    </div>
+                </a>
+                <a href="{{ route('minorcases') }}"
+                    class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('minorcases') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" width="16" height="16"
+                            fill="currentColor" class="bi bi-hash" viewBox="0 0 16 16">
+                            <path
+                                d="M8.39 12.648a1 1 0 0 0-.015.18c0 .305.21.508.5.508.266 0 .492-.172.555-.477l.554-2.703h1.204c.421 0 .617-.234.617-.547 0-.312-.188-.53-.617-.53h-.985l.516-2.524h1.265c.43 0 .618-.227.618-.547 0-.313-.188-.524-.618-.524h-1.046l.476-2.304a1 1 0 0 0 .016-.164.51.51 0 0 0-.516-.516.54.54 0 0 0-.539.43l-.523 2.554H7.617l.477-2.304c.008-.04.015-.118.015-.164a.51.51 0 0 0-.523-.516.54.54 0 0 0-.531.43L6.53 5.484H5.414c-.43 0-.617.22-.617.532s.187.539.617.539h.906l-.515 2.523H4.609c-.421 0-.609.219-.609.531s.188.547.61.547h.976l-.516 2.492c-.008.04-.015.125-.015.18 0 .305.21.508.5.508.265 0 .492-.172.554-.477l.555-2.703h2.242zm-1-6.109h2.266l-.515 2.563H6.859l.532-2.563z" />
+                        </svg>
+                        Minor Cases
+                    </div>
+                </a>
+                <!-- Bug Backlog - Available for all users not admin z-->
+                <a href="{{ route('backlog.index') }}"
+                    class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('backlog.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Bug Backlog
+                    </div>
+                </a>
+
+                <div class="px-4 py-2 mt-4 mb-2">
+                    <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Reports</p>
+                </div>
+
+                @if (!auth()->user()->isAdmin())
+                    <a href="{{ route('reports') }}"
+                        class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('reports') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            Reports
+                        </div>
+                    </a>
+                @endif
+                <a href="{{ route('story.points.report') }}"
+                    class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('story.points.report') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
@@ -227,39 +283,76 @@
                     </div>
                 </a>
 
-                <a href="{{ route('minorcases') }}"
-                    class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('minorcases') ? 'active' : '' }}"
-                    :class="sidebarOpen ? '' : 'flex justify-center'">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                            class="bi bi-send" viewBox="0 0 16 16">
-                            <path
-                                d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z" />
-                        </svg>
-                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Minor
-                            Cases</span>
-                        <span class="tooltip-text" x-show="!sidebarOpen">Minor Cases</span>
-                    </div>
-                </a>
+                <!-- Sprint Reports - Available for admin -->
                 @if (auth()->user()->isAdmin())
-                    <a href="{{ route('trello.teams.index') }}"
-                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('trello.teams.*') ? 'active' : '' }}"
+                    <div class="px-4 py-2 mt-6 mb-4">
+                        <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Admin Settings</p>
+                    </div>
+                    <a href="{{ route('users.index') }}"
+                        class="block px-4 py-2 rounded-lg mb-1 {{ request()->routeIs('users.*') ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                <path
+                                    d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z" />
+                            </svg>
+                            <span class="ml-3 text-fade"
+                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Minor
+                                Cases</span>
+                            <span class="tooltip-text" x-show="!sidebarOpen">Minor Cases</span>
+                        </div>
+                    </a>
+                    @if (auth()->user()->isAdmin())
+                        <a href="{{ route('trello.teams.index') }}"
+                            class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('trello.teams.*') ? 'active' : '' }}"
+                            :class="sidebarOpen ? '' : 'flex justify-center'">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                <span class="ml-3 text-fade"
+                                    :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Trello Teams</span>
+                                <span class="tooltip-text" x-show="!sidebarOpen">Trello Teams</span>
+                            </div>
+                        </a>
+                    @endif
+                    @if (auth()->user()->isAdmin())
+                        <a href="{{ route('settings.sprint') }}"
+                            class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('settings.sprint') ? 'active' : '' }}"
+                            :class="sidebarOpen ? '' : 'flex justify-center'">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span class="ml-3 text-fade"
+                                    :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Sprint Settings</span>
+                                <span class="tooltip-text" x-show="!sidebarOpen">Sprint Settings</span>
+                            </div>
+                        </a>
+                    @endif
+
+                    <a href="{{ route('saved-reports.index') }}"
+                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('saved-reports.*') ? 'active' : '' }}"
                         :class="sidebarOpen ? '' : 'flex justify-center'">
                         <div class="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                             </svg>
                             <span class="ml-3 text-fade"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Trello Teams</span>
-                            <span class="tooltip-text" x-show="!sidebarOpen">Trello Teams</span>
+                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Saved
+                                Reports</span>
+                            <span class="tooltip-text" x-show="!sidebarOpen">Saved Reports</span>
                         </div>
                     </a>
-                @endif
-                @if (auth()->user()->isAdmin())
-                    <a href="{{ route('settings.sprint') }}"
-                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('settings.sprint') ? 'active' : '' }}"
+
+                    <a href="{{ route('sprints.index') }}"
+                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('sprints.*') || request()->routeIs('sprint-reports.*') ? 'active' : '' }}"
                         :class="sidebarOpen ? '' : 'flex justify-center'">
                         <div class="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
@@ -268,98 +361,69 @@
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             <span class="ml-3 text-fade"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Sprint Settings</span>
-                            <span class="tooltip-text" x-show="!sidebarOpen">Sprint Settings</span>
+                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Sprint
+                                Reports</span>
+                            <span class="tooltip-text" x-show="!sidebarOpen">Sprint Reports</span>
                         </div>
                     </a>
-                @endif
 
-                <a href="{{ route('saved-reports.index') }}"
-                    class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('saved-reports.*') ? 'active' : '' }}"
-                    :class="sidebarOpen ? '' : 'flex justify-center'">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                        </svg>
-                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Saved
-                            Reports</span>
-                        <span class="tooltip-text" x-show="!sidebarOpen">Saved Reports</span>
-                    </div>
-                </a>
-
-                <a href="{{ route('sprints.index') }}"
-                    class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('sprints.*') || request()->routeIs('sprint-reports.*') ? 'active' : '' }}"
-                    :class="sidebarOpen ? '' : 'flex justify-center'">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Sprint
-                            Reports</span>
-                        <span class="tooltip-text" x-show="!sidebarOpen">Sprint Reports</span>
-                    </div>
-                </a>
-
-                <a href="{{ route('backlog.index') }}"
-                    class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('backlog.*') ? 'active' : '' }}"
-                    :class="sidebarOpen ? '' : 'flex justify-center'">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" fill="currentColor"
-                            class="bi bi-bug" viewBox="0 0 16 16">
-                            <path
-                                d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623M4 7v4a4 4 0 0 0 3.5 3.97V7zm4.5 0v7.97A4 4 0 0 0 12 11V7zM12 6a4 4 0 0 0-1.334-2.982A3.98 3.98 0 0 0 8 2a3.98 3.98 0 0 0-2.667 1.018A4 4 0 0 0 4 6z" />
-                        </svg>
-                        <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Bug
-                            Backlog</span>
-                        <span class="tooltip-text" x-show="!sidebarOpen">Bug Backlog</span>
-                    </div>
-                </a>
-
-                <!-- Admin Settings Section -->
-                @if (auth()->user()->isAdmin())
-                    <div class="px-4 py-2 mt-6 mb-4" x-show="sidebarOpen"
-                        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-                        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-                        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-                        <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Admin Settings</p>
-                    </div>
-
-                    <a href="{{ route('users.index') }}"
-                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('users.*') ? 'active' : '' }}"
+                    <a href="{{ route('backlog.index') }}"
+                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('backlog.*') ? 'active' : '' }}"
                         :class="sidebarOpen ? '' : 'flex justify-center'">
                         <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="18"
+                                fill="currentColor" class="bi bi-bug" viewBox="0 0 16 16">
+                                <path
+                                    d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623M4 7v4a4 4 0 0 0 3.5 3.97V7zm4.5 0v7.97A4 4 0 0 0 12 11V7zM12 6a4 4 0 0 0-1.334-2.982A3.98 3.98 0 0 0 8 2a3.98 3.98 0 0 0-2.667 1.018A4 4 0 0 0 4 6z" />
                             </svg>
-                            <span class="ml-3 text-fade"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">User Management</span>
-                            <span class="tooltip-text" x-show="!sidebarOpen">User Management</span>
+                            <span class="ml-3 text-fade" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Bug
+                                Backlog</span>
+                            <span class="tooltip-text" x-show="!sidebarOpen">Bug Backlog</span>
                         </div>
                     </a>
 
-                    <a href="{{ route('trello.settings.index') }}"
-                        class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('trello.settings.*') ? 'active' : '' }}"
-                        :class="sidebarOpen ? '' : 'flex justify-center'">
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span class="ml-3 text-fade"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Trello API Settings</span>
-                            <span class="tooltip-text" x-show="!sidebarOpen">Trello API Settings</span>
+                    <!-- Admin Settings Section -->
+                    @if (auth()->user()->isAdmin())
+                        <div class="px-4 py-2 mt-6 mb-4" x-show="sidebarOpen"
+                            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+                            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+                            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                            <p class="text-xs uppercase font-semibold text-gray-500 tracking-wider">Admin Settings</p>
                         </div>
-                    </a>
-                @endif
+
+                        <a href="{{ route('users.index') }}"
+                            class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('users.*') ? 'active' : '' }}"
+                            :class="sidebarOpen ? '' : 'flex justify-center'">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                <span class="ml-3 text-fade"
+                                    :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">User Management</span>
+                                <span class="tooltip-text" x-show="!sidebarOpen">User Management</span>
+                            </div>
+                        </a>
+
+                        <a href="{{ route('trello.settings.index') }}"
+                            class="block px-4 py-2 sidebar-button mb-1 tooltip {{ request()->routeIs('trello.settings.*') ? 'active' : '' }}"
+                            :class="sidebarOpen ? '' : 'flex justify-center'">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span class="ml-3 text-fade"
+                                    :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">Trello API
+                                    Settings</span>
+                                <span class="tooltip-text" x-show="!sidebarOpen">Trello API Settings</span>
+                            </div>
+                        </a>
+                    @endif
             </div>
 
             <!-- App Version - Only Show When Expanded -->

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Services\TrelloService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class TrelloTeamController extends Controller
 {
@@ -155,27 +156,36 @@ class TrelloTeamController extends Controller
                 }
             }
             
-            // For non-admin users, filter the teams to show only the ones they are a member of
+            // For non-admin users, filter the teams to show only the ones they are a direct member of
             if (!auth()->user()->isAdmin()) {
                 $currentUserName = auth()->user()->name;
-                $teams = array_filter($teams, function($team) use ($currentUserName) {
-                    // Check if the current user is a member of this team
-                    foreach ($team['members'] as $member) {
-                        if ($member['fullName'] === $currentUserName) {
-                            return true;
+                $filteredTeams = [];
+                $seenTeamNames = []; // Track team names we've already added
+                
+                foreach ($teams as $team) {
+                    // Skip if we've already added a team with this name
+                    if (in_array(strtolower($team['name']), $seenTeamNames)) {
+                        continue;
+                    }
+                    
+                    // Check if user is a member of this team
+                    if (isset($team['members']) && is_array($team['members'])) {
+                        foreach ($team['members'] as $member) {
+                            if (isset($member['fullName']) && $member['fullName'] === $currentUserName) {
+                                // Add team to filtered list and mark name as seen
+                                $filteredTeams[] = $team;
+                                $seenTeamNames[] = strtolower($team['name']);
+                                break;
+                            }
                         }
                     }
-                    return false;
-                });
-                
-                // For regular users, only show their primary team (first matching team)
-                // This prevents multiple teams being shown even if user is a member of multiple teams
-                if (count($teams) > 1) {
-                    $teams = array_slice($teams, 0, 1);
                 }
+                
+                // Replace original teams array with filtered one
+                $teams = $filteredTeams;
             }
+            // Sort teams by name
             return view('trello.teams.index', compact('teams', 'organizations'));
-            
         } catch (\Exception $e) {
             Log::error('Error connecting to Trello API: ' . $e->getMessage());
             
@@ -428,7 +438,7 @@ class TrelloTeamController extends Controller
      * @return \Illuminate\View\View
      */
     public function allBoards()
-    {
+    {          
         if (!$this->trelloService->hasValidCredentials()) {
             // Use direct routing instead of redirect
             $apiKey = \App\Models\Setting::where('key', 'trello_api_key')->first();

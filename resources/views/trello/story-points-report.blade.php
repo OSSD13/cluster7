@@ -740,6 +740,10 @@
         // Set the current board ID from the selector's value
         if (boardSelector && boardSelector.value) {
             currentBoardId = boardSelector.value;
+        } else if (boardSelector && {{ count($boards) > 0 ? 'true' : 'false' }}) {
+            // For hidden input case, set it to the default board ID
+            currentBoardId = '{{ $defaultBoardId ?? '' }}';
+            boardSelector.value = currentBoardId;
         }
 
         // Initialize backlog table if it exists

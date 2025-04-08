@@ -36,6 +36,7 @@ class TrelloController extends Controller
             // Add debugging to help identify the issue
             \Log::info('Starting fetchStoryPoints', [
                 'board_id' => $request->input('board_id'),
+                'user' => auth()->user()->name,
                 'timestamp' => now()->toDateTimeString(),
                 'request_url' => $request->fullUrl(),
                 'base_url' => url('/'),
@@ -91,7 +92,11 @@ class TrelloController extends Controller
             \Log::info('Fetching fresh data for board ID: ' . $boardId);
 
             // Important: Log the actual board ID being used
-            \Log::info('Fetching data for board ID: ' . $boardId);
+            \Log::info('Fetching data for board ID: ' . $boardId, [
+                'user' => auth()->user()->name,
+                'user_id' => auth()->id(),
+                'is_admin' => auth()->user()->isAdmin() ? 'Yes' : 'No'
+            ]);
 
             // More direct approach with simpler structure and better error handling
             $cards = [];
@@ -110,6 +115,7 @@ class TrelloController extends Controller
                 if ($boardResponse->successful()) {
                     $boardDetails = $boardResponse->json();
                 }
+                // Ensure the try block is properly closed
             } catch (\Exception $e) {
                 \Log::warning('Error fetching board details: ' . $e->getMessage());
                 // Continue even if board fetch fails
@@ -568,9 +574,22 @@ class TrelloController extends Controller
             // Try to get boards for the user
             $boards = $this->fetchBoards($apiKey, $apiToken);
 
-            // Filter boards for non-admin users based on board membership
-            if (!auth()->user()->isAdmin()) {
-                $boards = $this->filterBoardsForUser($boards, $apiKey, $apiToken);
+            if (auth()->user()->isAdmin()) {
+                // Admins see all boards
+                $userBoards = $boards;
+                
+                // For admins, use the first board as default if exists
+                if (count($boards) > 0) {
+                    $defaultBoardId = $boards[0]['id'];
+                }
+            } else {
+                // For testers and developers, filter boards they are members of
+                try {
+                    $userBoards = $this->filterBoardsForUser($boards, $apiKey, $apiToken);
+                } catch (\Exception $e) {
+                    \Log::error('Error filtering boards: ' . $e->getMessage());
+                    $userBoards = [];
+                }
             }
 
             // Handle cases based on the number of available boards
@@ -621,6 +640,17 @@ class TrelloController extends Controller
                     if (is_array($bugs)) {
                         $backlogData['bugsByTeam'][$team] = collect($bugs);
                     }
+                // For non-admin users, allow all their teams to be visible
+                // And ensure the defaultBoardId is set to the first board
+                if (count($userBoards) > 0) {
+                    $defaultBoardId = $userBoards[0]['id'];
+                    \Log::info('Setting default board for user: ' . $userName, [
+                        'defaultBoardId' => $defaultBoardId,
+                        'boardName' => $userBoards[0]['name'],
+                        'totalBoards' => count($userBoards)
+                    ]);
+                } else {
+                    \Log::warning('No boards found for user: ' . $userName);
                 }
             }
 

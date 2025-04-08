@@ -56,8 +56,8 @@ class RegisterController extends Controller
             'is_approved' => false,
         ]);
 
-        Auth::login($user);
-
-        return view('dashboard', ['status' => 'Your account is pending approval. You will be notified once an administrator approves your account.']);
+        // Don't log in unapproved users, redirect to login with message
+        return redirect()->route('login')
+            ->with('status', 'Your account has been created and is pending approval. You will be notified once an administrator approves your account.');
     }
 } 

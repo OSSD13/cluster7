@@ -57,6 +57,7 @@
                     Print
                 </button>
                 
+                @if(auth()->user()->isAdmin())
                 <form action="{{ route('sprint-reports.delete', $report->id) }}" method="POST" class="inline">
                     @csrf
                     @method('DELETE')
@@ -69,6 +70,7 @@
                         Delete
                     </button>
                 </form>
+                @endif
             </div>
         </div>
         
