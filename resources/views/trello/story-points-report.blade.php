@@ -319,12 +319,12 @@
 
         <div id="main-data-container" class="hidden">
             <div id="story-points-summary" class="hidden">
-                <div class="bg-white shadow rounded-lg p-6 mb-6">
-                    <h2 class="text-lg font-semibold mb-4">
-                        Sprint Statistics
-                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Using Agile Tools Plugin
-                            (59d4ef8cfea15a55b0086614)</span>
-                    </h2>
+                <div class="bg-white shadow rounded-lg p-6 mb-6">                 <h2 class="text-lg font-semibold mb-4 flex items-center">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                     </svg>
+                     Sprint Statistics
+                 </h2>
 
                     <!-- Date Display -->
                     <div id="sprint-date-range" class="mb-3 text-sm text-gray-500 flex items-center">
@@ -593,7 +593,7 @@
                         </thead>
                         <tbody id="team-members-table-body">
                             <tr>
-                                <td colspan="7" class="py-4 px-4 text-center text-gray-500">Loading team data...</td>
+                                <td colspan="8" class="py-4 px-4 text-center text-gray-500">Loading team data...</td>
                             </tr>
                         </tbody>
                         <tfoot class="bg-gray-50 font-semibold">
@@ -1705,7 +1705,7 @@
                 </thead>
                 <tbody id="team-members-table-body">
                     <tr>
-                        <td colspan="7" class="py-4 px-4 text-center text-gray-500">Loading team data...</td>
+                        <td colspan="8" class="py-4 px-4 text-center text-gray-500">Loading team data...</td>
                     </tr>
                 </tbody>
                 <tfoot class="bg-gray-50 font-semibold">
@@ -1720,11 +1720,35 @@
                         <td class="py-3 px-4 border-t text-center">-</td>
                     </tr>
                 </tfoot>
-            `;
+                `;
 
-                // Replace old table with new one
-                tableContainer.removeChild(oldTable);
+                // Replace the old table with the new one
+                if (oldTable) {
+                    oldTable.remove();
+                }
                 tableContainer.appendChild(newTable);
+
+                // Reattach event listeners to the new table
+                attachExtraPointsEventListeners();
+            }
+
+            // Function to attach extra points event listeners
+            function attachExtraPointsEventListeners() {
+                const tableBody = document.getElementById('team-members-table-body');
+                if (tableBody) {
+                    tableBody.addEventListener('click', function(e) {
+                        const row = e.target.closest('tr');
+                        if (!row) return;
+
+                        const extraCell = row.querySelector('td:nth-child(6)'); // Extra points column
+                        if (e.target === extraCell || extraCell.contains(e.target)) {
+                            const memberId = row.dataset.memberId;
+                            const rowIndex = Array.from(row.parentElement.children).indexOf(row);
+                            const currentExtraPoints = parseFloat(extraCell.textContent) || 0;
+                            openExtraPointsModal(memberId, rowIndex, currentExtraPoints);
+                        }
+                    });
+                }
             }
 
             function updateBoardDetails(boardDetails) {
