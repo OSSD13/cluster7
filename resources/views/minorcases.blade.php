@@ -373,7 +373,7 @@
                                         value = value.substring(1);
                                     }
                                     cell.innerHTML =
-                                        `<input type="text" value="${value}" class="w-full p-1 border">`;
+                                        `<input type="text" value="${value}" class="w-full p-1 bg-white border ">`;
                                 });
                                 this.innerHTML = "Save";
                             } else {
@@ -489,7 +489,7 @@
                                             value = value.substring(1);
                                         }
                                         cell.innerHTML =
-                                            `<input type="text" value="${value}" class="w-full p-1 border">`;
+                                            `<input type="text" value="${value}" class="w-full p-1 border text-red-50">`;
                                     });
                                     this.innerHTML = "Save";
                                 } else {
