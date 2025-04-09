@@ -96,7 +96,7 @@ class UserController extends Controller
      * Store a newly created user in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\View\View
      */
     public function store(Request $request)
     {
@@ -112,8 +112,17 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return redirect()->route('users.index')
-            ->with('success', 'User created successfully.');
+        // Use direct routing
+        $users = User::where('is_approved', true)->orderBy('created_at', 'desc')->paginate(10);
+        $pendingUsers = User::where('is_approved', false)->orderBy('created_at', 'desc')->get();
+        $userTeamsMap = [];
+        
+        return view('users.index', [
+            'users' => $users, 
+            'pendingUsers' => $pendingUsers, 
+            'userTeamsMap' => $userTeamsMap,
+            'success' => 'User created successfully.'
+        ]);
     }
 
     /**
@@ -132,7 +141,7 @@ class UserController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\View\View
      */
     public function update(Request $request, User $user)
     {
@@ -158,41 +167,88 @@ class UserController extends Controller
             ]);
         }
 
-        return redirect()->route('users.index')
-            ->with('success', 'User updated successfully.');
+        // Use direct routing
+        $users = User::where('is_approved', true)->orderBy('created_at', 'desc')->paginate(10);
+        $pendingUsers = User::where('is_approved', false)->orderBy('created_at', 'desc')->get();
+        $userTeamsMap = [];
+        
+        return view('users.index', [
+            'users' => $users, 
+            'pendingUsers' => $pendingUsers, 
+            'userTeamsMap' => $userTeamsMap,
+            'success' => 'User updated successfully.'
+        ]);
     }
 
     /**
      * Remove the specified user from storage.
      *
      * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\View\View
      */
     public function destroy(User $user)
     {
         // Prevent self deletion
         if (auth()->id() === $user->id) {
-            return redirect()->route('users.index')
-                ->with('error', 'You cannot delete yourself.');
+            // Use direct routing for error case
+            $users = User::where('is_approved', true)->orderBy('created_at', 'desc')->paginate(10);
+            $pendingUsers = User::where('is_approved', false)->orderBy('created_at', 'desc')->get();
+            $userTeamsMap = [];
+            
+            return view('users.index', [
+                'users' => $users, 
+                'pendingUsers' => $pendingUsers, 
+                'userTeamsMap' => $userTeamsMap,
+                'error' => 'You cannot delete yourself.'
+            ]);
         }
 
         $user->delete();
 
-        return redirect()->route('users.index')
-            ->with('success', 'User deleted successfully.');
+        // Use direct routing for success case
+        $users = User::where('is_approved', true)->orderBy('created_at', 'desc')->paginate(10);
+        $pendingUsers = User::where('is_approved', false)->orderBy('created_at', 'desc')->get();
+        $userTeamsMap = [];
+        
+        return view('users.index', [
+            'users' => $users, 
+            'pendingUsers' => $pendingUsers, 
+            'userTeamsMap' => $userTeamsMap,
+            'success' => 'User deleted successfully.'
+        ]);
     }
 
     public function approve(User $user)
     {
         $user->update(['is_approved' => true]);
-        return redirect()->route('users.index')
-            ->with('success', 'User has been approved successfully.');
+        
+        // Use direct routing
+        $users = User::where('is_approved', true)->orderBy('created_at', 'desc')->paginate(10);
+        $pendingUsers = User::where('is_approved', false)->orderBy('created_at', 'desc')->get();
+        $userTeamsMap = [];
+        
+        return view('users.index', [
+            'users' => $users, 
+            'pendingUsers' => $pendingUsers, 
+            'userTeamsMap' => $userTeamsMap,
+            'success' => 'User has been approved successfully.'
+        ]);
     }
 
     public function reject(User $user)
     {
         $user->delete();
-        return redirect()->route('users.index')
-            ->with('success', 'User has been rejected and removed.');
+        
+        // Use direct routing
+        $users = User::where('is_approved', true)->orderBy('created_at', 'desc')->paginate(10);
+        $pendingUsers = User::where('is_approved', false)->orderBy('created_at', 'desc')->get();
+        $userTeamsMap = [];
+        
+        return view('users.index', [
+            'users' => $users, 
+            'pendingUsers' => $pendingUsers, 
+            'userTeamsMap' => $userTeamsMap,
+            'success' => 'User has been rejected and removed.'
+        ]);
     }
 }

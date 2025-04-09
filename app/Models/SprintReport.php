@@ -100,6 +100,21 @@ class SprintReport extends Model
             ];
         }
         
+        // Handle if the data is already a string (JSON)
+        if (is_string($this->story_points_data)) {
+            $decoded = json_decode($this->story_points_data, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return $decoded;
+            } else {
+                \Log::error('Error decoding story_points_data in SprintReport #' . $this->id . ': ' . json_last_error_msg());
+                return [
+                    'teamMembers' => [],
+                    'summary' => [],
+                    'totals' => [],
+                ];
+            }
+        }
+        
         return $this->story_points_data;
     }
     
@@ -117,6 +132,21 @@ class SprintReport extends Model
                 'bugCount' => '0 bugs',
                 'totalBugPoints' => 0,
             ];
+        }
+        
+        // Handle if the data is already a string (JSON)
+        if (is_string($this->bug_cards_data)) {
+            $decoded = json_decode($this->bug_cards_data, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return $decoded;
+            } else {
+                \Log::error('Error decoding bug_cards_data in SprintReport #' . $this->id . ': ' . json_last_error_msg());
+                return [
+                    'bugCards' => [],
+                    'bugCount' => '0 bugs',
+                    'totalBugPoints' => 0,
+                ];
+            }
         }
         
         return $this->bug_cards_data;

@@ -36,7 +36,7 @@ class RegisterController extends Controller
      * Handle a registration request for the application.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\Response
      */
     public function register(Request $request)
     {
@@ -56,7 +56,8 @@ class RegisterController extends Controller
             'is_approved' => false,
         ]);
 
-        Auth::login($user);
-        return redirect('/dashboard')->with('status', 'Your account is pending approval. You will be notified once an administrator approves your account.');
+        // Don't log in unapproved users, redirect to login with message
+        return redirect()->route('login')
+            ->with('status', 'Your account has been created and is pending approval. You will be notified once an administrator approves your account.');
     }
 } 

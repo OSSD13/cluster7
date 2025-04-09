@@ -1,64 +1,89 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Services\MinorCaseService;
 use App\Services\TrelloService;
+use App\Models\Sprint;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
-class MinorCasesController extends Controller
+final class MinorCasesController extends Controller
 {
     /**
      * The Trello service instance.
-     *
-     * @var \App\Services\TrelloService
      */
-    protected $trelloService;
+    private TrelloService $trelloService;
+    
+    /**
+     * The Minor Case service instance.
+     */
+    private MinorCaseService $minorCaseService;
 
     /**
      * Create a new controller instance.
      *
-     * @param \App\Services\TrelloService $trelloService
-     * @return void
+     * @param TrelloService $trelloService
+     * @param MinorCaseService $minorCaseService
      */
-    public function __construct(TrelloService $trelloService)
+    public function __construct(TrelloService $trelloService, MinorCaseService $minorCaseService)
     {
         $this->middleware('auth');
         $this->trelloService = $trelloService;
+        $this->minorCaseService = $minorCaseService;
     }
 
     /**
      * Display the minor cases page with user's team data
-     *
-     * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(): View
     {
-        // For now, just return the view
-        // In the future, we can filter minor cases data based on user teams
-        return view('minorcases');
+        // Get list of available sprints for the dropdown
+        $sprints = Sprint::orderBy('sprint_number', 'desc')->get();
+        
+        // Get the current year for the view
+        $currentYear = date('Y');
+        
+        return view('minorcases', compact('sprints', 'currentYear'));
     }
 
     /**
      * Get minor cases data filtered by user's team if needed
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function getMinorCasesData()
+    public function getMinorCasesData(Request $request): JsonResponse
     {
         try {
-            // Get report data (this would be replaced with your actual data source)
-            $reportData = $this->fetchReportData();
+            // Get the boards the user has access to
+            $userBoards = $this->getUserBoards();
             
-            // If user is not admin, filter by their teams
-            if (!auth()->user()->isAdmin()) {
-                $userTeams = $this->getUserTeams();
-                $reportData = array_filter($reportData, function($item) use ($userTeams) {
-                    return isset($item['team']) && in_array($item['team'], $userTeams);
-                });
+            // Prepare data by board
+            $minorCasesData = [];
+            
+            foreach ($userBoards as $board) {
+                // Get minor cases for this board
+                $boardMinorCases = $this->minorCaseService->getByBoard($board['id'], auth()->id());
+                
+                // Map to include the board name
+                foreach ($boardMinorCases as $minorCase) {
+                    $minorCasesData[] = [
+                        'id' => $minorCase->id,
+                        'board_id' => $minorCase->board_id,
+                        'board_name' => $board['name'] ?? 'Unknown Board',
+                        'sprint_number' => $minorCase->sprint,
+                        'card' => $minorCase->card,
+                        'description' => $minorCase->description,
+                        'member' => $minorCase->member,
+                        'points' => (float) $minorCase->points,
+                        'created_at' => $minorCase->created_at->format('Y-m-d H:i:s'),
+                    ];
+                }
             }
             
-            return response()->json(array_values($reportData));
+            return response()->json($minorCasesData);
             
         } catch (\Exception $e) {
             Log::error('Error fetching minor cases data: ' . $e->getMessage());
@@ -70,32 +95,16 @@ class MinorCasesController extends Controller
     }
     
     /**
-     * Fetch report data from the database/API
-     * This is a placeholder method - replace with actual data source
+     * Get the boards accessible to the current user
      *
-     * @return array
+     * @return array Array of board data (id and name)
      */
-    private function fetchReportData()
+    private function getUserBoards(): array
     {
-        // This would be replaced with your actual data source
-        // Currently returning an empty array as placeholder
-        return [];
-    }
-
-    /**
-     * Get the teams the current user belongs to
-     *
-     * @return array Array of team names the user is a member of
-     */
-    protected function getUserTeams()
-    {
-        $userTeams = [];
+        $userBoards = [];
 
         if ($this->trelloService->hasValidCredentials()) {
             try {
-                // Get current user's name
-                $userName = auth()->user()->name;
-                
                 // Get all boards with members
                 $options = [
                     'members' => true,
@@ -108,21 +117,22 @@ class MinorCasesController extends Controller
                 foreach ($boards as $board) {
                     if (isset($board['members'])) {
                         foreach ($board['members'] as $member) {
-                            if (isset($member['fullName']) && $member['fullName'] === $userName) {
-                                $userTeams[] = $board['name'];
+                            if (isset($member['fullName']) && $member['fullName'] === auth()->user()->name) {
+                                $userBoards[] = [
+                                    'id' => $board['id'],
+                                    'name' => $board['name']
+                                ];
                                 break;
                             }
                         }
                     }
                 }
-                // Allow users to see data from all teams they belong to
-                // Removed the limitation to first team only
             } catch (\Exception $e) {
-                // Log error but don't fail - empty team list will result
-                \Log::error('Error fetching user teams: ' . $e->getMessage());
+                // Log error but don't fail - empty board list will result
+                Log::error('Error fetching user boards: ' . $e->getMessage());
             }
         }
         
-        return $userTeams;
+        return $userBoards;
     }
 } 

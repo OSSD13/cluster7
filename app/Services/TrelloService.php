@@ -363,6 +363,26 @@ class TrelloService
     }
 
     /**
+     * Get avatar URL base.
+     *
+     * @return string
+     */
+    public function getAvatarBaseUrl()
+    {
+        return 'https://trello-avatars.s3.amazonaws.com/';
+    }
+    
+    /**
+     * Get organization logo URL base.
+     *
+     * @return string
+     */
+    public function getLogoBaseUrl()
+    {
+        return 'https://trello-logos.s3.amazonaws.com/';
+    }
+
+    /**
      * Get avatar URL from hash.
      *
      * @param string $userId
@@ -376,7 +396,7 @@ class TrelloService
             return null;
         }
 
-        return "https://trello-avatars.s3.amazonaws.com/{$avatarHash}/{$size}.png";
+        return $this->getAvatarBaseUrl() . "{$avatarHash}/{$size}.png";
     }
 
     /**
@@ -393,7 +413,7 @@ class TrelloService
             return null;
         }
 
-        return "https://trello-logos.s3.amazonaws.com/{$orgId}/{$logoHash}/{$size}.png";
+        return $this->getLogoBaseUrl() . "{$orgId}/{$logoHash}/{$size}.png";
     }
 
     /**
@@ -405,22 +425,38 @@ class TrelloService
     {
         try {
             if (!$this->hasValidCredentials()) {
+                Log::error('Trello test connection failed: Invalid credentials');
                 return [
                     'success' => false,
-                    'message' => 'API credentials are not configured.'
+                    'message' => 'Invalid API credentials. Please check your API key and token.'
                 ];
             }
-
-            \Log::info('Testing Trello API connection', [
-                'endpoint' => 'https://api.trello.com/1/members/me',
-                'key_length' => strlen($this->apiKey),
-                'token_length' => strlen($this->apiToken)
+            
+            $url = $this->baseUrl . 'members/me';
+            
+            // Log the request details for debugging
+            Log::info('Testing Trello connection', [
+                'url' => $url,
+                'apiKeyLength' => strlen($this->apiKey),
+                'apiTokenLength' => strlen($this->apiToken),
+                'baseUrl' => $this->baseUrl,
+                'requestHeaders' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ]
             ]);
-
+            
             $response = Http::withOptions([
-                'verify' => false,  // Try disabling SSL verification
-                'timeout' => 15,
-            ])->get('https://api.trello.com/1/members/me', $this->getDefaultParams());
+                'verify' => false,  // Disable SSL verification for testing
+                'timeout' => 30,    // Increase timeout
+                'http_errors' => false // Don't throw exceptions for HTTP errors
+            ])->get($url, [
+                'key' => $this->apiKey,
+                'token' => $this->apiToken,
+                'boards' => 'open',
+                'board_fields' => 'name,url',
+                'board_limit' => 5
+            ]);
 
             if ($response->successful()) {
                 $user = $response->json();
@@ -559,5 +595,15 @@ class TrelloService
         }
 
         return 0;
+    }
+
+    /**
+     * Get the base URL for Trello API.
+     *
+     * @return string
+     */
+    public function getBaseUrl()
+    {
+        return $this->baseUrl;
     }
 }
