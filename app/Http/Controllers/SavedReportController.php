@@ -402,6 +402,9 @@ class SavedReportController extends Controller
         // Prepare the report data for the template
         $reportData = $savedReport->report_data;
         
+        // Log report data for debugging
+        \Log::info('exportTemplate report data:', $reportData);
+        
         // Decode JSON data if stored as strings
         $storyPointsData = null;
         $bugCardsData = null;
@@ -472,7 +475,7 @@ class SavedReportController extends Controller
             $sumFinal += $dev->sum_final;
         }
         
-        // Format the report for the template
+        // Format the report for the template - directly use values from storyPointsData with fallbacks
         $report = [
             'author' => auth()->user()->name,
             'date_start' => $reportData['date_start'] ?? now()->format('Y-m-d'),
@@ -480,14 +483,21 @@ class SavedReportController extends Controller
             'sprint' => $reportData['sprint'] ?? 'Current Sprint',
             'last_update' => $reportData['last_update'] ?? now()->format('Y-m-d H:i'),
             'team_name' => $reportData['board_name'] ?? 'Development Team',
-            'plan_point' => $storyPointsData['totalPoints'] ?? $storyPointsData['total'] ?? 0,
-            'actual_point' => $storyPointsData['totalCompletedPoints'] ?? $storyPointsData['completed'] ?? 0,
-            'remain' => $storyPointsData['todo'] ?? 0,
-            'percent' => $storyPointsData['percentComplete'] ?? 0,
-            'current_sprint_point' => $storyPointsData['totalPoints'] ?? $storyPointsData['total'] ?? 0,
-            'current_sprint_actual_point' => $storyPointsData['totalCompletedPoints'] ?? $storyPointsData['completed'] ?? 0,
+            
+            // Use direct mappings from storyPointsData
+            'plan_point' => $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 0,
+            'actual_point' => $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ?? 0,
+            'remain' => $storyPointsData['remain'] ?? $storyPointsData['remainPercent'] ?? 0,
+            'percent' => $storyPointsData['percent'] ?? $storyPointsData['percentComplete'] ?? 0,
+            'current_sprint_point' => $storyPointsData['current_sprint_point'] ?? $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 0,
+            'current_sprint_actual_point' => $storyPointsData['current_sprint_actual_point'] ?? $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ?? 0,
+            
             'developers' => $developers,
-            'backlog' => $this->formatBacklogData($reportData),
+            'backlog' => $this->formatBacklogData([
+                'board_name' => $reportData['board_name'] ?? 'Development Team',
+                'bug_cards_data' => $bugCardsData,
+                'story_points_data' => $storyPointsData
+            ]),
             'logo' => env('APP_URL') . '/images/logo.png',
             'sum_point_personal' => $sumPointPersonal,
             'sum_test_pass' => $sumTestPass,
@@ -496,6 +506,9 @@ class SavedReportController extends Controller
             'sum_cancel' => $sumCancel,
             'sum_final' => $sumFinal
         ];
+        
+        // Log the final report for debugging
+        \Log::info('Final report data being sent to template:', $report);
         
         // Convert the report to an object to match the expected structure in the template
         $reportObject = json_decode(json_encode($report));
@@ -513,18 +526,16 @@ class SavedReportController extends Controller
     public function exportToCsv(Request $request)
     {
         // Log the input data for debugging
-        \Log::info('ExportToCsv input data:', [
-            'has_story_points_data' => $request->has('story_points_data'),
-            'story_points_data_length' => $request->input('story_points_data') ? strlen($request->input('story_points_data')) : 0,
-            'has_bug_cards_data' => $request->has('bug_cards_data'),
-            'bug_cards_data_length' => $request->input('bug_cards_data') ? strlen($request->input('bug_cards_data')) : 0,
-        ]);
+        \Log::info('ExportToCsv input data:', $request->all());
         
         // Extract data from request
         $storyPointsData = $request->input('story_points_data');
         if (is_string($storyPointsData)) {
             $storyPointsData = json_decode($storyPointsData, true);
         }
+        
+        // Log decoded story points data for debugging
+        \Log::info('Decoded story points data:', $storyPointsData ?? []);
         
         $bugCardsData = $request->input('bug_cards_data');
         if (is_string($bugCardsData)) {
@@ -540,14 +551,6 @@ class SavedReportController extends Controller
                 $memberPointsData = json_decode($memberPointsData, true);
             }
         }
-        
-        // Create a temporary report structure for the template
-        $reportData = [
-            'board_name' => $request->input('board_name', 'Development Team'),
-            'bug_cards_data' => $bugCardsData,
-            'story_points_data' => $storyPointsData,
-            'member_points_data' => $memberPointsData
-        ];
         
         // Extract developer data and map fields correctly
         $developers = [];
@@ -569,7 +572,11 @@ class SavedReportController extends Controller
             }
         } else {
             // If no specific member points data, use the formatDevelopersData method
-            $developers = $this->formatDevelopersData($reportData);
+            $developers = $this->formatDevelopersData([
+                'board_name' => $request->input('board_name', 'Development Team'),
+                'bug_cards_data' => $bugCardsData,
+                'story_points_data' => $storyPointsData
+            ]);
         }
         
         // Calculate sums for the totals row
@@ -589,7 +596,7 @@ class SavedReportController extends Controller
             $sumFinal += $dev->sum_final;
         }
         
-        // Format the report for the template
+        // Format the report for the template - directly use values from storyPointsData
         $report = [
             'author' => auth()->user()->name,
             'date_start' => now()->format('Y-m-d'),
@@ -597,14 +604,21 @@ class SavedReportController extends Controller
             'sprint' => $request->input('sprint', 'Current Sprint'),
             'last_update' => now()->format('Y-m-d H:i'),
             'team_name' => $request->input('board_name', 'Development Team'),
-            'plan_point' => $storyPointsData['totalPoints'] ?? $storyPointsData['total'] ?? 0,
-            'actual_point' => $storyPointsData['totalCompletedPoints'] ?? $storyPointsData['completed'] ?? 0,
-            'remain' => $storyPointsData['todo'] ?? 0,
-            'percent' => $storyPointsData['percentComplete'] ?? 0,
-            'current_sprint_point' => $storyPointsData['totalPoints'] ?? $storyPointsData['total'] ?? 0,
-            'current_sprint_actual_point' => $storyPointsData['totalCompletedPoints'] ?? $storyPointsData['completed'] ?? 0,
+            
+            // Use direct mappings from storyPointsData
+            'plan_point' => $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 0,
+            'actual_point' => $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ?? 0,
+            'remain' => $storyPointsData['remain'] ?? $storyPointsData['remainPercent'] ?? 0,
+            'percent' => $storyPointsData['percent'] ?? $storyPointsData['percentComplete'] ?? 0,
+            'current_sprint_point' => $storyPointsData['current_sprint_point'] ?? $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 0,
+            'current_sprint_actual_point' => $storyPointsData['current_sprint_actual_point'] ?? $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ?? 0,
+            
             'developers' => $developers,
-            'backlog' => $this->formatBacklogData($reportData),
+            'backlog' => $this->formatBacklogData([
+                'board_name' => $request->input('board_name', 'Development Team'),
+                'bug_cards_data' => $bugCardsData,
+                'story_points_data' => $storyPointsData
+            ]),
             'logo' => env('APP_URL') . '/images/logo.png',
             'sum_point_personal' => $sumPointPersonal,
             'sum_test_pass' => $sumTestPass,
@@ -614,11 +628,20 @@ class SavedReportController extends Controller
             'sum_final' => $sumFinal
         ];
         
+        // Log the final report for debugging
+        \Log::info('Final report data being sent to template:', $report);
+        
         // Convert the report to an object to match the expected structure
         $reportObject = json_decode(json_encode($report));
         
-        // Render the template view
-        return view('saved-reports.template', ['report' => $reportObject]);
+        // Check if autoprint parameter exists in the request
+        $autoprint = $request->input('autoprint', false);
+        
+        // Render the template view with autoprint parameter if needed
+        return view('saved-reports.template', [
+            'report' => $reportObject,
+            'autoprint' => $autoprint
+        ]);
     }
     
     /**

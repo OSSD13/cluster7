@@ -1,0 +1,94 @@
+[1mdiff --git a/resources/views/trello/story-points-report.blade.php b/resources/views/trello/story-points-report.blade.php[m
+[1mindex bd946e1..72102b5 100644[m
+[1m--- a/resources/views/trello/story-points-report.blade.php[m
+[1m+++ b/resources/views/trello/story-points-report.blade.php[m
+[36m@@ -1498,14 +1498,6 @@[m [mfunction fetchDataWithParam(customParam) {[m
+             // Add print functionality to the print button[m
+             if (printReportBtn) {[m
+                 printReportBtn.addEventListener('click', function() {[m
+[31m-                    window.print();[m
+[31m-                });[m
+[31m-            }[m
+[31m-[m
+[31m-            // Add export to CSV functionality to the export button[m
+[31m-            const exportCsvBtn = document.getElementById('export-csv-btn');[m
+[31m-            if (exportCsvBtn) {[m
+[31m-                exportCsvBtn.addEventListener('click', function() {[m
+                     // Create a form to submit the data directly to our export endpoint[m
+                     const form = document.createElement('form');[m
+                     form.method = 'POST';[m
+[36m@@ -1533,28 +1525,34 @@[m [mfunction fetchDataWithParam(customParam) {[m
+                     sprintInput.value = document.getElementById('points-title').textContent || 'Current Sprint';[m
+                     form.appendChild(sprintInput);[m
+ [m
+[31m-                    // Add story points data[m
+[31m-                    const storyPointsInput = document.createElement('input');[m
+[31m-                    storyPointsInput.type = 'hidden';[m
+[31m-                    storyPointsInput.name = 'story_points_data';[m
+[31m-                    storyPointsInput.value = JSON.stringify(window.cachedData?.storyPoints || {});[m
+[31m-                    form.appendChild(storyPointsInput);[m
+[31m-[m
+[31m-                    // Add bug cards data[m
+[31m-                    const bugCardsInput = document.createElement('input');[m
+[31m-                    bugCardsInput.type = 'hidden';[m
+[31m-                    bugCardsInput.name = 'bug_cards_data';[m
+[31m-                    bugCardsInput.value = JSON.stringify(window.cachedData?.cardsByList || {});[m
+[31m-                    form.appendChild(bugCardsInput);[m
+[31m-                    [m
+[31m-                    // Add member points data[m
+[31m-                    const memberPointsInput = document.createElement('input');[m
+[31m-                    memberPointsInput.type = 'hidden';[m
+[31m-                    memberPointsInput.name = 'member_points_data';[m
+[31m-                    memberPointsInput.value = JSON.stringify(window.cachedData?.memberPoints || []);[m
+[31m-                    form.appendChild(memberPointsInput);[m
+[31m-[m
+[31m-                    // Add form to document, submit it, and remove it[m
+[32m+[m[32m                    // Add story points data from cached data[m
+[32m+[m[32m                    if (window.cachedData && window.cachedData.storyPoints) {[m
+[32m+[m[32m                        const storyPointsInput = document.createElement('input');[m
+[32m+[m[32m                        storyPointsInput.type = 'hidden';[m
+[32m+[m[32m                        storyPointsInput.name = 'story_points_data';[m
+[32m+[m[32m                        storyPointsInput.value = JSON.stringify(window.cachedData.storyPoints);[m
+[32m+[m[32m                        form.appendChild(storyPointsInput);[m
+[32m+[m[32m                    }[m
+[32m+[m
+[32m+[m[32m                    // Add bug cards data from cached data[m
+[32m+[m[32m                    if (window.cachedData && window.cachedData.bugCards) {[m
+[32m+[m[32m                        const bugCardsInput = document.createElement('input');[m
+[32m+[m[32m                        bugCardsInput.type = 'hidden';[m
+[32m+[m[32m                        bugCardsInput.name = 'bug_cards_data';[m
+[32m+[m[32m                        bugCardsInput.value = JSON.stringify(window.cachedData.bugCards);[m
+[32m+[m[32m                        form.appendChild(bugCardsInput);[m
+[32m+[m[32m                    }[m
+[32m+[m
+[32m+[m[32m                    // Add member points data if available[m
+[32m+[m[32m                    if (window.cachedData && window.cachedData.memberPoints) {[m
+[32m+[m[32m                        const memberPointsInput = document.createElement('input');[m
+[32m+[m[32m                        memberPointsInput.type = 'hidden';[m
+[32m+[m[32m                        memberPointsInput.name = 'member_points_data';[m
+[32m+[m[32m                        memberPointsInput.value = JSON.stringify(window.cachedData.memberPoints);[m
+[32m+[m[32m                        form.appendChild(memberPointsInput);[m
+[32m+[m[32m                    }[m
+[32m+[m
+[32m+[m[32m                    // Append form to body, submit it, and remove it[m
+                     document.body.appendChild(form);[m
+                     form.submit();[m
+                     document.body.removeChild(form);[m
+[36m@@ -2031,7 +2029,7 @@[m [mfunction buildMemberTable(members) {[m
+                     const extraPoint = savedExtraPoint || parseFloat(member.extraPoint || 0);[m
+ [m
+                     // Recalculate final point with the updated extra point[m
+[31m-                    const finalPoint = passPoint + extraPoint;[m
+[32m+[m[32m                    const finalPoint = pointPersonal - bugPoint;[m
+ [m
+                     // Update running totals[m
+                     totals.personal += pointPersonal;[m
+[36m@@ -3070,7 +3068,7 @@[m [mfunction closeExtraPointsModal() {[m
+ [m
+                     // Recalculate final points (pass points + extra points)[m
+                     const passPoints = parseFloat(passCell.textContent) || 0;[m
+[31m-                    const finalPoints = passPoints + extraPoints;[m
+[32m+[m[32m                    const finalPoints = pointPersonal - bugPoints;[m
+                     finalCell.textContent = finalPoints.toFixed(1);[m
+ [m
+                     // Save the extra points to localStorage[m

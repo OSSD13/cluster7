@@ -4,6 +4,21 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link type="text/css" rel="stylesheet" href="{{ asset('css/sheet.css') }}">
     <style type="text/css">
+      /* Ensure color printing */
+      @media print {
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+
+        /* Force background colors to be visible when printing */
+        .ritz .waffle td, .ritz .waffle th {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+      }
+
       .ritz .waffle a {
         color: inherit;
       }
@@ -602,7 +617,7 @@
 </div>
 @if(isset($report->logo))
 <div id='embed_246369636' class='waffle-embedded-object-overlay' style='width: 89px; height: 89px; display: block;'>
-    <img src='{{ $report->logo }}' style='display: block;' height='89' width='89'>
+    <img src="{{ asset('tttLogo.png') }}" alt="Logo" style="width: 100%; height: 100%;">
 </div>
 @endif
 <script>
@@ -612,11 +627,11 @@
     if (importedData) {
       const parsedData = JSON.parse(importedData);
       console.log('Imported data for print:', parsedData);
-      
+
       // Set global variables from imported data
       window.storyPointsData = parsedData.storyPointsData;
       window.cachedData = parsedData.cachedData;
-      
+
       // If the server didn't provide full data, use our client-side data
       if (!window.storyPointsData || !window.storyPointsData.totalPoints) {
         console.log('Using imported data instead of server data');
@@ -696,6 +711,21 @@
     };
     console.log('Fixed Story Points Data:', window.storyPointsData);
   }
+
+  // Auto-trigger print dialog when page loads
+  window.addEventListener('load', function() {
+    // Check if autoprint parameter is present in URL or passed from controller
+    const urlParams = new URLSearchParams(window.location.search);
+    const autoPrintUrl = urlParams.get('autoprint') === 'true';
+    const autoPrintController = {{ isset($autoprint) && $autoprint ? 'true' : 'false' }};
+
+    if (autoPrintUrl || autoPrintController) {
+      // Small delay to ensure everything is rendered properly
+      setTimeout(function() {
+        window.print();
+      }, 1000);
+    }
+  });
 </script>
 </body>
 </html>

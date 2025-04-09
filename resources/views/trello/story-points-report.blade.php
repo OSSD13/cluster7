@@ -227,15 +227,6 @@
                                 </svg>
                                 Print Report
                             </button>
-                            <button id="export-csv-btn"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                Export to CSV
-                            </button>
                         </div>
                         <div class="py-1">
                             <a href="{{ route('saved-reports.index') }}"
@@ -1498,19 +1489,18 @@
             // Add print functionality to the print button
             if (printReportBtn) {
                 printReportBtn.addEventListener('click', function() {
-                    window.print();
-                });
-            }
-
-            // Add export to CSV functionality to the export button
-            const exportCsvBtn = document.getElementById('export-csv-btn');
-            if (exportCsvBtn) {
-                exportCsvBtn.addEventListener('click', function() {
                     // Create a form to submit the data directly to our export endpoint
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = '{{ route("export.to.csv") }}';
                     form.target = '_blank'; // Open in new window/tab
+
+                    // Add autoprint parameter
+                    const autoPrintInput = document.createElement('input');
+                    autoPrintInput.type = 'hidden';
+                    autoPrintInput.name = 'autoprint';
+                    autoPrintInput.value = 'true';
+                    form.appendChild(autoPrintInput);
 
                     // Add CSRF token
                     const csrfToken = document.createElement('input');
@@ -1533,28 +1523,34 @@
                     sprintInput.value = document.getElementById('points-title').textContent || 'Current Sprint';
                     form.appendChild(sprintInput);
 
-                    // Add story points data
-                    const storyPointsInput = document.createElement('input');
-                    storyPointsInput.type = 'hidden';
-                    storyPointsInput.name = 'story_points_data';
-                    storyPointsInput.value = JSON.stringify(window.cachedData?.storyPoints || {});
-                    form.appendChild(storyPointsInput);
+                    // Add story points data from cached data
+                    if (window.cachedData && window.cachedData.storyPoints) {
+                        const storyPointsInput = document.createElement('input');
+                        storyPointsInput.type = 'hidden';
+                        storyPointsInput.name = 'story_points_data';
+                        storyPointsInput.value = JSON.stringify(window.cachedData.storyPoints);
+                        form.appendChild(storyPointsInput);
+                    }
 
-                    // Add bug cards data
-                    const bugCardsInput = document.createElement('input');
-                    bugCardsInput.type = 'hidden';
-                    bugCardsInput.name = 'bug_cards_data';
-                    bugCardsInput.value = JSON.stringify(window.cachedData?.cardsByList || {});
-                    form.appendChild(bugCardsInput);
-                    
-                    // Add member points data
-                    const memberPointsInput = document.createElement('input');
-                    memberPointsInput.type = 'hidden';
-                    memberPointsInput.name = 'member_points_data';
-                    memberPointsInput.value = JSON.stringify(window.cachedData?.memberPoints || []);
-                    form.appendChild(memberPointsInput);
+                    // Add bug cards data from cached data
+                    if (window.cachedData && window.cachedData.bugCards) {
+                        const bugCardsInput = document.createElement('input');
+                        bugCardsInput.type = 'hidden';
+                        bugCardsInput.name = 'bug_cards_data';
+                        bugCardsInput.value = JSON.stringify(window.cachedData.bugCards);
+                        form.appendChild(bugCardsInput);
+                    }
 
-                    // Add form to document, submit it, and remove it
+                    // Add member points data if available
+                    if (window.cachedData && window.cachedData.memberPoints) {
+                        const memberPointsInput = document.createElement('input');
+                        memberPointsInput.type = 'hidden';
+                        memberPointsInput.name = 'member_points_data';
+                        memberPointsInput.value = JSON.stringify(window.cachedData.memberPoints);
+                        form.appendChild(memberPointsInput);
+                    }
+
+                    // Append form to body, submit it, and remove it
                     document.body.appendChild(form);
                     form.submit();
                     document.body.removeChild(form);
@@ -2031,7 +2027,7 @@
                     const extraPoint = savedExtraPoint || parseFloat(member.extraPoint || 0);
 
                     // Recalculate final point with the updated extra point
-                    const finalPoint = passPoint + extraPoint;
+                    const finalPoint = pointPersonal - bugPoint;
 
                     // Update running totals
                     totals.personal += pointPersonal;
@@ -3070,7 +3066,7 @@
 
                     // Recalculate final points (pass points + extra points)
                     const passPoints = parseFloat(passCell.textContent) || 0;
-                    const finalPoints = passPoints + extraPoints;
+                    const finalPoints = pointPersonal - bugPoints;
                     finalCell.textContent = finalPoints.toFixed(1);
 
                     // Save the extra points to localStorage
