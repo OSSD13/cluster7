@@ -9,7 +9,7 @@
     <div class="mb-6">
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold flex items-center">
-                Bug Backlog
+                Bug Backlog 
                 <span class="ml-3 text-sm bg-amber-100 text-amber-800 py-1 px-2 rounded-full">
                     {{ $allBugs->count() }} {{ Str::plural('bug', $allBugs->count()) }}
                     ({{ $allBugs->sum('points') }} {{ Str::plural('point', $allBugs->sum('points')) }})

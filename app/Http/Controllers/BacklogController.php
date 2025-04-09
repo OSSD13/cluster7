@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\Models\SprintReport;
 use App\Models\Sprint;
@@ -280,7 +279,6 @@ class BacklogController extends Controller
         // Default to Low priority if no priority label found
         return 'Low';
     }
-
     private function getPriorityValue($priority)
     {
         // Return numeric values for sorting (lower value = higher priority)

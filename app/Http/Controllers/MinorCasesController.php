@@ -133,6 +133,7 @@ final class MinorCasesController extends Controller
             }
         }
         
-        return $userBoards;
+        return $userTeams;
     }
+    
 } 
