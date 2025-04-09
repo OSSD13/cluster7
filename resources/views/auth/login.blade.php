@@ -185,7 +185,6 @@
 
             <!-- Create An Account If don't have account-->
             <div class="flex flex-col items-center">
-
                 <p class="text-sm text-center text-gray-600">
                     Or
                     <a href="{{ route('register') }}" class="font-medium text-primary-600 hover:text-primary-500">
@@ -193,6 +192,19 @@
                     </a>
                 </p>
             </div>
+
+            <!-- Logout Form -->
+            @auth
+            <form method="POST" action="{{ route('logout') }}" class="hidden">
+                @csrf
+            </form>
+            <div class="flex flex-col items-center mt-4">
+                <button onclick="event.preventDefault(); document.querySelector('form[action=\'{{ route('logout') }}\']').submit();"
+                    class="text-sm font-medium text-primary-600 hover:text-primary-500">
+                    Logout
+                </button>
+            </div>
+            @endauth
 
             <!-- Footer -->
         </div>
