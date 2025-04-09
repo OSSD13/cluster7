@@ -84,12 +84,17 @@
             <table class="min-w-full bg-white">
                 <thead>
                     <tr class="bg-gray-100">
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sprint</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sprint
+                        </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Card</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Description</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -112,7 +117,8 @@
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                                     </svg>
                                 </button>
-                                <button class="px-2 py-2 text-[#FF0004] bg-[#FFACAE] rounded-full delete-btn hover:bg-red-600"
+                                <button
+                                    class="px-2 py-2 text-[#FF0004] bg-[#FFACAE] rounded-full delete-btn hover:bg-red-600"
                                     data-id="{{ $case->id }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hover:text-white" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
@@ -134,36 +140,46 @@
         </div>
 
         <!-- Modal for Edit -->
-        <div id="editModal" class="fixed justify-center inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" style="z-index: 1000;">
+        <!-- Modal for Edit -->
+        <div id="editModal"
+            class="fixed justify-center inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden"
+            style="z-index: 1000;">
             <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white max-w-md">
                 <h2 class="text-xl font-bold mb-4 text-gray-800">Edit Minor Case</h2>
                 <form id="editForm">
                     <input type="hidden" id="editId">
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="editSprint">Sprint</label>
-                        <input type="text" id="editSprint" name="sprint" class="w-full px-3 py-2 border rounded shadow appearance-none">
+                        <input type="text" id="editSprint" name="sprint"
+                            class="w-full px-3 py-2 border rounded shadow appearance-none">
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="editCard">Card</label>
-                        <input type="text" id="editCard" name="card" class="w-full px-3 py-2 border rounded shadow appearance-none">
+                        <input type="text" id="editCard" name="card"
+                            class="w-full px-3 py-2 border rounded shadow appearance-none">
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="editDescription">Description</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2"
+                            for="editDescription">Description</label>
                         <textarea id="editDescription" name="description" class="w-full px-3 py-2 border rounded shadow appearance-none"></textarea>
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="editMember">Member</label>
-                        <select id="editMember" name="member" class="w-full px-3 py-2 border rounded shadow appearance-none">
+                        <select id="editMember" name="member"
+                            class="w-full px-3 py-2 border rounded shadow appearance-none">
                             <option value="">Select Member</option>
                         </select>
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="editPoints">Points</label>
-                        <input type="number" id="editPoints" name="points" class="w-full px-3 py-2 border rounded shadow appearance-none">
+                        <input type="number" id="editPoints" name="points"
+                            class="w-full px-3 py-2 border rounded shadow appearance-none">
                     </div>
                     <div class="flex justify-end space-x-3">
-                        <button type="button" id="cancelEdit" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</button>
-                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save Changes</button>
+                        <button type="button" id="cancelEdit"
+                            class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save
+                            Changes</button>
                     </div>
                 </form>
             </div>
@@ -176,8 +192,10 @@
                 <p class="mb-6">Are you sure you want to delete this minor case? This action cannot be undone.</p>
                 <input type="hidden" id="deleteId">
                 <div class="flex justify-end space-x-3">
-                    <button type="button" id="cancelDelete" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</button>
-                    <button type="button" id="confirmDelete" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+                    <button type="button" id="cancelDelete"
+                        class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</button>
+                    <button type="button" id="confirmDelete"
+                        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
                 </div>
             </div>
         </div>
@@ -216,11 +234,17 @@
 
             /* Animation for modals */
             @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
             }
 
-            #editModal, #deleteModal {
+            #editModal,
+            #deleteModal {
                 animation: fadeIn 0.3s ease;
             }
         </style>
@@ -331,7 +355,7 @@
 
                 function openEditModal(id) {
                     // Fetch record data via AJAX
-                    fetch(`/minor-cases/${id}`)
+                    fetch(`/api/minor-cases/${id}`)
                         .then(response => response.json())
                         .then(data => {
                             document.getElementById('editId').value = id;
@@ -378,57 +402,67 @@
                         points: document.getElementById('editPoints').value
                     };
 
-                    // Replace with actual AJAX call
-                    fetch(`/minor-cases/${id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify(formData)
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Refresh the page or update the row
-                            location.reload();
-                        } else {
-                            alert('Failed to update: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error updating:', error);
-                        alert('An error occurred while updating');
-                    })
-                    .finally(() => {
-                        editModal.classList.add('hidden');
-                    });
+                    fetch(`/api/minor-cases/${id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                    'content')
+                            },
+                            body: JSON.stringify(formData)
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.message) {
+                                // Refresh the page to show updated data
+                                location.reload();
+                            } else {
+                                throw new Error('Invalid response from server');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error updating:', error);
+                            alert('An error occurred while updating: ' + error.message);
+                        })
+                        .finally(() => {
+                            editModal.classList.add('hidden');
+                        });
                 }
 
                 function deleteMinorCase(id) {
-                    // Replace with actual AJAX call
-                    fetch(`/minor-cases/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Remove the row or refresh the page
-                            location.reload();
-                        } else {
-                            alert('Failed to delete: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error deleting:', error);
-                        alert('An error occurred while deleting');
-                    })
-                    .finally(() => {
-                        deleteModal.classList.add('hidden');
-                    });
+                    fetch(`/api/minor-cases/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                    'content')
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.message) {
+                                // Refresh the page to show updated data
+                                location.reload();
+                            } else {
+                                throw new Error('Invalid response from server');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error deleting:', error);
+                            alert('An error occurred while deleting: ' + error.message);
+                        })
+                        .finally(() => {
+                            deleteModal.classList.add('hidden');
+                        });
                 }
 
                 function updateDisplayedDate() {
@@ -448,6 +482,7 @@
                     });
                 }
 
+                // Update the updateDisplayedSprints function to filter table rows
                 function updateDisplayedSprints() {
                     const sprintRange = document.getElementById('selectedSprint').textContent;
                     const rangeMatch = sprintRange.match(/Sprint (\d+) ~ (\d+)/);
@@ -456,17 +491,41 @@
                         const startSprint = parseInt(rangeMatch[1]);
                         const endSprint = parseInt(rangeMatch[2]);
 
+                        // Filter sprint blocks (if you have those)
                         document.querySelectorAll('.sprint-block').forEach(sprintBlock => {
                             const sprintNumber = parseInt(sprintBlock.dataset.sprintNumber);
-
                             if (sprintNumber >= startSprint && sprintNumber <= endSprint) {
                                 sprintBlock.style.display = 'block';
                             } else {
                                 sprintBlock.style.display = 'none';
                             }
                         });
+
+                        // Filter table rows based on sprint number in the first column
+                        document.querySelectorAll('tbody tr').forEach(row => {
+                            const sprintCell = row.querySelector('td:first-child');
+                            if (sprintCell) {
+                                const sprintNumber = parseInt(sprintCell.textContent);
+                                if (!isNaN(sprintNumber) && sprintNumber >= startSprint && sprintNumber <=
+                                    endSprint) {
+                                    row.style.display = ''; // Show the row
+                                } else {
+                                    row.style.display = 'none'; // Hide the row
+                                }
+                            }
+                        });
                     }
                 }
+
+                // Make sure to call this function when the page loads to set initial filtering
+                document.addEventListener("DOMContentLoaded", function() {
+                    // Your existing code...
+
+                    // Add this line to apply initial filtering
+                    updateDisplayedSprints();
+
+                    // Your existing dropdown setup code will trigger this function when selection changes
+                });
 
                 function setupSprintEvents() {
                     document.querySelectorAll('.sprint-header').forEach(header => {
@@ -496,7 +555,10 @@
                     sprintEndDate.setDate(sprintStartDate.getDate() + 4);
 
                     const startDateStr = sprintStartDate.getDate();
-                    const options = { day: 'numeric', month: 'long' };
+                    const options = {
+                        day: 'numeric',
+                        month: 'long'
+                    };
                     const endDateStr = sprintEndDate.toLocaleDateString('en-GB', options);
 
                     return `${startDateStr} - ${endDateStr} ${SPRINT_YEAR}`;
