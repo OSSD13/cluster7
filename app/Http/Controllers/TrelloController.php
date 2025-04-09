@@ -557,67 +557,111 @@ class TrelloController extends Controller
     public function storyPointsReport()
     {
         // Get current user's boards
-        $apiKey         = $this->getSetting('trello_api_key');
-        $apiToken       = $this->getSetting('trello_api_token');
-        $boards         = [];
+        $apiKey = $this->getSetting('trello_api_key');
+        $apiToken = $this->getSetting('trello_api_token');
+        $boards = [];
         $defaultBoardId = null;
-        $error          = null;
-        $singleBoard    = false;
-        $boardData      = null;
-        $backlogData    = null;
+        $error = null;
+        $singleBoard = false;
+        $boardData = null;
+        $backlogData = null;
+        $userBoards = []; // Initialize userBoards array
+        $user = auth()->user();
 
         try {
-            if (! $apiKey || ! $apiToken) {
+            if (!$apiKey || !$apiToken) {
                 throw new \Exception('Trello API credentials not configured.');
             }
 
             // Try to get boards for the user
             $boards = $this->fetchBoards($apiKey, $apiToken);
-
-            if (auth()->user()->isAdmin()) {
-                // Admins see all boards
-                $userBoards = $boards;
-
-                // For admins, use the first board as default if exists
-                if (count($boards) > 0) {
-                    $defaultBoardId = $boards[0]['id'];
-                }
-            } else {
+            
+            // Filter boards based on user role
+            if (!$user->isAdmin()) {
                 // For testers and developers, filter boards they are members of
                 try {
                     $userBoards = $this->filterBoardsForUser($boards, $apiKey, $apiToken);
+                    // Replace the main boards array with filtered boards for non-admins
+                    $boards = $userBoards;
+                    
+                    \Log::info('Filtered boards for non-admin user', [
+                        'user' => $user->name,
+                        'role' => $user->role,
+                        'board_count' => count($boards),
+                        'board_names' => collect($boards)->pluck('name')->toArray()
+                    ]);
+
+                    if (empty($boards)) {
+                        throw new \Exception('You do not have access to any boards. Please contact your administrator if you believe this is an error.');
+                    }
                 } catch (\Exception $e) {
-                    \Log::error('Error filtering boards: ' . $e->getMessage());
+                    \Log::error('Error filtering boards for user', [
+                        'user' => $user->name,
+                        'role' => $user->role,
+                        'error' => $e->getMessage()
+                    ]);
+                    $boards = [];
                     $userBoards = [];
+                    $error = $e->getMessage();
                 }
+            } else {
+                $userBoards = $boards; // Admins can see all boards
+                \Log::info('Admin user accessing all boards', [
+                    'user' => $user->name,
+                    'board_count' => count($boards)
+                ]);
             }
 
             // Handle cases based on the number of available boards
-            if (count($boards) === 0) {
-                $error = "No Trello boards available. Please configure board access first.";
+            if (count($boards) === 0 && !$error) {
+                $error = "No Trello boards available. Please ensure you have access to at least one board.";
             } elseif (count($boards) === 1) {
-                $singleBoard    = true;
+                $singleBoard = true;
                 $defaultBoardId = $boards[0]['id'];
             } else {
                 // Multiple boards - set default or use the user's preference
-                $defaultBoardId = session('trello.default_board_id', $boards[0]['id']);
+                $defaultBoardId = session('trello.default_board_id');
+                
+                // If no default board is set in session, or if the default board is not in the user's allowed boards
+                if (!$defaultBoardId || !collect($boards)->pluck('id')->contains($defaultBoardId)) {
+                    $defaultBoardId = $boards[0]['id'];
+                }
             }
 
             // Check if we have cached data for the default board
             if ($defaultBoardId) {
+                // Verify user has access to this board
+                if (!collect($boards)->pluck('id')->contains($defaultBoardId)) {
+                    throw new \Exception('You do not have access to this board.');
+                }
+
+                // Get board members to verify access
+                $boardMembers = $this->fetchBoardMembers($defaultBoardId, $apiKey, $apiToken);
+                $userHasAccess = false;
+
+                foreach ($boardMembers as $member) {
+                    if ($member['fullName'] === $user->name) {
+                        $userHasAccess = true;
+                        break;
+                    }
+                }
+
+                if (!$user->isAdmin() && !$userHasAccess) {
+                    throw new \Exception('You do not have access to view this board\'s report.');
+                }
+
                 $cachedData = TrelloBoardData::where('board_id', $defaultBoardId)->first();
 
                 if ($cachedData) {
                     $boardData = [
-                        'storyPoints'  => $cachedData->story_points,
-                        'cardsByList'  => $cachedData->cards_by_list,
+                        'storyPoints' => $cachedData->story_points,
+                        'cardsByList' => $cachedData->cards_by_list,
                         'memberPoints' => $cachedData->member_points,
                         'boardDetails' => $cachedData->board_details,
-                        'backlogData'  => $cachedData->backlog_data,
-                        'lastFetched'  => $cachedData->getLastFetchedFormatted(),
+                        'backlogData' => $cachedData->backlog_data,
+                        'lastFetched' => $cachedData->getLastFetchedFormatted(),
                     ];
 
-                    // If we have backlog data in the cache, use it
                     if (isset($cachedData->backlog_data) && $cachedData->backlog_data) {
                         $backlogData = $cachedData->backlog_data;
                     }
@@ -625,43 +669,9 @@ class TrelloController extends Controller
             }
 
             // If we don't have backlog data from cache, try to get fresh data
-            if (! $backlogData) {
+            if (!$backlogData && $defaultBoardId && ($user->isAdmin() || $userHasAccess)) {
                 $backlogController = app()->make(BacklogController::class);
-                $backlogData       = $backlogController->getBacklogData();
-            }
-
-            // Ensure backlogData is properly formatted for collections
-            if ($backlogData && isset($backlogData['allBugs']) && is_array($backlogData['allBugs'])) {
-                $backlogData['allBugs'] = collect($backlogData['allBugs']);
-            }
-
-            if ($backlogData && isset($backlogData['bugsByTeam']) && is_array($backlogData['bugsByTeam'])) {
-                foreach ($backlogData['bugsByTeam'] as $team => $bugs) {
-                    if (is_array($bugs)) {
-                        $backlogData['bugsByTeam'][$team] = collect($bugs);
-                    }
-                    // For non-admin users, allow all their teams to be visible
-                    // And ensure the defaultBoardId is set to the first board
-                    $userName = auth()->user()->name;
-                    if (count($userBoards) > 0) {
-                        $defaultBoardId = $userBoards[0]['id'];
-                        \Log::info('Setting default board for user: ' . $userName, [
-                            'defaultBoardId' => $defaultBoardId,
-                            'boardName'      => $userBoards[0]['name'],
-                            'totalBoards'    => count($userBoards),
-                        ]);
-                    } else {
-                        \Log::warning('No boards found for user: ' . $userName);
-                    }
-                }
-
-                if ($backlogData && isset($backlogData['bugsBySprint']) && is_array($backlogData['bugsBySprint'])) {
-                    foreach ($backlogData['bugsBySprint'] as $sprint => $bugs) {
-                        if (is_array($bugs)) {
-                            $backlogData['bugsBySprint'][$sprint] = collect($bugs);
-                        }
-                    }
-                }
+                $backlogData = $backlogController->getBacklogData();
             }
 
             // Get sprint info
@@ -669,31 +679,36 @@ class TrelloController extends Controller
 
         } catch (\Exception $e) {
             $error = $e->getMessage();
-            \Log::error('Error in storyPointsReport: ' . $e->getMessage());
+            \Log::error('Error in storyPointsReport', [
+                'user' => $user->name,
+                'role' => $user->role,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
 
         // Get current date
         $currentDate = Carbon::now()->format('F d, Y');
 
         return view('trello.story-points-report', [
-            'boards'                 => $boards,
-            'defaultBoardId'         => $defaultBoardId,
-            'singleBoard'            => $singleBoard,
-            'error'                  => $error,
-            'currentDate'            => $currentDate,
-            'boardData'              => $boardData,
-            'backlogData'            => $backlogData,
-            'currentSprintNumber'    => $sprintInfo['currentSprintNumber'] ?? null,
-            'sprintDateRange'        => $sprintInfo['sprintDateRange'] ?? null,
-            'sprintDurationDisplay'  => $sprintInfo['sprintDurationDisplay'] ?? null,
-            'currentSprintDay'       => $sprintInfo['currentSprintDay'] ?? null,
-            'sprintTotalDays'        => $sprintInfo['sprintTotalDays'] ?? null,
-            'daysRemaining'          => $sprintInfo['daysRemaining'] ?? null,
-            'nextReportDate'         => $sprintInfo['nextReportDate'] ?? null,
-            'currentWeekNumber'      => $sprintInfo['currentWeekNumber'] ?? null,
+            'boards' => $boards,
+            'defaultBoardId' => $defaultBoardId,
+            'singleBoard' => $singleBoard,
+            'error' => $error,
+            'currentDate' => $currentDate,
+            'boardData' => $boardData,
+            'backlogData' => $backlogData,
+            'currentSprintNumber' => $sprintInfo['currentSprintNumber'] ?? null,
+            'sprintDateRange' => $sprintInfo['sprintDateRange'] ?? null,
+            'sprintDurationDisplay' => $sprintInfo['sprintDurationDisplay'] ?? null,
+            'currentSprintDay' => $sprintInfo['currentSprintDay'] ?? null,
+            'sprintTotalDays' => $sprintInfo['sprintTotalDays'] ?? null,
+            'daysRemaining' => $sprintInfo['daysRemaining'] ?? null,
+            'nextReportDate' => $sprintInfo['nextReportDate'] ?? null,
+            'currentWeekNumber' => $sprintInfo['currentWeekNumber'] ?? null,
             'currentSprintStartDate' => $sprintInfo['currentSprintStartDate'] ?? null,
-            'currentSprintEndDate'   => $sprintInfo['currentSprintEndDate'] ?? null,
-            'sprintProgressPercent'  => $sprintInfo['sprintProgressPercent'] ?? 0,
+            'currentSprintEndDate' => $sprintInfo['currentSprintEndDate'] ?? null,
+            'sprintProgressPercent' => $sprintInfo['sprintProgressPercent'] ?? 0,
         ]);
     }
 
