@@ -485,12 +485,12 @@ class SavedReportController extends Controller
             'team_name' => $reportData['board_name'] ?? 'Development Team',
 
             // Use direct mappings from storyPointsData
-            'plan_point' => $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 0,
-            'actual_point' => $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ?? 0,
-            'remain' => $storyPointsData['remain'] ?? $storyPointsData['remainPercent'] ?? 0,
-            'percent' => $storyPointsData['percent'] ?? $storyPointsData['percentComplete'] ?? 0,
-            'current_sprint_point' => $storyPointsData['current_sprint_point'] ?? $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 0,
-            'current_sprint_actual_point' => $storyPointsData['current_sprint_actual_point'] ?? $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ?? 0,
+            'plan_point' => $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'],
+            'actual_point' => $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'],
+            'remain' => $storyPointsData['remain'] ?? $storyPointsData['remainPercent'],
+            'percent' => $storyPointsData['percent'] ?? $storyPointsData['percentComplete'],
+            'current_sprint_point' => $storyPointsData['current_sprint_point'] ?? $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'],
+            'current_sprint_actual_point' => $storyPointsData['current_sprint_actual_point'] ?? $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'],
 
             'developers' => $developers,
             'backlog' => $this->formatBacklogData([
@@ -604,7 +604,7 @@ class SavedReportController extends Controller
             'sprint' => $request->input('sprint', 'Current Sprint'),
             'last_update' => now()->format('Y-m-d H:i'),
             'team_name' => $request->input('board_name', 'Development Team'),
-            
+
             // Use direct mappings from storyPointsData
             'plan_point' => $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 0,
             'actual_point' => $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ?? 0,
@@ -612,7 +612,7 @@ class SavedReportController extends Controller
             'percent' => $storyPointsData['percent'] ?? $storyPointsData['percentComplete'] ?? 0,
             'current_sprint_point' => $storyPointsData['current_sprint_point'] ?? $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 0,
             'current_sprint_actual_point' => $storyPointsData['current_sprint_actual_point'] ?? $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ?? 0,
-            
+
             'developers' => $developers,
             'backlog' => $this->formatBacklogData([
                 'board_name' => $request->input('board_name', 'Development Team'),
@@ -627,18 +627,28 @@ class SavedReportController extends Controller
             'sum_cancel' => $sumCancel,
             'sum_final' => $sumFinal
         ];
-        
+
         // Process extra points data if available
         if ($request->has('extra_points_data')) {
             $extraPointsData = $request->input('extra_points_data');
             if (is_string($extraPointsData)) {
                 $extraPointsData = json_decode($extraPointsData, true);
             }
-            
+
             if (is_array($extraPointsData) && !empty($extraPointsData)) {
+                // Log the raw extra points data
+                \Log::info('Raw extra points data:', $extraPointsData);
+
+                // Convert each item to an object and ensure proper structure
                 $report['extra_points'] = array_map(function($item) {
-                    return (object) $item;
+                    return (object) [
+                        'extra_personal' => $item['extra_personal'] ?? 'Unknown',
+                        'extra_point' => floatval($item['extra_point'] ?? 0)
+                    ];
                 }, $extraPointsData);
+
+                // Log the processed extra points data
+                \Log::info('Processed extra points data:', $report['extra_points']);
             }
         }
 
