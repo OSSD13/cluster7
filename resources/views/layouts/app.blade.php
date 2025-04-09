@@ -64,6 +64,7 @@
             visibility: visible;
             opacity: 1;
         }
+        
 
         .sidebar-button span {
             overflow: auto;
@@ -136,6 +137,9 @@
                                 } elseif (auth()->user()->isDeveloper()) {
                                 $roleBgColor = 'bg-green-100';
                                 $roleTextColor = 'text-green-800';
+                                } elseif (auth()->user()->isProjectManager()) {
+                                $roleBgColor = 'bg-purple-100';
+                                $roleTextColor = 'text-purple-800';
                                 }
                                 @endphp
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $roleBgColor }} {{ $roleTextColor }}">
@@ -176,7 +180,7 @@
                             Dashboard
                         </span>
                     </a>
-                    @if(auth()->user()->isDeveloper() || auth()->user()->isTester())
+                    @if(auth()->user()->isDeveloper() || auth()->user()->isTester() || auth()->user()->isProjectManager())
                     <a href="{{ route('reports') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('reports') ? 'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -186,16 +190,24 @@
                         </span>
                     </a>
                     @endif
-                    <a href="{{ route('story.points.report') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('story.points.report') ? 'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    <a href="{{ route('story.points.report') }}"
+                    
+                    class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('story.points.report') ? 'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-
-                        <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
-                            Current Sprint Report
+                        <span class="ml-2 rounded-full text-white bg-sky-300  px-2 py-1  transition-colors duration-200"
+                        :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'"> Ongoing
                         </span>
+                        <div class="ml-4 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Sprint {{$sprintNumber ?? '-'}}
+                            </div>
                     </a>
-                    <a href="{{ route('minor-cases.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('minor-cases.*') ?  'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                    <a href="{{ route('minor-cases.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('minor-cases.index') ?  'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
                             <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z" />
                         </svg>

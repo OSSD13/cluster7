@@ -45,20 +45,19 @@ class LoginController extends Controller
         // First check if the user exists and is not approved
         $user = User::where('email', $request->email)->first();
         if ($user && !$user->is_approved) {
-            return back()->withErrors([
+            return redirect()->route('login')->withErrors([
                 'approval' => 'Your account is pending approval from an administrator. Please wait for approval or contact an administrator.',
-            ])->onlyInput('email');
+            ])->withInput($request->only('email'));
         }
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-
-            return view('dashboard');
+            return redirect()->intended('dashboard');
         }
 
-        return back()->withErrors([
+        return redirect()->route('login')->withErrors([
             'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+        ])->withInput($request->only('email'));
     }
 
     /**

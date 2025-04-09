@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'tester', 'dev', 'project_manager'])->default('dev')->after('email');
-        });
+        Schema::dropIfExists('minor_cases');
     }
 
     /**
@@ -21,8 +19,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role');
-        });
+        // We don't need to recreate the table in the down method
+        // as the original migration will handle that
     }
-};
+}; 

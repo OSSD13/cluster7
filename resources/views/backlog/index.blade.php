@@ -5,7 +5,16 @@
 @section('page-title', 'Bug Backlog')
 
 @section('content')
-<div class="max-w-7xl min-h-screen mx-auto">
+<div class="max-w-7xl mx-auto">
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center">
+                Bug Backlog 
+                <span class="ml-3 text-sm bg-amber-100 text-amber-800 py-1 px-2 rounded-full">
+                    {{ $allBugs->count() }} {{ Str::plural('bug', $allBugs->count()) }}
+                    ({{ $allBugs->sum('points') }} {{ Str::plural('point', $allBugs->sum('points')) }})
+                </span>
+            </h1>
 
     <!-- Edit Bug Modal -->
     <div id="editBugModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">

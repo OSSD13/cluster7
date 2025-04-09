@@ -120,13 +120,13 @@
                 @csrf
 
                 <!-- Input Full Name -->
-                <div class="space-y-1  active:translate-y-0.5 active:shadow-inner transition-transform">
+                <div class="space-y-1 active:translate-y-0.5 active:shadow-inner transition-transform">
                     <label for="name" class="sr-only">Full name</label>
                     <input id="name" name="name" type="text" required
                         class="opacity-75 appearance-none relative block w-full px-3 py-2 border placeholder-gray-500 border-gray-300 text-gray-800 rounded-full focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm @error('name') border-red-500 @enderror"
                         placeholder="Name" value="{{ old('name') }}">
                     @error('name')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                        <p class="mt-1 text-sm text-red-500 pl-3">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -138,7 +138,7 @@
                             class="opacity-75 appearance-none relative block w-full px-3 py-2 border placeholder-gray-500 border-gray-300 text-gray-800 rounded-full focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm @error('email') border-red-500 @enderror"
                             placeholder="Email" value="{{ old('email') }}">
                         @error('email')
-                            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-red-500 pl-3">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -150,10 +150,11 @@
                             <option value="" class="text-gray-300" disabled selected>Select your role</option>
                             <option value="dev" {{ old('role') == 'dev' ? 'selected' : '' }}>Developer</option>
                             <option value="tester" {{ old('role') == 'tester' ? 'selected' : '' }}>Tester</option>
+                            <option value="project_manager" {{ old('role') == 'project_manager' ? 'selected' : '' }}>Project Manager</option>
                             <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrator</option>
                         </select>
                         @error('role')
-                            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-red-500 pl-3">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
@@ -167,16 +168,19 @@
                             class="opacity-75 appearance-none relative block w-full px-3 py-2 border placeholder-gray-500 border-gray-300 text-gray-800 rounded-full focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm @error('password') border-red-500 @enderror"
                             placeholder="Password">
                         @error('password')
-                            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-red-500 pl-3">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Confirm Email -->
+                    <!-- Confirm Password -->
                     <div class="space-y-0 active:translate-y-0.5 active:shadow-inner transition-transform">
                         <label for="password_confirmation" class="sr-only">Confirm password</label>
                         <input id="password_confirmation" name="password_confirmation" type="password" required
-                            class="relative block w-full px-3 py-2 text-gray-800 placeholder-gray-500 border border-gray-300 rounded-full opacity-75 appearance-none focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                            class="relative block w-full px-3 py-2 text-gray-800 placeholder-gray-500 border border-gray-300 rounded-full opacity-75 appearance-none focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm @error('password_confirmation') border-red-500 @enderror"
                             placeholder="Confirm your password">
+                        @error('password_confirmation')
+                            <p class="mt-1 text-sm text-red-500 pl-3">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
 

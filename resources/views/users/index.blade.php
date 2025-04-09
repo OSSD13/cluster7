@@ -111,9 +111,13 @@
                                         } elseif ($user->isTester()) {
                                             $roleBgColor = 'bg-blue-100';
                                             $roleTextColor = 'text-blue-800';
+                                            //edit color Developer and Project manager
                                         } elseif ($user->isDeveloper()) {
                                             $roleBgColor = 'bg-green-100';
                                             $roleTextColor = 'text-green-800';
+                                        } elseif ($user->isProjectManager()) {
+                                            $roleBgColor = 'bg-purple-100';
+                                            $roleTextColor = 'text-purple-800';
                                         }
                                     @endphp
                                     <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $roleBgColor }} {{ $roleTextColor }}">
@@ -229,6 +233,9 @@
                                         } elseif ($user->isDeveloper()) {
                                             $roleBgColor = 'bg-green-100';
                                             $roleTextColor = 'text-green-800';
+                                        } elseif ($user->isProjectManager()) {
+                                            $roleBgColor = 'bg-purple-100';
+                                            $roleTextColor = 'text-purple-800';
                                         }
                                     @endphp
                                     <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $roleBgColor }} {{ $roleTextColor }}">
