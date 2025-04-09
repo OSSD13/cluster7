@@ -6,8 +6,8 @@
 @section('content')
 
 <div class="rounded-[2vw] h-full w-full bg-gray-100 p-5">
-    <div class="grid grid-cols-11 gap-1 ps-5 pt-3">
-        <div class="w-20 h-20 rounded-full bg-sky-100 flex justify-center items-center ">
+    <div class="grid grid-cols-11 gap-1 pt-3 ps-5">
+        <div class="flex items-center justify-center w-20 h-20 rounded-full bg-sky-100 ">
             <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="#13A7FD" class="bi bi-bug"
                 viewBox="0 0 16 16">
                 <path
@@ -15,17 +15,17 @@
             </svg>
         </div>
         <p
-            class="flex items-center font-style: italic font-weight: text-[#009eff] text-6xl font-bold inline-block align-middle pb-3">
+            class="flex items-center font-style: italic font-weight: text-[#009eff] text-5xl font-bold inline-block align-middle pb-3">
             Backlog</p>
 
 
         <!-- Dropdown -->
-        <div class=" col-start-8 col-span-4 grid grid-rows-2 gap-y-2">
+        <div class="grid col-span-4 col-start-8 grid-rows-2 gap-y-2 ">
             @if(auth()->user()->isAdmin())
-            <form class="grid grid-cols-12  w-30">
-                <label for="team" class="col-start-1 block col-span-2 text-sm font-medium text-gray-900 dark:text-black pt-2 ">Team :</label>
+            <form class="grid grid-cols-12 w-30 ">
+                <label for="team" class="block col-span-2 col-start-1 pt-8 text-sm font-medium text-gray-900 dark:text-black ">Team :</label>
                 <select
-                    id="team" class=" col-start-3 col-span-9 bg-gray-50 border-gray-300 text-gray-900 text-sm rounded-3xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    id="team" class=" col-start-3 col-span-9 bg-gray-50 border-gray-300 text-gray-900 text-sm rounded-3xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500 ">
                     <option selected class="p-center ">All</option>
                     <option value="A">Alpha</option>
                     <option value="B">beta</option>
@@ -34,8 +34,8 @@
             </form>
             @endif
             <!-- Dropdown2 -->
-            <form class="grid grid-cols-12  w-30">
-                <label for="year" class="col-start-1 block col-span-2 text-sm font-medium text-gray-900 dark:text-black pt-2 ">Year :</label>
+            <form class="grid grid-cols-12 w-30">
+                <label for="year" class="block col-span-2 col-start-1 pt-2 text-sm font-medium text-gray-900 dark:text-black ">Year :</label>
                 <select
                     id="year" class=" col-start-3 col-span-3 bg-gray-50 border-gray-300 text-gray-900 text-sm rounded-3xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500">
                     <option selected class="p-center ">2025</option>
@@ -43,7 +43,8 @@
                     <option value="B">2023</option>
                     <option value="D">2022</option>
                 </select>
-                <label for="sprint" class="col-start-7 block col-span-2 text-sm font-medium text-gray-900 dark:text-black pt-2 ">Sprint :</label>
+
+                <label for="sprint" class="block col-span-2 col-start-7 pt-2 text-sm font-medium text-gray-900 dark:text-black ">Sprint :</label>
                 <select
                     id="sprint" class=" col-start-9 col-span-3 bg-gray-50 border-gray-300 text-gray-900 text-sm rounded-3xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500">
                     <option selected class="p-center ">1 ~ 10</option>
@@ -56,25 +57,25 @@
     </div>
     <!-- -------- -->
     <!-- Backlog Task(ตัว Task Backlog) -->
-    <div class="bg-white rounded-3xl p-5 w-96 mt-10">
+    <div class="p-5 mt-10 bg-white rounded-3xl w-96">
         <div class="">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 rounded-3xl">
                 <!-- point -->
-                <div class="w-10 h-9 rounded-full bg-[#FFE2B9] flex justify-center items-center text-[#FFA954] font-bold">
+                <div class="w-10 h-9 rounded-full bg-[#FFE2B9] flex justify-center items-center text-[#FFA954] font-bold ">
                     10
                 </div>
                 <!-- Title Backlog -->
-                <div class="text-lg bg-gray-100 rounded-full w-full h-8 p-2 flex justify-between items-center">
-                    <div class="font-bold text-base">Google SSO</div>
+                <div class="flex items-center justify-between w-full h-8 p-2 text-lg bg-gray-100 rounded-full">
+                    <div class="text-base font-bold">Google SSO</div>
                     <!--  -->
-                    <span class="text-gray-400 bg-white rounded-full text-sm h-6 p-1 flex justify-between items-center">Sprint 1</span>
+                    <span class="flex items-center justify-between h-6 p-1 text-sm text-gray-400 bg-white rounded-full">Sprint 1</span>
                 </div>
             </div>
         </div>
         <div>
             <!-- Info in Backlog -->
-            <div class="text-lg rounded-full w-full h-8 p-2 grid grid-cols-11 gap-1 mb-20 mt-3">
-                <div class="flex justify-between items-center col-span-7">Add Google Login Feature hjgggggffffhhhhg</div>
+            <div class="grid w-full h-8 grid-cols-11 gap-1 p-2 mt-3 mb-20 text-lg rounded-full">
+                <div class="flex items-center justify-between col-span-7">Add Google Login Feature hjgggggffffhhhhg</div>
                 <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center ms-3 h-8 w-8 col-start-9">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-pencil-square" viewBox="0 0 16 16 ">
                         <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
@@ -90,7 +91,7 @@
             </div>
         </div>
 
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <div class="text-black">Assign to:</div>
                 <div class="bg-[#BAF3FF] text-[#13A7FD] px-2 py-1 rounded-full font-bold">Alpha</div>

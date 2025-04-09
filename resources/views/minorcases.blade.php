@@ -24,14 +24,8 @@
         </div>
 
         <!-- Container for both Dropdowns and add button -->
-        <div class="absolute top-14 right-10 flex space-x-4">
-            <div class="relative inline-block text-left py-3.5">
-                <button id="addSprintBtn"
-                    class="flex items-center py-1.5 border rounded-[100px] shadow-md w-12.5 justify-between"
-                    style="background-color: #13A7FD">
-                    <span class="block px-10  text-[#ffffff] font-semibold text-2xl relative -mt-1 ">+</span>
-                </button>
-            </div>
+        <div class="absolute flex space-x-4 top-14 right-10">
+            
             <!-- Year Dropdown -->
             <div class="relative inline-block text-left py-3.5">
                 <button id="yearDropdownButton"
@@ -49,12 +43,12 @@
                 <div id="yearDropdownMenu"
                     class="hidden absolute right-0 mt-2 w-32 bg-white border rounded-[15px] shadow-lg overflow-hidden">
                     <ul class="text-gray-700">
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2025</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2024</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2023</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2022</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2021</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">2020</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2025</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2024</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2023</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2022</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">2021</a></li>
+                        <li><a href="#" class="block py-2 px-11 hover:bg-gray-200">2020</a></li>
                     </ul>
                 </div>
             </div>
@@ -76,12 +70,12 @@
                 <div id="sprintDropdownMenu"
                     class="hidden absolute right-0 mt-2 w-48 bg-white border rounded-[15px] shadow-lg overflow-hidden">
                     <ul class="text-gray-700">
-                        <li><a href="#" class="block px-12 py-2 hover:bg-gray-200 border-b">Sprint 1 ~ 10</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 11 ~ 20</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 21 ~ 30</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 31 ~ 40</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">Sprint 41 ~ 50</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">Sprint 51 ~ 52</a></li>
+                        <li><a href="#" class="block px-12 py-2 border-b hover:bg-gray-200">Sprint 1 ~ 10</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 11 ~ 20</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 21 ~ 30</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 31 ~ 40</a></li>
+                        <li><a href="#" class="block py-2 border-b px-11 hover:bg-gray-200">Sprint 41 ~ 50</a></li>
+                        <li><a href="#" class="block py-2 px-11 hover:bg-gray-200">Sprint 51 ~ 52</a></li>
                     </ul>
                 </div>
             </div>
@@ -123,60 +117,60 @@
         </style>
 
         <!-- Modal for adding/editing minor cases -->
-        <div id="minor-case-modal" class="fixed z-50 inset-0 overflow-y-auto hidden">
-            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div id="minor-case-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 transition-opacity" aria-hidden="true">
                     <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
                 </div>
 
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                     <div class="sm:flex sm:items-start">
-                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="minor-case-modal-title">Add Minor Case</h3>
-                            
+                        <div class="w-full mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900" id="minor-case-modal-title">Add Minor Case</h3>
+
                             <form id="minor-case-form" class="mt-4">
                                 @csrf
                                 <input type="hidden" id="minor-case-id" name="id">
-                                
+
                                 <div class="mb-4">
                                     <label for="minor-case-board-id" class="block text-sm font-medium text-gray-700">Board</label>
-                                    <select id="minor-case-board-id" name="board_id" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <select id="minor-case-board-id" name="board_id" class="block w-full px-3 py-2 mt-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                         <option value="">Select a board</option>
                                         <!-- Options will be populated via JavaScript -->
                                     </select>
                                 </div>
-                                
+
                                 <div class="mb-4">
                                     <label for="minor-case-sprint" class="block text-sm font-medium text-gray-700">Sprint Number</label>
-                                    <input type="number" id="minor-case-sprint" name="sprint" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <input type="number" id="minor-case-sprint" name="sprint" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 </div>
-                                
+
                                 <div class="mb-4">
                                     <label for="minor-case-card" class="block text-sm font-medium text-gray-700">Card</label>
-                                    <input type="text" id="minor-case-card" name="card" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <input type="text" id="minor-case-card" name="card" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 </div>
-                                
+
                                 <div class="mb-4">
                                     <label for="minor-case-description" class="block text-sm font-medium text-gray-700">Description</label>
-                                    <textarea id="minor-case-description" name="description" rows="3" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"></textarea>
+                                    <textarea id="minor-case-description" name="description" rows="3" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
                                 </div>
-                                
+
                                 <div class="mb-4">
                                     <label for="minor-case-member" class="block text-sm font-medium text-gray-700">Member</label>
-                                    <input type="text" id="minor-case-member" name="member" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <input type="text" id="minor-case-member" name="member" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 </div>
-                                
+
                                 <div class="mb-4">
                                     <label for="minor-case-points" class="block text-sm font-medium text-gray-700">Points</label>
-                                    <input type="number" step="0.5" id="minor-case-points" name="points" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <input type="number" step="0.5" id="minor-case-points" name="points" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 </div>
-                                
+
                                 <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                    <button type="submit" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
                                         Save
                                     </button>
-                                    <button type="button" id="cancel-minor-case" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                                    <button type="button" id="cancel-minor-case" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
                                         Cancel
                                     </button>
                                 </div>
@@ -194,30 +188,30 @@
                     // Show loading indicator
                     const sprintContainer = document.getElementById('sprintContainer');
                     sprintContainer.innerHTML = `
-                        <div class="bg-white rounded-lg p-4 mb-4 flex items-center justify-center">
-                            <div class="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500 mr-2"></div>
+                        <div class="flex items-center justify-center p-4 mb-4 bg-white rounded-lg">
+                            <div class="inline-block w-6 h-6 mr-2 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
                             <span>Loading minor cases...</span>
                         </div>
                     `;
-                    
+
                     // First fetch available boards - API doesn't allow loading all data without a board_id
                     fetch('/api/boards')
                         .then(response => response.json())
                         .then(boards => {
                             console.log('Available boards:', boards);
-                            
+
                             if (boards.length === 0) {
                                 // No boards available
                                 sprintContainer.innerHTML = `
-                                    <div class="bg-white rounded-lg p-4 mb-4 text-center">
+                                    <div class="p-4 mb-4 text-center bg-white rounded-lg">
                                         <p class="text-gray-500">No boards available. Please configure your Trello integration.</p>
                                     </div>
                                 `;
                                 return;
                             }
-                            
+
                             // Process all boards to get minor cases
-                            Promise.all(boards.map(board => 
+                            Promise.all(boards.map(board =>
                                 fetch(`/api/minor-cases?board_id=${board.id}`)
                                     .then(response => response.json())
                                     .then(data => data.data || []) // Access the 'data' property of the response
@@ -235,7 +229,7 @@
                                         board_name: boardInfo.name
                                     };
                                 });
-                                
+
                                 console.log('Processed minor cases:', allMinorCases);
                                 populateSprintsFromData(allMinorCases);
                             })
@@ -288,7 +282,7 @@
                     if (sortedSprintNumbers.length === 0) {
                         // No data available
                         sprintContainer.innerHTML = `
-                            <div class="bg-white rounded-lg p-4 mb-4 text-center">
+                            <div class="p-4 mb-4 text-center bg-white rounded-lg">
                                 <p class="text-gray-500">No minor cases found. Use the + button to add new cases.</p>
                             </div>
                         `;
@@ -304,7 +298,7 @@
 
                     // Set up event listeners
                     setupSprintEventListeners();
-                    
+
                     // Update displayed sprints based on filters
                     updateDisplayedSprints();
                 }
@@ -323,7 +317,7 @@
                     const dateRange = getSprintDateRange(parseInt(sprintNumber));
 
                     sprintDiv.innerHTML = `
-                        <div class="flex h-12 items-center px-10 py-3 text-lg font-bold text-blue-700 cursor-pointer rounded-3xl sprint-header bg-sky-100">
+                        <div class="flex items-center h-12 px-10 py-3 text-lg font-bold text-blue-700 cursor-pointer rounded-3xl sprint-header bg-sky-100">
                             <span class="mr-2 text-[#13A7FD] text-1xl" style="width: 9%;">Sprint #${sprintNumber}</span>
                             <button class="ml-3 px-3 py-1 text-white text-left bg-[#13A7FD] rounded-full add-minor-case-btn hover:bg-blue-600" data-sprint="${sprintNumber}">+</button>
                             <span style="width: 70%;"></span>
@@ -331,9 +325,9 @@
                             <span class="collapse-icon text-[#13A7FD] sprint-icon px-5 text-right">▲</span>
                         </div>
 
-                        <div class="sprint-content mt-2 bg-white p-4 rounded-3xl" style="display: block;" ${dataClass}">
+                        <div class="p-4 mt-2 bg-white sprint-content rounded-3xl" style="display: block;" ${dataClass}">
                             <table class="w-full border border-collapse bg gray-200">
-                                <thead class="bg-gray-50 rounded-full">
+                                <thead class="rounded-full bg-gray-50">
                                     <tr>
                                         <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Number</span></th>
                                         <th class="px-4 py-2 border border-white"><span class="px-10 py-1 mr-2 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Card</span></th>
@@ -361,8 +355,8 @@
                                 <span class="px-14 py-1 mr-2 bg-white border border-[#13A7FD] rounded-full text-[#13A7FD] font-bold pt-1 pb-1">#${item.number || item.sprint || ''}</span>
                             </td>
                             <td class="px-4 py-2 text-center border border-white">${item.card_detail || item.card || ''}</td>
-                            <td class="px-15 py-2 text-center border border-white" style="width: 40%;">
-                                <div class="max-h-20 overflow-y-auto">
+                            <td class="py-2 text-center border border-white px-15" style="width: 40%;">
+                                <div class="overflow-y-auto max-h-20">
                                     ${item.description || 'No description'}
                                 </div>
                             </td>
@@ -393,17 +387,17 @@
                 // Load available boards and populate dropdown
                 function loadBoards() {
                     const boardSelect = document.getElementById('minor-case-board-id');
-                    
+
                     // Clear existing options except the first placeholder
                     while (boardSelect.options.length > 1) {
                         boardSelect.remove(1);
                     }
-                    
+
                     fetch('/api/boards')
                         .then(response => response.json())
                         .then(boards => {
                             console.log('Available boards for dropdown:', boards);
-                            
+
                             if (boards.length === 0) {
                                 const option = document.createElement('option');
                                 option.textContent = 'No boards available';
@@ -433,24 +427,24 @@
                         .then(response => response.json())
                         .then(data => {
                             console.log('Minor case to edit:', data);
-                            
+
                             // Make sure boards are loaded first
                             loadBoards();
-                            
+
                             // Populate form fields with data
                             document.getElementById('minor-case-id').value = data.id;
-                            
+
                             // Set timeout to allow board dropdown to populate first
                             setTimeout(() => {
                                 const boardSelect = document.getElementById('minor-case-board-id');
                                 boardSelect.value = data.board_id;
-                                
+
                                 document.getElementById('minor-case-sprint').value = data.sprint;
                                 document.getElementById('minor-case-card').value = data.card;
                                 document.getElementById('minor-case-description').value = data.description || '';
                                 document.getElementById('minor-case-member').value = data.member;
                                 document.getElementById('minor-case-points').value = data.points;
-                                
+
                                 // Show modal
                                 document.getElementById('minor-case-modal').classList.remove('hidden');
                                 document.getElementById('minor-case-modal-title').textContent = 'Edit Minor Case';
@@ -466,7 +460,7 @@
                 function deleteMinorCase(id) {
                     if (confirm('Are you sure you want to delete this minor case?')) {
                         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-                        
+
                         fetch(`/api/minor-cases/${id}`, {
                             method: 'DELETE',
                             headers: {
@@ -478,10 +472,10 @@
                             if (!response.ok) {
                                 throw new Error('Failed to delete minor case');
                             }
-                            
+
                             // Reload data after successful deletion
                             loadMinorCases();
-                            
+
                             // Show success message
                             alert('Minor case deleted successfully');
                         })
@@ -497,14 +491,14 @@
                     const currentYear = parseInt(document.getElementById('selectedYear').textContent) || new Date().getFullYear();
                     const startDate = new Date(currentYear, 0, 1);
                     startDate.setDate(startDate.getDate() + (sprintNumber - 1) * 7);
-                    
+
                     const endDate = new Date(startDate);
                     endDate.setDate(startDate.getDate() + 6);
-                    
+
                     const options = { day: 'numeric', month: 'long' };
                     const startDateStr = startDate.getDate();
                     const endDateStr = endDate.toLocaleDateString('en-GB', options);
-                    
+
                     return `${startDateStr} - ${endDateStr} ${currentYear}`;
                 }
 
@@ -548,15 +542,15 @@
                     document.querySelectorAll('.add-minor-case-btn').forEach(button => {
                         button.addEventListener('click', function(e) {
                             e.stopPropagation();
-                            
+
                             // Load boards for dropdown
                             loadBoards();
-                            
+
                             // Reset form
                             document.getElementById('minor-case-form').reset();
                             document.getElementById('minor-case-id').value = '';
                             document.getElementById('minor-case-sprint').value = this.dataset.sprint;
-                            
+
                             // Show modal with title
                             document.getElementById('minor-case-modal').classList.remove('hidden');
                             document.getElementById('minor-case-modal-title').textContent = 'Add Minor Case';
@@ -591,7 +585,7 @@
                 if (minorCaseForm) {
                     minorCaseForm.addEventListener('submit', function(e) {
                         e.preventDefault();
-                        
+
                         const id = document.getElementById('minor-case-id').value;
                         const boardId = document.getElementById('minor-case-board-id').value;
                         const sprint = document.getElementById('minor-case-sprint').value;
@@ -599,12 +593,12 @@
                         const description = document.getElementById('minor-case-description').value;
                         const member = document.getElementById('minor-case-member').value;
                         const points = document.getElementById('minor-case-points').value;
-                        
+
                         if (!boardId) {
                             alert('Please select a board before saving');
                             return;
                         }
-                        
+
                         const data = {
                             board_id: boardId,
                             sprint: sprint,
@@ -613,13 +607,13 @@
                             member: member,
                             points: parseFloat(points)
                         };
-                        
+
                         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
                         const url = id ? `/api/minor-cases/${id}` : '/api/minor-cases';
                         const method = id ? 'PUT' : 'POST';
-                        
+
                         console.log('Submitting data:', data);
-                        
+
                         fetch(url, {
                             method: method,
                             headers: {
@@ -644,14 +638,14 @@
                         })
                         .then(data => {
                             console.log('Success:', data);
-                            
+
                             // Reset form and close modal
                             minorCaseForm.reset();
                             document.getElementById('minor-case-modal').classList.add('hidden');
-                            
+
                             // Reload data
                             loadMinorCases();
-                            
+
                             // Show success message
                             alert(`Minor case ${id ? 'updated' : 'added'} successfully`);
                         })
@@ -683,16 +677,16 @@
                                 maxSprintNum = sprintNum;
                             }
                         });
-                        
+
                         const newSprintNum = maxSprintNum + 1;
                         const newSprintDiv = createSprintDiv(newSprintNum, []);
-                        
+
                         // Add to container at the top
                         document.getElementById('sprintContainer').prepend(newSprintDiv);
-                        
+
                         // Set up event listeners
                         setupSprintEventListeners();
-                        
+
                         // Update displayed sprints
                         updateDisplayedSprints();
                     });
@@ -731,7 +725,7 @@
 
                 // Load data on page load
                 loadMinorCases();
-                
+
                 // Pre-load boards for faster modal opening
                 loadBoards();
             });
