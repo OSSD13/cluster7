@@ -48,7 +48,12 @@ final class MinorCasesController extends Controller
         // Get the current year for the view
         $currentYear = date('Y');
         
-        return view('minorcases', compact('sprints', 'currentYear'));
+        // Get all minor cases for the current user
+        $minorCases = \App\Models\MinorCase::where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return view('minorcases', compact('sprints', 'currentYear', 'minorCases'));
     }
 
     /**
