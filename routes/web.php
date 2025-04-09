@@ -269,3 +269,7 @@ Route::get('/api/boards', function () {
         return response()->json([]);
     }
 });
+
+// Add new routes for updating and deleting minor cases
+Route::put('/api/minor-cases/{id}', [MinorCasesController::class, 'update'])->name('minor-cases.update');
+Route::delete('/api/minor-cases/{id}', [MinorCasesController::class, 'destroy'])->name('minor-cases.destroy');
