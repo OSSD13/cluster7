@@ -59,9 +59,13 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     Route::post('/save-report', [SavedReportController::class, 'store'])->name('report.save');
 
     // Minor Cases Routes
-    Route::middleware(['auth'])->group(function () {
-        Route::get('/minorcases', [App\Http\Controllers\MinorCasesController::class, 'index'])->name('minorcases');
-        Route::get('/minor-cases/data', [App\Http\Controllers\MinorCasesController::class, 'getMinorCasesData'])->name('minor-cases.data');
+    Route::prefix('minor-cases')->name('minor-cases.')->group(function () {
+        Route::get('/', [App\Http\Controllers\MinorCasesController::class, 'index'])->name('index');
+        Route::get('/data', [App\Http\Controllers\MinorCasesController::class, 'getMinorCasesData'])->name('data');
+        Route::get('/api', [App\Http\Controllers\MinorCaseController::class, 'index'])->name('api.index');
+        Route::post('/api', [App\Http\Controllers\MinorCaseController::class, 'store'])->name('api.store');
+        Route::put('/api/{id}', [App\Http\Controllers\MinorCaseController::class, 'update'])->name('api.update');
+        Route::delete('/api/{id}', [App\Http\Controllers\MinorCaseController::class, 'destroy'])->name('api.destroy');
     });
 
     // Admin Only Routes
@@ -149,7 +153,6 @@ if (app()->environment('local')) {
 }
 
 // Trello Story Points Report routes
-Route::get('story-points-report', [TrelloController::class, 'storyPointsReport'])->name('story.points.report');
 Route::get('trello/data', [TrelloController::class, 'fetchTrelloData']);
 Route::get('trello/bug-cards', [TrelloController::class, 'fetchBugCards']);
 Route::get('trello/sprint-info', [TrelloController::class, 'getSprintInfo']);
@@ -239,12 +242,6 @@ Route::prefix('trello-api-test')->name('trello.api.test.')->group(function () {
         }
     })->name('board.cards');
 });
-
-// Add direct routes for minor cases
-Route::get('/api/minor-cases', [App\Http\Controllers\MinorCaseController::class, 'index']);
-Route::post('/api/minor-cases', [App\Http\Controllers\MinorCaseController::class, 'store']);
-Route::put('/api/minor-cases/{id}', [App\Http\Controllers\MinorCaseController::class, 'update']);
-Route::delete('/api/minor-cases/{id}', [App\Http\Controllers\MinorCaseController::class, 'destroy']);
 
 // Add a route for boards
 Route::get('/api/boards', function () {
