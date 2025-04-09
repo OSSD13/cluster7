@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use App\Models\MinorCase;
 
 final class MinorCasesController extends Controller
 {
@@ -18,7 +19,7 @@ final class MinorCasesController extends Controller
      * The Trello service instance.
      */
     private TrelloService $trelloService;
-    
+
     /**
      * The Minor Case service instance.
      */
@@ -44,15 +45,15 @@ final class MinorCasesController extends Controller
     {
         // Get list of available sprints for the dropdown
         $sprints = Sprint::orderBy('sprint_number', 'desc')->get();
-        
+
         // Get the current year for the view
         $currentYear = date('Y');
-        
+
         // Get all minor cases for the current user
         $minorCases = \App\Models\MinorCase::where('user_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         return view('minorcases', compact('sprints', 'currentYear', 'minorCases'));
     }
 
@@ -64,14 +65,14 @@ final class MinorCasesController extends Controller
         try {
             // Get the boards the user has access to
             $userBoards = $this->getUserBoards();
-            
+
             // Prepare data by board
             $minorCasesData = [];
-            
+
             foreach ($userBoards as $board) {
                 // Get minor cases for this board
                 $boardMinorCases = $this->minorCaseService->getByBoard($board['id'], auth()->id());
-                
+
                 // Map to include the board name
                 foreach ($boardMinorCases as $minorCase) {
                     $minorCasesData[] = [
@@ -87,9 +88,9 @@ final class MinorCasesController extends Controller
                     ];
                 }
             }
-            
+
             return response()->json($minorCasesData);
-            
+
         } catch (\Exception $e) {
             Log::error('Error fetching minor cases data: ' . $e->getMessage());
             return response()->json([
@@ -98,7 +99,7 @@ final class MinorCasesController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Get the boards accessible to the current user
      *
@@ -115,9 +116,9 @@ final class MinorCasesController extends Controller
                     'members' => true,
                     'member_fields' => 'fullName'
                 ];
-                
+
                 $boards = $this->trelloService->getBoards(['id', 'name'], $options);
-                
+
                 // Filter for boards where user is a member
                 foreach ($boards as $board) {
                     if (isset($board['members'])) {
@@ -137,7 +138,51 @@ final class MinorCasesController extends Controller
                 Log::error('Error fetching user boards: ' . $e->getMessage());
             }
         }
-        
+
         return $userBoards;
     }
-} 
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $minorCase = MinorCase::findOrFail($id);
+
+            $validatedData = $request->validate([
+                'sprint' => 'required|string',
+                'card' => 'required|string',
+                'description' => 'nullable|string',
+                'member' => 'required|string',
+                'points' => 'required|numeric|min:0'
+            ]);
+
+            $minorCase->update($validatedData);
+
+            return response()->json([
+                'message' => 'Minor case updated successfully',
+                'data' => $minorCase
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to update minor case',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $minorCase = MinorCase::findOrFail($id);
+            $minorCase->delete();
+
+            return response()->json([
+                'message' => 'Minor case deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to delete minor case',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+}
