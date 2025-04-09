@@ -1543,11 +1543,58 @@
 
                     // Add member points data if available
                     if (window.cachedData && window.cachedData.memberPoints) {
+                        // Log the member points data for debugging
+                        console.log('Member points data before print:', window.cachedData.memberPoints);
+                        
+                        // Process and enhance member points data to ensure it contains valid extraPoint values
+                        const processedMemberPoints = window.cachedData.memberPoints.map(member => {
+                            // Check if there's a saved extra point in localStorage
+                            let extraPoint = 0;
+                            if (member.id) {
+                                const storageKey = `extraPoints_${currentBoardId}_${member.id}`;
+                                const savedExtraPoint = localStorage.getItem(storageKey);
+                                if (savedExtraPoint !== null) {
+                                    extraPoint = parseFloat(savedExtraPoint) || 0;
+                                } else if (member.extraPoint) {
+                                    extraPoint = parseFloat(member.extraPoint) || 0;
+                                }
+                            }
+                            
+                            // Create a new object with the updated extraPoint
+                            return {
+                                ...member,
+                                extraPoint: extraPoint
+                            };
+                        });
+                        
+                        // Add the processed member points to the form
                         const memberPointsInput = document.createElement('input');
                         memberPointsInput.type = 'hidden';
                         memberPointsInput.name = 'member_points_data';
-                        memberPointsInput.value = JSON.stringify(window.cachedData.memberPoints);
+                        memberPointsInput.value = JSON.stringify(processedMemberPoints);
                         form.appendChild(memberPointsInput);
+                        
+                        // Extract extra points data for each member
+                        const extraPointsData = [];
+                        processedMemberPoints.forEach(member => {
+                            if (member.extraPoint && parseFloat(member.extraPoint) > 0) {
+                                extraPointsData.push({
+                                    extra_personal: member.fullName || member.username || 'Unknown',
+                                    extra_point: parseFloat(member.extraPoint) || 0
+                                });
+                            }
+                        });
+                        
+                        console.log('Extracted extra points data:', extraPointsData);
+                        
+                        // Add extra points data
+                        if (extraPointsData.length > 0) {
+                            const extraPointsInput = document.createElement('input');
+                            extraPointsInput.type = 'hidden';
+                            extraPointsInput.name = 'extra_points_data';
+                            extraPointsInput.value = JSON.stringify(extraPointsData);
+                            form.appendChild(extraPointsInput);
+                        }
                     }
 
                     // Append form to body, submit it, and remove it
@@ -3059,13 +3106,17 @@
                 if (row) {
                     const extraCell = row.querySelector('td:nth-child(6)');
                     const finalCell = row.querySelector('td:nth-child(7)');
-                    const passCell = row.querySelector('td:nth-child(3)');
+                    const pointPersonalCell = row.querySelector('td:nth-child(2)');
+                    const bugCell = row.querySelector('td:nth-child(4)');
 
                     // Update extra points cell
                     extraCell.textContent = extraPoints.toFixed(1);
 
-                    // Recalculate final points (pass points + extra points)
-                    const passPoints = parseFloat(passCell.textContent) || 0;
+                    // Get values from cells
+                    const pointPersonal = parseFloat(pointPersonalCell.textContent) || 0;
+                    const bugPoints = parseFloat(bugCell.textContent) || 0;
+                    
+                    // Recalculate final points (personal points - bug points)
                     const finalPoints = pointPersonal - bugPoints;
                     finalCell.textContent = finalPoints.toFixed(1);
 
@@ -3075,14 +3126,24 @@
                         const storageKey = `extraPoints_${currentBoardId}_${currentMemberId}`;
                         localStorage.setItem(storageKey, extraPoints);
 
-                        // Also update the cached data if we have it
+                        // Also update the cachedData if we have it
                         if (window.cachedData && window.cachedData.memberPoints) {
-                            const memberIndex = window.cachedData.memberPoints.findIndex(m => m.id ===
-                                currentMemberId);
+                            const memberIndex = window.cachedData.memberPoints.findIndex(m => m.id === currentMemberId);
                             if (memberIndex >= 0) {
                                 window.cachedData.memberPoints[memberIndex].extraPoint = extraPoints;
+                                
+                                // Make sure we're using the right property name consistently
+                                const member = window.cachedData.memberPoints[memberIndex];
+                                
+                                // Update final point in the cached data
                                 window.cachedData.memberPoints[memberIndex].finalPoint = finalPoints;
+                                
+                                console.log('Updated cached data:', window.cachedData.memberPoints[memberIndex]);
+                            } else {
+                                console.warn('Member not found in cached data:', currentMemberId);
                             }
+                        } else {
+                            console.warn('No cached member points data available');
                         }
                     }
 

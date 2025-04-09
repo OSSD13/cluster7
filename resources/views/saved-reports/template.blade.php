@@ -600,6 +600,24 @@
                 <td class="s12">Personal</td>
                 <td class="s12">Point</td>
             </tr>
+            
+            <!-- Extra Points Section -->
+            @if(isset($report->extra_points) && count($report->extra_points) > 0)
+                @foreach($report->extra_points as $extraPoint)
+                <tr style="height: 20px">
+                    <td class="s5"></td>
+                    <td class="s5"></td>
+                    <td class="s5"></td>
+                    <td class="s5"></td>
+                    <td class="s5"></td>
+                    <td class="s5"></td>
+                    <td class="s5"></td>
+                    <td class="s5">{{ $extraPoint->extra_personal }}</td>
+                    <td class="s20">{{ $extraPoint->extra_point }}</td>
+                </tr>
+                @endforeach
+            @endif
+            
             @foreach($report->backlog ?? [] as $backlog)
             <tr style="height: 20px">
                 <td class="s5">{{ $backlog->sprint }}</td>
