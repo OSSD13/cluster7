@@ -186,7 +186,7 @@
                             <!-- Sprint Stats -->
                             <div class="flex justify-between mt-2 text-xs text-gray-500">
                                 <div>{{ $daysElapsed }} {{ Str::plural('day', $daysElapsed) }} elapsed</div>
-                                <div>{{ $daysRemaining }} {{ Str::plural('day', $daysRemaining) }} remaining</div>
+                                <div>{{ $remainingText }}</div>
                             </div>
                         </div>
                     </div>

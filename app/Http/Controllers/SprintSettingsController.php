@@ -52,7 +52,7 @@ class SprintSettingsController extends Controller
             $nowDate = $now->copy(); // Don't use startOfDay() here to get accurate hours
 
             if ($nowDate->between($startDate, $endDate)) {
-                $daysElapsed = $startDate->diffInDays($nowDate) + 1;
+                $daysElapsed = (int)$startDate->diffInDays($nowDate) + 1;
             } elseif ($nowDate->gt($endDate)) {
                 $daysElapsed = $totalDays;
             } else {
@@ -67,33 +67,40 @@ class SprintSettingsController extends Controller
 
             // Calculate days and hours remaining
             if ($nowDate->lte($endDate)) {
-                $diffInHours = $nowDate->diffInHours($endDate, false);
-                $daysRemaining = floor($diffInHours / 24);
-                $hoursRemaining = $diffInHours % 24;
+                $diffInHours = (int)$nowDate->diffInHours($endDate, false);
+                $daysRemaining = (int)floor($diffInHours / 24);
+                $hoursRemaining = (int)($diffInHours % 24);
 
                 // Format the remaining time string
                 if ($daysRemaining > 0) {
-                    $daysRemaining = "{$daysRemaining} " . Str::plural('day', $daysRemaining);
+                    $remainingText = "{$daysRemaining} " . Str::plural('day', $daysRemaining);
                     if ($hoursRemaining > 0) {
-                        $daysRemaining .= " {$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
+                        $remainingText .= " {$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
                     }
                 } else {
                     if ($hoursRemaining > 0) {
-                        $daysRemaining = "{$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
+                        $remainingText = "{$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
                     } else {
-                        $daysRemaining = "Less than 1 hour";
+                        $remainingText = "Less than 1 hour";
                     }
                 }
             } else {
-                $daysRemaining = "0 days";
+                $remainingText = "0 days";
             }
+
+            // Store numeric values for database
+            $numericDaysRemaining = $nowDate->lte($endDate) ? max(0, $daysRemaining) : 0;
 
             // Update the sprint with new calculations
             $currentSprint->update([
                 'progress_percentage' => $sprintProgressPercent,
                 'days_elapsed' => $daysElapsed,
-                'days_remaining' => $daysRemaining
+                'days_remaining' => $numericDaysRemaining,
+                'remaining_text' => $remainingText
             ]);
+
+            // Use the formatted text for display
+            $daysRemaining = $remainingText;
         } else {
             // Calculate sprint timeline data
             $sprintStartDate = $this->getCurrentSprintStartDate($sprintStartDay, $sprintDuration);
@@ -112,7 +119,7 @@ class SprintSettingsController extends Controller
             $nowDate = $now->copy(); // Don't use startOfDay() here to get accurate hours
 
             if ($nowDate->between($startDate, $endDate)) {
-                $daysElapsed = $startDate->diffInDays($nowDate) + 1;
+                $daysElapsed = (int)$startDate->diffInDays($nowDate) + 1;
             } elseif ($nowDate->gt($endDate)) {
                 $daysElapsed = $totalDays;
             } else {
@@ -127,26 +134,29 @@ class SprintSettingsController extends Controller
 
             // Calculate days and hours remaining
             if ($nowDate->lte($endDate)) {
-                $diffInHours = $nowDate->diffInHours($endDate, false);
-                $daysRemaining = floor($diffInHours / 24);
-                $hoursRemaining = $diffInHours % 24;
+                $diffInHours = (int)$nowDate->diffInHours($endDate, false);
+                $daysRemaining = (int)floor($diffInHours / 24);
+                $hoursRemaining = (int)($diffInHours % 24);
 
                 // Format the remaining time string
                 if ($daysRemaining > 0) {
-                    $daysRemaining = "{$daysRemaining} " . Str::plural('day', $daysRemaining);
+                    $remainingText = "{$daysRemaining} " . Str::plural('day', $daysRemaining);
                     if ($hoursRemaining > 0) {
-                        $daysRemaining .= " {$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
+                        $remainingText .= " {$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
                     }
                 } else {
                     if ($hoursRemaining > 0) {
-                        $daysRemaining = "{$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
+                        $remainingText = "{$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
                     } else {
-                        $daysRemaining = "Less than 1 hour";
+                        $remainingText = "Less than 1 hour";
                     }
                 }
             } else {
-                $daysRemaining = "0 days";
+                $remainingText = "0 days";
             }
+
+            // Store numeric values for database
+            $numericDaysRemaining = $nowDate->lte($endDate) ? max(0, $daysRemaining) : 0;
 
             // Save the current sprint in the database
             $this->saveCurrentSprint(
@@ -156,8 +166,12 @@ class SprintSettingsController extends Controller
                 $sprintDuration,
                 $sprintProgressPercent,
                 $daysElapsed,
-                $daysRemaining
+                $numericDaysRemaining,
+                $remainingText
             );
+
+            // Use the formatted text for display
+            $daysRemaining = $remainingText;
         }
 
         return view('settings.sprint-settings', compact(
@@ -171,9 +185,11 @@ class SprintSettingsController extends Controller
             'currentSprintStartDate',
             'currentSprintEndDate',
             'sprintProgressPercent',
-            'daysElapsed',
-            'daysRemaining'
-        ));
+            'daysElapsed'
+        ) + [
+            'daysRemaining' => $numericDaysRemaining ?? 0,
+            'remainingText' => $remainingText ?? '0 days'
+        ]);
     }
 
     /**
@@ -186,9 +202,10 @@ class SprintSettingsController extends Controller
      * @param float $progressPercentage
      * @param int $daysElapsed
      * @param int $daysRemaining
+     * @param string $remainingText
      * @return Sprint
      */
-    private function saveCurrentSprint($sprintNumber, $startDate, $endDate, $duration, $progressPercentage, $daysElapsed, $daysRemaining)
+    private function saveCurrentSprint($sprintNumber, $startDate, $endDate, $duration, $progressPercentage, $daysElapsed, $daysRemaining, $remainingText = null)
     {
         $now = Carbon::now();
         $status = 'active';
@@ -212,6 +229,7 @@ class SprintSettingsController extends Controller
                 'progress_percentage' => $progressPercentage,
                 'days_elapsed' => $daysElapsed,
                 'days_remaining' => $daysRemaining,
+                'remaining_text' => $remainingText
             ]
         );
     }
@@ -323,7 +341,8 @@ class SprintSettingsController extends Controller
             'currentSprintStartDate' => $currentSprintStartDate,
             'currentSprintEndDate' => $currentSprintEndDate,
             'daysElapsed' => $daysElapsed,
-            'daysRemaining' => $daysRemaining,
+            'daysRemaining' => is_numeric($daysRemaining) ? $daysRemaining : 0,
+            'remainingText' => is_string($daysRemaining) ? $daysRemaining : '0 days',
             'success' => 'Sprint settings updated successfully.'
         ]);
     }
@@ -404,7 +423,9 @@ class SprintSettingsController extends Controller
                 'nextSprintNumber' => $nextSprintNumber,
                 'recentSprints' => $recentSprints,
                 'success' => $exitCode === 0 ? $message : null,
-                'error' => $exitCode !== 0 ? $message : null
+                'error' => $exitCode !== 0 ? $message : null,
+                'daysRemaining' => $currentSprint ? $currentSprint->days_remaining : 0,
+                'remainingText' => $currentSprint ? $currentSprint->remaining_text : '0 days'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -432,7 +453,9 @@ class SprintSettingsController extends Controller
                 'currentSprint' => $currentSprint,
                 'nextSprintNumber' => $nextSprintNumber,
                 'recentSprints' => $recentSprints,
-                'error' => 'An error occurred: ' . $e->getMessage()
+                'error' => 'An error occurred: ' . $e->getMessage(),
+                'daysRemaining' => $currentSprint ? $currentSprint->days_remaining : 0,
+                'remainingText' => $currentSprint ? $currentSprint->remaining_text : '0 days'
             ]);
         }
     }
@@ -526,7 +549,9 @@ class SprintSettingsController extends Controller
             'currentSprint' => $currentSprint,
             'nextSprintNumber' => $nextSprintNumber,
             'recentSprints' => $recentSprints,
-            'success' => 'Current sprint number has been manually set to ' . $validated['current_sprint_number'] . '.'
+            'success' => 'Current sprint number has been manually set to ' . $validated['current_sprint_number'] . '.',
+            'daysRemaining' => $currentSprint ? $currentSprint->days_remaining : 0,
+            'remainingText' => $currentSprint ? $currentSprint->remaining_text : '0 days'
         ]);
     }
 
