@@ -315,11 +315,11 @@
 
                             // Store original SVG content
                             const originalSvgContent = `<svg class="h-5 w-5 text-stone-800" width="24" height="24" viewBox="0 0 24 24"
-         xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
-         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>`;
+                            xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>`;
 
                             // Check if we're in edit mode by looking for inputs
                             const isEditing = row.querySelector("input") !== null;
@@ -507,60 +507,60 @@
 
                 // Function to load demo data if report data is not available
                 function loadDemoData() {
-                    const demoData = [{
-                            sprint_number: 13,
-                            data: [{
-                                    number: '1',
-                                    card_detail: 'Update UI',
-                                    description: 'Update login page',
-                                    member: 'John',
-                                    teamName: 'Alhpa',
-                                    point: 3
-                                },
-                                {
-                                    number: '2',
-                                    card_detail: 'Fix bug',
-                                    description: 'This page displays all backlog bugs from previous sprints',
-                                    member: 'Sarah',
-                                    teamName: 'Alhpa',
-                                    point: 2
-                                }
-                            ]
-                        },
-                        {
-                            sprint_number: 1,
-                            data: [{
-                                number: '1',
-                                card_detail: 'New feature',
-                                description: 'Add dashboard',
-                                member: 'Mike',
-                                teamName: 'Alhpa',
-                                point: 5
-                            }]
-                        },
-                        {
-                            sprint_number: 3,
-                            data: [{
-                                number: '1',
-                                card_detail: 'New feature',
-                                description: 'Add dashboard',
-                                member: 'Mike',
-                                teamName: 'Alhpa',
-                                point: 5
-                            }]
-                        },
-                        {
-                            sprint_number: 14,
-                            data: [{
-                                number: '1',
-                                card_detail: 'New feature',
-                                description: 'Add dashboard',
-                                member: 'Mike',
-                                teamName: 'Alhpa',
-                                point: 5
-                            }]
-                        }
-                    ];
+                    // const demoData = [{
+                    //         sprint_number: 13,
+                    //         data: [{
+                    //                 number: '1',
+                    //                 card_detail: 'Update UI',
+                    //                 description: 'Update login page',
+                    //                 member: 'John',
+                    //                 teamName: 'Alhpa',
+                    //                 point: 3
+                    //             },
+                    //             {
+                    //                 number: '2',
+                    //                 card_detail: 'Fix bug',
+                    //                 description: 'This page displays all backlog bugs from previous sprints',
+                    //                 member: 'Sarah',
+                    //                 teamName: 'Alhpa',
+                    //                 point: 2
+                    //             }
+                    //         ]
+                    //     },
+                    //     {
+                    //         sprint_number: 1,
+                    //         data: [{
+                    //             number: '1',
+                    //             card_detail: 'New feature',
+                    //             description: 'Add dashboard',
+                    //             member: 'Mike',
+                    //             teamName: 'Alhpa',
+                    //             point: 5
+                    //         }]
+                    //     },
+                    //     {
+                    //         sprint_number: 3,
+                    //         data: [{
+                    //             number: '1',
+                    //             card_detail: 'New feature',
+                    //             description: 'Add dashboard',
+                    //             member: 'Mike',
+                    //             teamName: 'Alhpa',
+                    //             point: 5
+                    //         }]
+                    //     },
+                    //     {
+                    //         sprint_number: 14,
+                    //         data: [{
+                    //             number: '1',
+                    //             card_detail: 'New feature',
+                    //             description: 'Add dashboard',
+                    //             member: 'Mike',
+                    //             teamName: 'Alhpa',
+                    //             point: 5
+                    //         }]
+                    //     }
+                    // ];
 
                     const formattedData = [];
                     demoData.forEach(sprint => {
