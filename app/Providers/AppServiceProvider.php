@@ -29,16 +29,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Only force HTTPS on the production domain
-        if (config('app.env') === 'production' && !str_contains(request()->getHost(), 'localhost')) {
-            URL::forceRootUrl(config('app.url'));
-            URL::forceScheme('https');
-        }
-        // Configure URL generation for subdirectory installation
-        if (env('URL_PATH')) {
-            $this->app['url']->setRootControllerNamespace('App\Http\Controllers');
-            $this->app['url']->forceRootUrl(config('app.url'));
-        }
+        if (config('app.env') === 'production') {
+                URL::forceRootUrl(config('app.url'));
+                URL::forceScheme('https');
+        };
         
         // Add a custom Blade directive for formatting dates
         Blade::directive('formatDate', function ($expression) {

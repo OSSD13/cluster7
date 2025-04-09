@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Carbon;
+use App\Services\TrelloService;
 
 class AutoSaveSprintReportCommand extends Command
 {
@@ -24,6 +25,25 @@ class AutoSaveSprintReportCommand extends Command
      * @var string
      */
     protected $description = 'Automatically save sprint reports at the end of each sprint';
+
+    /**
+     * The Trello service instance.
+     *
+     * @var \App\Services\TrelloService
+     */
+    protected $trelloService;
+
+    /**
+     * Create a new command instance.
+     *
+     * @param \App\Services\TrelloService $trelloService
+     * @return void
+     */
+    public function __construct(TrelloService $trelloService)
+    {
+        parent::__construct();
+        $this->trelloService = $trelloService;
+    }
 
     /**
      * Execute the console command.
@@ -165,7 +185,7 @@ class AutoSaveSprintReportCommand extends Command
     {
         try {
             $response = Http::withOptions(['verify' => false])
-                ->get('https://api.trello.com/1/members/me/boards', [
+                ->get($this->trelloService->getBaseUrl() . 'members/me/boards', [
                     'key' => $apiKey,
                     'token' => $apiToken,
                     'fields' => 'name,url,id'
@@ -191,11 +211,12 @@ class AutoSaveSprintReportCommand extends Command
     {
         $apiKey = $credentials['apiKey'];
         $apiToken = $credentials['apiToken'];
+        $baseUrl = $this->trelloService->getBaseUrl();
         
         try {
             // Fetch story points data
             $storyPointsResponse = Http::withOptions(['verify' => false])
-                ->get("https://api.trello.com/1/boards/{$boardId}/cards", [
+                ->get($baseUrl . "boards/{$boardId}/cards", [
                     'key' => $apiKey,
                     'token' => $apiToken,
                     'fields' => 'name,idList,labels,desc,idMembers',
@@ -212,7 +233,7 @@ class AutoSaveSprintReportCommand extends Command
             
             // Fetch lists
             $listsResponse = Http::withOptions(['verify' => false])
-                ->get("https://api.trello.com/1/boards/{$boardId}/lists", [
+                ->get($baseUrl . "boards/{$boardId}/lists", [
                     'key' => $apiKey,
                     'token' => $apiToken,
                     'fields' => 'name,id'
@@ -230,7 +251,7 @@ class AutoSaveSprintReportCommand extends Command
             
             // Fetch members
             $membersResponse = Http::withOptions(['verify' => false])
-                ->get("https://api.trello.com/1/boards/{$boardId}/members", [
+                ->get($baseUrl . "boards/{$boardId}/members", [
                     'key' => $apiKey,
                     'token' => $apiToken,
                     'fields' => 'id,fullName,username,avatarUrl'
@@ -245,7 +266,7 @@ class AutoSaveSprintReportCommand extends Command
             
             // Fetch board details
             $boardResponse = Http::withOptions(['verify' => false])
-                ->get("https://api.trello.com/1/boards/{$boardId}", [
+                ->get($baseUrl . "boards/{$boardId}", [
                     'key' => $apiKey,
                     'token' => $apiToken,
                     'fields' => 'name,url,dateLastActivity'

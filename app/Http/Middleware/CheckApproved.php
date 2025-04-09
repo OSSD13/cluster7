@@ -19,8 +19,10 @@ class CheckApproved
     {
         if (auth()->check() && !auth()->user()->is_approved) {
             auth()->logout();
-            return redirect()->route('login')
-                ->with('error', 'Your account is pending approval. Please wait for an administrator to approve your account.');
+            
+            return response()->view('auth.login', [
+                'error' => 'Your account is pending approval. Please wait for an administrator to approve your account.'
+            ]);
         }
 
         return $next($request);

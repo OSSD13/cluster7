@@ -21,6 +21,7 @@
 
         <!-- Dropdown -->
         <div class=" col-start-8 col-span-4 grid grid-rows-2 gap-y-2">
+            @if(auth()->user()->isAdmin())
             <form class="grid grid-cols-12  w-30">
                 <label for="team" class="col-start-1 block col-span-2 text-sm font-medium text-gray-900 dark:text-black pt-2 ">Team :</label>
                 <select
@@ -31,6 +32,7 @@
                     <option value="D">delta</option>
                 </select>
             </form>
+            @endif
             <!-- Dropdown2 -->
             <form class="grid grid-cols-12  w-30">
                 <label for="year" class="col-start-1 block col-span-2 text-sm font-medium text-gray-900 dark:text-black pt-2 ">Year :</label>

@@ -6,7 +6,62 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto">
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center">
+                Bug Backlog
+                <span class="ml-3 text-sm bg-amber-100 text-amber-800 py-1 px-2 rounded-full">
+                    {{ $allBugs->count() }} {{ Str::plural('bug', $allBugs->count()) }}
+                    ({{ $allBugs->sum('points') }} {{ Str::plural('point', $allBugs->sum('points')) }})
+                </span>
+            </h1>
 
+            <div class="flex items-center space-x-2">
+                <!--ask if is admin go to route sprint index if not go to user report-->
+                <a href="{{ auth()->user()->isAdmin() ? route('sprints.index') : route('reports') }}" class="text-primary-600 hover:text-primary-900 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                    View All Sprints
+                </a>
+
+                <button onclick="window.print()" class="ml-4 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Print
+                </button>
+            </div>
+        </div>
+
+        <p class="mt-2 text-sm text-gray-600">
+            This page displays all backlog bugs from previous sprints. These bugs have been tracked but not resolved in their original sprints.
+        </p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="border-b border-gray-200 mb-6">
+        <nav class="-mb-px flex space-x-8">
+            <button
+                id="tab-all-bugs"
+                class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-primary-500 font-medium text-sm text-primary-600"
+                onclick="showTab('all-bugs')">
+                All Bugs
+            </button>
+            <button
+                id="tab-by-sprint"
+                class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                onclick="showTab('by-sprint')">
+                By Sprint
+            </button>
+            <button
+                id="tab-by-team"
+                class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                onclick="showTab('by-team')">
+                By Team
+            </button>
+        </nav>
+    </div>
 
     <!-- No Bugs Message (Only shown if there are no backlog bugs) -->
     @if($allBugs->count() == 0)

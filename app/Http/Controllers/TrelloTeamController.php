@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Services\TrelloService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class TrelloTeamController extends Controller
 {
@@ -24,28 +25,64 @@ class TrelloTeamController extends Controller
      */
     public function __construct(TrelloService $trelloService)
     {
-        $this->middleware(['auth', \App\Http\Middleware\AdminMiddleware::class]);
+        // Only require authentication, not admin privileges
+        $this->middleware('auth');
+        // Apply admin middleware only for refresh method
+        $this->middleware(\App\Http\Middleware\AdminMiddleware::class)->only(['refresh']);
         $this->trelloService = $trelloService;
     }
     
     /**
      * Display the list of Trello teams (boards).
      *
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     * @return \Illuminate\View\View
      */
     public function index()
     {
         if (!$this->trelloService->hasValidCredentials()) {
-            return redirect()->route('trello.settings.index')
-                ->with('error', 'Trello API credentials are not configured. Please set them up first.');
+            // Use direct routing instead of redirect
+            $apiKey = \App\Models\Setting::where('key', 'trello_api_key')->first();
+            $apiToken = \App\Models\Setting::where('key', 'trello_api_token')->first();
+            $boardId = \App\Models\Setting::where('key', 'trello_board_id')->first();
+            
+            $connectionStatus = [
+                'success' => false,
+                'message' => 'Not tested',
+                'details' => []
+            ];
+            
+            return view('trello.settings', [
+                'trelloApiKey' => $apiKey ? $apiKey->value : null,
+                'trelloApiToken' => $apiToken ? $apiToken->value : null,
+                'boardId' => $boardId ? $boardId->value : null,
+                'connectionStatus' => $connectionStatus,
+                'error' => 'Trello API credentials are not configured. Please set them up first.'
+            ]);
         }
         
         // Test connection before proceeding
         $connectionTest = $this->trelloService->testConnection();
         if (!$connectionTest['success']) {
             \Log::error('Trello API connection test failed', ['details' => $connectionTest]);
-            return redirect()->route('trello.settings.index')
-                ->with('error', 'Failed to connect to Trello API: ' . $connectionTest['message']);
+            
+            // Use direct routing instead of redirect
+            $apiKey = \App\Models\Setting::where('key', 'trello_api_key')->first();
+            $apiToken = \App\Models\Setting::where('key', 'trello_api_token')->first();
+            $boardId = \App\Models\Setting::where('key', 'trello_board_id')->first();
+            
+            $connectionStatus = [
+                'success' => false,
+                'message' => $connectionTest['message'],
+                'details' => $connectionTest
+            ];
+            
+            return view('trello.settings', [
+                'trelloApiKey' => $apiKey ? $apiKey->value : null,
+                'trelloApiToken' => $apiToken ? $apiToken->value : null,
+                'boardId' => $boardId ? $boardId->value : null,
+                'connectionStatus' => $connectionStatus,
+                'error' => 'Failed to connect to Trello API: ' . $connectionTest['message']
+            ]);
         }
         
         try {
@@ -119,12 +156,57 @@ class TrelloTeamController extends Controller
                 }
             }
             
+            // For non-admin users, filter the teams to show only the ones they are a direct member of
+            if (!auth()->user()->isAdmin()) {
+                $currentUserName = auth()->user()->name;
+                $filteredTeams = [];
+                $seenTeamNames = []; // Track team names we've already added
+                
+                foreach ($teams as $team) {
+                    // Skip if we've already added a team with this name
+                    if (in_array(strtolower($team['name']), $seenTeamNames)) {
+                        continue;
+                    }
+                    
+                    // Check if user is a member of this team
+                    if (isset($team['members']) && is_array($team['members'])) {
+                        foreach ($team['members'] as $member) {
+                            if (isset($member['fullName']) && $member['fullName'] === $currentUserName) {
+                                // Add team to filtered list and mark name as seen
+                                $filteredTeams[] = $team;
+                                $seenTeamNames[] = strtolower($team['name']);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // Replace original teams array with filtered one
+                $teams = $filteredTeams;
+            }
+            // Sort teams by name
             return view('trello.teams.index', compact('teams', 'organizations'));
-            
         } catch (\Exception $e) {
             Log::error('Error connecting to Trello API: ' . $e->getMessage());
-            return redirect()->route('trello.settings.index')
-                ->with('error', 'Error connecting to Trello API: ' . $e->getMessage());
+            
+            // Use direct routing instead of redirect
+            $apiKey = \App\Models\Setting::where('key', 'trello_api_key')->first();
+            $apiToken = \App\Models\Setting::where('key', 'trello_api_token')->first();
+            $boardId = \App\Models\Setting::where('key', 'trello_board_id')->first();
+            
+            $connectionStatus = [
+                'success' => false,
+                'message' => 'Connection error',
+                'details' => ['error' => $e->getMessage()]
+            ];
+            
+            return view('trello.settings', [
+                'trelloApiKey' => $apiKey ? $apiKey->value : null,
+                'trelloApiToken' => $apiToken ? $apiToken->value : null,
+                'boardId' => $boardId ? $boardId->value : null,
+                'connectionStatus' => $connectionStatus,
+                'error' => 'Error connecting to Trello API: ' . $e->getMessage()
+            ]);
         }
     }
     
@@ -132,13 +214,29 @@ class TrelloTeamController extends Controller
      * Display the members of a specific Trello team/organization.
      *
      * @param  string  $organizationId
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     * @return \Illuminate\View\View
      */
     public function show($organizationId)
     {
         if (!$this->trelloService->hasValidCredentials()) {
-            return redirect()->route('trello.settings.index')
-                ->with('error', 'Trello API credentials are not configured. Please set them up first.');
+            // Use direct routing instead of redirect
+            $apiKey = \App\Models\Setting::where('key', 'trello_api_key')->first();
+            $apiToken = \App\Models\Setting::where('key', 'trello_api_token')->first();
+            $boardId = \App\Models\Setting::where('key', 'trello_board_id')->first();
+            
+            $connectionStatus = [
+                'success' => false,
+                'message' => 'Not tested',
+                'details' => []
+            ];
+            
+            return view('trello.settings', [
+                'trelloApiKey' => $apiKey ? $apiKey->value : null,
+                'trelloApiToken' => $apiToken ? $apiToken->value : null,
+                'boardId' => $boardId ? $boardId->value : null,
+                'connectionStatus' => $connectionStatus,
+                'error' => 'Trello API credentials are not configured. Please set them up first.'
+            ]);
         }
         
         try {
@@ -146,8 +244,18 @@ class TrelloTeamController extends Controller
             $organization = $this->trelloService->getOrganization($organizationId);
             
             if (!$organization) {
-                return redirect()->route('trello.teams.index')
-                    ->with('error', 'Failed to fetch team details');
+                // Use direct routing instead of redirect
+                $organizations = $this->trelloService->getOrganizations();
+                $teams = $this->trelloService->getBoards(
+                    ['name', 'desc', 'url', 'idOrganization', 'closed', 'shortUrl'],
+                    ['members' => true, 'member_fields' => 'fullName,username,avatarHash']
+                );
+                
+                return view('trello.teams.index', [
+                    'teams' => $teams,
+                    'organizations' => $organizations,
+                    'error' => 'Failed to fetch team details'
+                ]);
             }
             
             // Fetch members of the organization with caching
@@ -199,8 +307,19 @@ class TrelloTeamController extends Controller
             
         } catch (\Exception $e) {
             Log::error("Error processing Trello team data: " . $e->getMessage());
-            return redirect()->route('trello.teams.index')
-                ->with('error', 'Error processing Trello team data: ' . $e->getMessage());
+            
+            // Use direct routing instead of redirect
+            $organizations = $this->trelloService->getOrganizations();
+            $teams = $this->trelloService->getBoards(
+                ['name', 'desc', 'url', 'idOrganization', 'closed', 'shortUrl'],
+                ['members' => true, 'member_fields' => 'fullName,username,avatarHash']
+            );
+            
+            return view('trello.teams.index', [
+                'teams' => $teams,
+                'organizations' => $organizations,
+                'error' => 'Error processing Trello team data: ' . $e->getMessage()
+            ]);
         }
     }
     
@@ -208,13 +327,29 @@ class TrelloTeamController extends Controller
      * View a specific Trello board and its members
      *
      * @param string $boardId
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     * @return \Illuminate\View\View
      */
     public function viewBoard($boardId)
     {
         if (!$this->trelloService->hasValidCredentials()) {
-            return redirect()->route('trello.settings.index')
-                ->with('error', 'Trello API credentials are not configured. Please set them up first.');
+            // Use direct routing instead of redirect
+            $apiKey = \App\Models\Setting::where('key', 'trello_api_key')->first();
+            $apiToken = \App\Models\Setting::where('key', 'trello_api_token')->first();
+            $boardId = \App\Models\Setting::where('key', 'trello_board_id')->first();
+            
+            $connectionStatus = [
+                'success' => false,
+                'message' => 'Not tested',
+                'details' => []
+            ];
+            
+            return view('trello.settings', [
+                'trelloApiKey' => $apiKey ? $apiKey->value : null,
+                'trelloApiToken' => $apiToken ? $apiToken->value : null,
+                'boardId' => $boardId ? $boardId->value : null,
+                'connectionStatus' => $connectionStatus,
+                'error' => 'Trello API credentials are not configured. Please set them up first.'
+            ]);
         }
         
         try {
@@ -222,8 +357,18 @@ class TrelloTeamController extends Controller
             $board = $this->trelloService->getBoard($boardId);
             
             if (!$board) {
-                return redirect()->route('trello.teams.index')
-                    ->with('error', 'Failed to fetch board details');
+                // Use direct routing instead of redirect
+                $organizations = $this->trelloService->getOrganizations();
+                $teams = $this->trelloService->getBoards(
+                    ['name', 'desc', 'url', 'idOrganization', 'closed', 'shortUrl'],
+                    ['members' => true, 'member_fields' => 'fullName,username,avatarHash']
+                );
+                
+                return view('trello.teams.index', [
+                    'teams' => $teams,
+                    'organizations' => $organizations,
+                    'error' => 'Failed to fetch board details'
+                ]);
             }
             
             // Fetch members of the board with caching
@@ -271,23 +416,49 @@ class TrelloTeamController extends Controller
             
         } catch (\Exception $e) {
             Log::error("Error processing Trello board data: " . $e->getMessage());
-            return redirect()->route('trello.teams.index')
-                ->with('error', 'Error processing Trello board data: ' . $e->getMessage());
+            
+            // Use direct routing instead of redirect
+            $organizations = $this->trelloService->getOrganizations();
+            $teams = $this->trelloService->getBoards(
+                ['name', 'desc', 'url', 'idOrganization', 'closed', 'shortUrl'],
+                ['members' => true, 'member_fields' => 'fullName,username,avatarHash']
+            );
+            
+            return view('trello.teams.index', [
+                'teams' => $teams,
+                'organizations' => $organizations,
+                'error' => 'Error processing Trello board data: ' . $e->getMessage()
+            ]);
         }
     }
     
     /**
      * Display all boards the user has access to
      *
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     * @return \Illuminate\View\View
      */
     public function allBoards()
-    {
+    {          
         if (!$this->trelloService->hasValidCredentials()) {
-            return redirect()->route('trello.settings.index')
-                ->with('error', 'Trello API credentials are not configured. Please set them up first.');
+            // Use direct routing instead of redirect
+            $apiKey = \App\Models\Setting::where('key', 'trello_api_key')->first();
+            $apiToken = \App\Models\Setting::where('key', 'trello_api_token')->first();
+            $boardId = \App\Models\Setting::where('key', 'trello_board_id')->first();
+            
+            $connectionStatus = [
+                'success' => false,
+                'message' => 'Not tested',
+                'details' => []
+            ];
+            
+            return view('trello.settings', [
+                'trelloApiKey' => $apiKey ? $apiKey->value : null,
+                'trelloApiToken' => $apiToken ? $apiToken->value : null,
+                'boardId' => $boardId ? $boardId->value : null,
+                'connectionStatus' => $connectionStatus,
+                'error' => 'Trello API credentials are not configured. Please set them up first.'
+            ]);
         }
-        
         try {
             // Fetch all boards with organization data and proper caching
             $boards = $this->trelloService->getBoards(
@@ -300,37 +471,96 @@ class TrelloTeamController extends Controller
             );
             
             return view('trello.teams.boards', compact('boards'));
-            
         } catch (\Exception $e) {
             Log::error('Error connecting to Trello API: ' . $e->getMessage());
-            return redirect()->route('trello.settings.index')
-                ->with('error', 'Error connecting to Trello API: ' . $e->getMessage());
+            
+            // Use direct routing instead of redirect
+            $apiKey = \App\Models\Setting::where('key', 'trello_api_key')->first();
+            $apiToken = \App\Models\Setting::where('key', 'trello_api_token')->first();
+            $boardId = \App\Models\Setting::where('key', 'trello_board_id')->first();
+            
+            $connectionStatus = [
+                'success' => false,
+                'message' => 'Connection error',
+                'details' => ['error' => $e->getMessage()]
+            ];
+            
+            return view('trello.settings', [
+                'trelloApiKey' => $apiKey ? $apiKey->value : null,
+                'trelloApiToken' => $apiToken ? $apiToken->value : null,
+                'boardId' => $boardId ? $boardId->value : null,
+                'connectionStatus' => $connectionStatus,
+                'error' => 'Error connecting to Trello API: ' . $e->getMessage()
+            ]);
         }
     }
     
     /**
-     * Refresh Trello teams data and redirect back to teams index
+     * Refresh Trello teams data
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\View\View
      */
     public function refresh()
     {
         if (!$this->trelloService->hasValidCredentials()) {
-            return redirect()->route('trello.settings.index')
-                ->with('error', 'Trello API credentials are not configured. Please set them up first.');
+            // Use direct routing instead of redirect
+            $apiKey = \App\Models\Setting::where('key', 'trello_api_key')->first();
+            $apiToken = \App\Models\Setting::where('key', 'trello_api_token')->first();
+            $boardId = \App\Models\Setting::where('key', 'trello_board_id')->first();
+            
+            $connectionStatus = [
+                'success' => false,
+                'message' => 'Not tested',
+                'details' => []
+            ];
+            
+            return view('trello.settings', [
+                'trelloApiKey' => $apiKey ? $apiKey->value : null,
+                'trelloApiToken' => $apiToken ? $apiToken->value : null,
+                'boardId' => $boardId ? $boardId->value : null,
+                'connectionStatus' => $connectionStatus,
+                'error' => 'Trello API credentials are not configured. Please set them up first.'
+            ]);
         }
         
         try {
             // Clear cache for Trello data to force fresh retrieval
             $this->trelloService->clearCache();
             
-            return redirect()->route('trello.teams.index')
-                ->with('success', 'Trello team data refreshed successfully.');
+            // Use direct routing instead of redirect
+            $organizations = $this->trelloService->getOrganizations();
+            
+            $options = [
+                'members' => true,
+                'member_fields' => 'fullName,username,avatarHash'
+            ];
+            
+            $teams = $this->trelloService->getBoards(
+                ['name', 'desc', 'url', 'idOrganization', 'closed', 'shortUrl'],
+                $options
+            );
+            
+            return view('trello.teams.index', [
+                'teams' => $teams,
+                'organizations' => $organizations,
+                'success' => 'Trello team data refreshed successfully.'
+            ]);
                 
         } catch (\Exception $e) {
             Log::error('Error refreshing Trello data: ' . $e->getMessage());
-            return redirect()->route('trello.teams.index')
-                ->with('error', 'Error refreshing Trello data: ' . $e->getMessage());
+            
+            // Use direct routing instead of redirect
+            $organizations = $this->trelloService->getOrganizations();
+            $teams = $this->trelloService->getBoards(
+                ['name', 'desc', 'url', 'idOrganization', 'closed', 'shortUrl'],
+                ['members' => true, 'member_fields' => 'fullName,username,avatarHash']
+            );
+            
+            return view('trello.teams.index', [
+                'teams' => $teams,
+                'organizations' => $organizations,
+                'error' => 'Error refreshing Trello data: ' . $e->getMessage()
+            ]);
         }
     }
 }

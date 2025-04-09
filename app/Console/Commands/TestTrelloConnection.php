@@ -54,14 +54,17 @@ class TestTrelloConnection extends Command
         $this->info('- API key length: ' . strlen($key));
         $this->info('- API token length: ' . strlen($token));
         
+        // Get Trello API base URL from service
+        $baseUrl = $trelloService->getBaseUrl();
+        
         // Test API connection
-        $this->info('Testing API connection to https://api.trello.com/1/members/me');
+        $this->info('Testing API connection to ' . $baseUrl . 'members/me');
         
         try {
             $response = Http::withOptions([
                 'verify' => false,
                 'timeout' => 15,
-            ])->get('https://api.trello.com/1/members/me', [
+            ])->get($baseUrl . 'members/me', [
                 'key' => $key,
                 'token' => $token
             ]);
@@ -76,7 +79,7 @@ class TestTrelloConnection extends Command
                 $boardsResponse = Http::withOptions([
                     'verify' => false,
                     'timeout' => 15,
-                ])->get('https://api.trello.com/1/members/me/boards', [
+                ])->get($baseUrl . 'members/me/boards', [
                     'key' => $key,
                     'token' => $token,
                     'filter' => 'open',
