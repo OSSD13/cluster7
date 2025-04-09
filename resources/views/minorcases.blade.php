@@ -141,23 +141,25 @@
                     <input type="hidden" id="editId">
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="editSprint">Sprint</label>
-                        <input type="text" id="editSprint" class="w-full px-3 py-2 border rounded shadow appearance-none">
+                        <input type="text" id="editSprint" name="sprint" class="w-full px-3 py-2 border rounded shadow appearance-none">
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="editCard">Card</label>
-                        <input type="text" id="editCard" class="w-full px-3 py-2 border rounded shadow appearance-none">
+                        <input type="text" id="editCard" name="card" class="w-full px-3 py-2 border rounded shadow appearance-none">
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="editDescription">Description</label>
-                        <textarea id="editDescription" class="w-full px-3 py-2 border rounded shadow appearance-none"></textarea>
+                        <textarea id="editDescription" name="description" class="w-full px-3 py-2 border rounded shadow appearance-none"></textarea>
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="editMember">Member</label>
-                        <input type="text" id="editMember" class="w-full px-3 py-2 border rounded shadow appearance-none">
+                        <select id="editMember" name="member" class="w-full px-3 py-2 border rounded shadow appearance-none">
+                            <option value="">Select Member</option>
+                        </select>
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="editPoints">Points</label>
-                        <input type="number" id="editPoints" class="w-full px-3 py-2 border rounded shadow appearance-none">
+                        <input type="number" id="editPoints" name="points" class="w-full px-3 py-2 border rounded shadow appearance-none">
                     </div>
                     <div class="flex justify-end space-x-3">
                         <button type="button" id="cancelEdit" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</button>
@@ -329,16 +331,27 @@
 
                 function openEditModal(id) {
                     // Fetch record data via AJAX
-                    fetchMinorCaseData(id).then(data => {
-                        document.getElementById('editId').value = id;
-                        document.getElementById('editSprint').value = data.sprint;
-                        document.getElementById('editCard').value = data.card;
-                        document.getElementById('editDescription').value = data.description || '';
-                        document.getElementById('editMember').value = data.member;
-                        document.getElementById('editPoints').value = data.points;
+                    fetch(`/minor-cases/${id}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById('editId').value = id;
+                            document.getElementById('editSprint').value = data.sprint;
+                            document.getElementById('editCard').value = data.card;
+                            document.getElementById('editDescription').value = data.description || '';
+                            document.getElementById('editPoints').value = data.points;
 
-                        editModal.classList.remove('hidden');
-                    });
+                            // Populate member dropdown and set selected value
+                            populateMemberDropdown().then(() => {
+                                const memberSelect = document.getElementById('editMember');
+                                memberSelect.value = data.member;
+                            });
+
+                            editModal.classList.remove('hidden');
+                        })
+                        .catch(error => {
+                            console.error('Error fetching data:', error);
+                            alert('Error loading minor case data');
+                        });
                 }
 
                 function openDeleteModal(id) {
@@ -487,6 +500,30 @@
                     const endDateStr = sprintEndDate.toLocaleDateString('en-GB', options);
 
                     return `${startDateStr} - ${endDateStr} ${SPRINT_YEAR}`;
+                }
+
+                // Function to populate member dropdown
+                async function populateMemberDropdown() {
+                    try {
+                        const response = await fetch('/api/members');
+                        const members = await response.json();
+                        const memberSelect = document.getElementById('editMember');
+
+                        // Clear existing options except the first one
+                        while (memberSelect.options.length > 1) {
+                            memberSelect.remove(1);
+                        }
+
+                        // Add new options
+                        members.forEach(member => {
+                            const option = document.createElement('option');
+                            option.value = member.name;
+                            option.textContent = member.name;
+                            memberSelect.appendChild(option);
+                        });
+                    } catch (error) {
+                        console.error('Error fetching members:', error);
+                    }
                 }
             });
         </script>
