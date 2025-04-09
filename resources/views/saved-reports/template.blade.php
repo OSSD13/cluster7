@@ -303,14 +303,19 @@
                     <td class="plan-header" colspan="2" style="background-color: #b3c6e7; font-size: 11pt;">PlanPoint</td>
                     <td class="text-center" colspan="2" style="font-size: 11pt;">
                         @php
-                            // Calculate sum of personal points
-                            $sumPersonalPoints = 0;
-                            foreach ($report->developers ?? [] as $dev) {
-                                $sumPersonalPoints += $dev->point_personal;
+                            // ใช้ค่า plan_point จากรายงานโดยตรงถ้ามี
+                            $planPoint = 0;
+                            
+                            // ตรวจสอบว่ามีค่า plan_point ใน report หรือไม่
+                            if (isset($report->plan_point) && is_numeric($report->plan_point)) {
+                                $planPoint = $report->plan_point;
+                            } 
+                            // ถ้าไม่มี ให้คำนวณจาก personal points
+                            else {
+                                foreach ($report->developers ?? [] as $dev) {
+                                    $planPoint += isset($dev->point_personal) ? $dev->point_personal : 0;
+                                }
                             }
-
-                            // Use input value if it exists, otherwise use sum of personal points
-                            $planPoint = isset($report->plan_point) ? $report->plan_point : $sumPersonalPoints;
                         @endphp
                         {{ $planPoint }}
                     </td>
@@ -321,6 +326,11 @@
                             $actualPoint = 0;
                             foreach ($report->developers ?? [] as $dev) {
                                 $actualPoint += $dev->test_pass;
+                            }
+                            
+                            // รวม extra points เข้ากับ actual points เพื่อให้สอดคล้องกับหน้ารายงานหลัก
+                            foreach ($report->extra_points ?? [] as $extraPoint) {
+                                $actualPoint += $extraPoint->points ?? $extraPoint->extra_point ?? 0;
                             }
                         @endphp
                         {{ $actualPoint }}
