@@ -138,11 +138,15 @@
                                                 Registered
                                             </span>
                                             @if(isset($member['role']))
+                <!--project_manager have to same, Tester, Developer, Admin-->
                                             <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                                                         {{ $member['role'] == 'admin' ? 'bg-red-100 text-red-800' : 
                                                                         ($member['role'] == 'tester' ? 'bg-blue-100 text-blue-800' : 
-                                                                            'bg-green-100 text-green-800') }}">
-                                                {{ ucfirst($member['role']) }}
+                                                                        ($member['role'] == 'project_manager' ? 'bg-purple-100 text-purple-800' : 
+                                                                        ($member['role'] == 'dev'  ? 'bg-green-100 text-green-800' : 
+                                                                            'bg-gray-100 text-gray-800')))
+                                                                             }}">
+                                                {{ ucfirst(str_replace('_', ' ', $member['role'])) }}
                                             </span>
                                             @endif
                                             @else

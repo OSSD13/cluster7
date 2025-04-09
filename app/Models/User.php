@@ -78,4 +78,14 @@ class User extends Authenticatable
     {
         return $this->role === 'dev';
     }
+
+    /**
+     * Check if the user is a project manager
+     *
+     * @return bool
+     */
+    public function isProjectManager(): bool
+    {
+        return $this->role === 'project_manager';
+    }
 }

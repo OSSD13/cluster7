@@ -44,7 +44,7 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'string', 'in:admin,tester,dev'],
+            'role' => ['required', 'string', 'in:admin,tester,dev,project_manager'],
         ]);
 
         // Create the user with pending approval
