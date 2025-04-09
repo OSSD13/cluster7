@@ -1999,9 +1999,13 @@
                 const boardNameDisplay = document.getElementById('board-name-display');
                 const lastUpdated = document.getElementById('last-updated');
 
-                // Update the title with board name
+                // Get current sprint number
+                const currentSprintNumberElement = document.getElementById('current-sprint-number');
+                const sprintNumber = currentSprintNumberElement ? currentSprintNumberElement.textContent : '';
+
+                // Update the title with sprint number and board name
                 if (boardDetails.name) {
-                    pointsTitle.textContent = `Points from ${boardDetails.name}`;
+                    pointsTitle.textContent = `Sprint ${sprintNumber} - ${boardDetails.name}`;
                     boardNameDisplay.textContent = boardDetails.name;
                     boardNameDisplay.classList.remove('hidden');
                 }
