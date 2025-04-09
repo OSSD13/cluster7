@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Http;
 use App\Models\Setting;
 use App\Http\Controllers\MinorCaseController;
 
+use App\Http\Controllers\MinorCaseController;
+use App\Http\Controllers\TrelloPlanPointController;
 
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
 
@@ -57,6 +59,8 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     // Saved Reports Routes
     Route::resource('/saved-reports', SavedReportController::class);
     Route::post('/save-report', [SavedReportController::class, 'store'])->name('report.save');
+    Route::get('/saved-reports/{savedReport}/export-template', [SavedReportController::class, 'exportTemplate'])->name('saved-reports.export-template');
+    Route::post('/export-to-csv', [SavedReportController::class, 'exportToCsv'])->name('export.to.csv');
 
     // Minor Cases Routes
     Route::prefix('minor-cases')->name('minor-cases.')->group(function () {
@@ -100,6 +104,18 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
         Route::get('teams', [TrelloTeamController::class, 'index'])->name('teams.index');
         Route::get('teams/{organization}', [TrelloTeamController::class, 'show'])->name('teams.show');
         Route::get('teams/refresh', [TrelloTeamController::class, 'refresh'])->name('teams.refresh');
+        Route::get('teams/{id}', [TrelloTeamController::class, 'show'])->name('teams.show');
+        Route::get('boards/{id}', [TrelloTeamController::class, 'viewBoard'])->name('boards.show');
+        Route::get("home", function () {
+            return view('dashboard');
+        })->name('home');
+        
+        // Add route for trello.log
+        Route::post('log', [TrelloController::class, 'logMessage'])->name('log');
+        
+        // Add routes for Plan Points
+        Route::post('save-plan-point', [TrelloPlanPointController::class, 'savePlanPoint'])->name('save.plan.point');
+        Route::get('get-plan-point', [TrelloPlanPointController::class, 'getPlanPoint'])->name('get.plan.point');
     });
 
     // Non-admin routes

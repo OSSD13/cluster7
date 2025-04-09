@@ -1264,4 +1264,15 @@ class TrelloController extends Controller
 
         return $userBoards;
     }
+
+    // Add a method to handle client-side logging
+    public function logMessage(Request $request)
+    {
+        $message = $request->input('message', 'No message provided');
+        $data = $request->input('data', []);
+        
+        \Log::info('Client log: ' . $message, $data);
+        
+        return response()->json(['success' => true]);
+    }
 }

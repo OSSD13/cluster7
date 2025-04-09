@@ -10,6 +10,7 @@
         // Add base URL for API endpoints
         const apiBaseUrl = '{{ url('/') }}';
     </script>
+    <link rel="stylesheet" href="{{ asset('css/print-report.css') }}" media="print">
     <style>
         @media print {
             body {
@@ -530,10 +531,10 @@
                         <div class="relative">
                             <input type="number" id="plan-points"
                                 class="text-2xl font-bold text-gray-800 bg-transparent w-full text-center py-1 border-b border-dashed border-gray-300 focus:outline-none focus:border-primary-500"
-                                value="0">
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                value="0" readonly>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <button id="edit-plan-points"
-                                    class="text-gray-400 hover:text-gray-600 pointer-events-auto">
+                                    class="text-gray-400 hover:text-gray-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1844,7 +1845,256 @@
             // Add print functionality to the print button
             if (printReportBtn) {
                 printReportBtn.addEventListener('click', function() {
-                    window.print();
+                    // Create a form to submit the data directly to our export endpoint
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route("export.to.csv") }}';
+                    form.target = '_blank'; // Open in new window/tab
+
+                    // Add autoprint parameter
+                    const autoPrintInput = document.createElement('input');
+                    autoPrintInput.type = 'hidden';
+                    autoPrintInput.name = 'autoprint';
+                    autoPrintInput.value = 'true';
+                    form.appendChild(autoPrintInput);
+
+                    // Add CSRF token
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+
+                    // Add board name
+                    const boardNameInput = document.createElement('input');
+                    boardNameInput.type = 'hidden';
+                    boardNameInput.name = 'board_name';
+                    boardNameInput.value = boardSelector.options[boardSelector.selectedIndex].text;
+                    form.appendChild(boardNameInput);
+
+                    // Add sprint info
+                    const sprintInput = document.createElement('input');
+                    sprintInput.type = 'hidden';
+                    sprintInput.name = 'sprint';
+                    sprintInput.value = document.getElementById('points-title').textContent || 'Current Sprint';
+                    form.appendChild(sprintInput);
+
+                    // Add story points data from cached data
+                    if (window.cachedData && window.cachedData.storyPoints) {
+                        // Get plan points from input field
+                        const planPointsValue = parseFloat(document.getElementById('plan-points').value) || 0;
+
+                        // Create a copy of storyPoints with the current plan points value
+                        const storyPointsData = {
+                            ...window.cachedData.storyPoints,
+                            planPoints: planPointsValue
+                        };
+
+                        const storyPointsInput = document.createElement('input');
+                        storyPointsInput.type = 'hidden';
+                        storyPointsInput.name = 'story_points_data';
+                        storyPointsInput.value = JSON.stringify(storyPointsData);
+                        form.appendChild(storyPointsInput);
+                    }
+
+                    // Add bug cards data from cached data
+                    if (window.cachedData && window.cachedData.bugCards) {
+                        const bugCardsInput = document.createElement('input');
+                        bugCardsInput.type = 'hidden';
+                        bugCardsInput.name = 'bug_cards_data';
+                        bugCardsInput.value = JSON.stringify(window.cachedData.bugCards);
+                        form.appendChild(bugCardsInput);
+                    }
+
+                    // Add member points data if available
+                    if (window.cachedData && window.cachedData.memberPoints) {
+                        // Log the member points data for debugging
+                        console.log('Member points data before print:', window.cachedData.memberPoints);
+
+                        // Process and enhance member points data to ensure it contains valid extraPoint values
+                        const processedMemberPoints = window.cachedData.memberPoints.map(member => {
+                            // Check if there's a saved extra point in localStorage
+                            let extraPoint = 0;
+                            if (member.id) {
+                                const storageKey = `extraPoints_${currentBoardId}_${member.id}`;
+                                const savedExtraPoint = localStorage.getItem(storageKey);
+                                if (savedExtraPoint !== null) {
+                                    extraPoint = parseFloat(savedExtraPoint) || 0;
+                                } else if (member.extraPoint) {
+                                    extraPoint = parseFloat(member.extraPoint) || 0;
+                                }
+                            }
+
+                            // Create a new object with the updated extraPoint
+                            return {
+                                ...member,
+                                extraPoint: extraPoint
+                            };
+                        });
+
+                        // Add the processed member points to the form
+                        const memberPointsInput = document.createElement('input');
+                        memberPointsInput.type = 'hidden';
+                        memberPointsInput.name = 'member_points_data';
+                        memberPointsInput.value = JSON.stringify(processedMemberPoints);
+                        form.appendChild(memberPointsInput);
+
+                        // Extract extra points data for each member
+                        const extraPointsData = [];
+                        processedMemberPoints.forEach(member => {
+                            if (member.extraPoint && parseFloat(member.extraPoint) > 0) {
+                                extraPointsData.push({
+                                    extra_personal: member.fullName || member.username || 'Unknown',
+                                    extra_point: parseFloat(member.extraPoint) || 0
+                                });
+                            }
+                        });
+
+                        console.log('Extracted extra points data:', extraPointsData);
+
+                        // Add extra points data
+                        if (extraPointsData.length > 0) {
+                            const extraPointsInput = document.createElement('input');
+                            extraPointsInput.type = 'hidden';
+                            extraPointsInput.name = 'extra_points_data';
+                            extraPointsInput.value = JSON.stringify(extraPointsData);
+                            form.appendChild(extraPointsInput);
+                        }
+                    }
+
+                    // Append form to body, submit it, and remove it
+                    document.body.appendChild(form);
+                    form.submit();
+                    document.body.removeChild(form);
+                });
+            }
+
+            // Function to show a save dialog
+            function showSaveDialog(callback) {
+                // Create a modal dialog
+                const dialog = document.createElement('div');
+                dialog.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50';
+                dialog.id = 'save-export-dialog';
+
+                dialog.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-xl p-6 w-96 max-w-full">
+                        <h3 class="text-lg font-semibold mb-4">Save Report For Export</h3>
+                        <p class="text-sm text-gray-600 mb-4">Enter a name for this report to save it before exporting.</p>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Report Name</label>
+                            <input type="text" id="export-report-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="My Sprint Report">
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button id="cancel-export" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">Cancel</button>
+                            <button id="confirm-export" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md">Save & Export</button>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(dialog);
+
+                // Focus the input field
+                document.getElementById('export-report-name').focus();
+
+                // Handle cancel
+                document.getElementById('cancel-export').addEventListener('click', function() {
+                    dialog.remove();
+                });
+
+                // Handle confirm
+                document.getElementById('confirm-export').addEventListener('click', function() {
+                    const reportName = document.getElementById('export-report-name').value.trim();
+                    if (reportName) {
+                        dialog.remove();
+                        callback(reportName);
+                    } else {
+                        // Show error if no name provided
+                        alert('Please enter a name for the report');
+                    }
+                });
+
+                // Handle enter key
+                document.getElementById('export-report-name').addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        const reportName = this.value.trim();
+                        if (reportName) {
+                            dialog.remove();
+                            callback(reportName);
+                        } else {
+                            alert('Please enter a name for the report');
+                        }
+                    }
+                });
+            }
+
+            // Function to save the report and export to template
+            function saveReportAndExport(reportName) {
+                // Get all the necessary data
+                const boardId = boardSelector.value;
+                const boardName = boardSelector.options[boardSelector.selectedIndex].text;
+
+                // Check if we have data to save
+                if (!window.cachedData) {
+                    showToast('No data available to export', 'error');
+                    return;
+                }
+
+                // Create a loading indicator
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30';
+                loadingOverlay.innerHTML = `
+                    <div class="bg-white rounded-lg p-4">
+                        <div class="spinner"></div>
+                        <p class="mt-2 text-sm text-gray-600">Saving report...</p>
+                    </div>
+                `;
+                document.body.appendChild(loadingOverlay);
+
+                // Create a form data object
+                const formData = new FormData();
+                formData.append('report_name', reportName);
+                formData.append('name', reportName);
+                formData.append('board_id', boardId);
+                formData.append('board_name', boardName);
+                formData.append('notes', 'Generated for export');
+                formData.append('story_points_data', JSON.stringify(window.cachedData.storyPoints || {}));
+                formData.append('bug_cards_data', JSON.stringify(window.cachedData.cardsByList || {}));
+
+                // Send the data to the server
+                fetch('{{ route("report.save") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Remove loading overlay
+                    loadingOverlay.remove();
+
+                    if (data.success) {
+                        // Redirect to the export template URL with the saved report ID
+                        const savedReportId = data.savedReportId || data.id;
+                        if (savedReportId) {
+                            window.location.href = `{{ url('/saved-reports') }}/${savedReportId}/export-template`;
+                        } else {
+                            // If we can't get the ID, redirect to the saved reports page
+                            window.location.href = '{{ route("saved-reports.index") }}';
+                        }
+                    } else {
+                        showToast('Error saving report: ' + (data.error || 'Unknown error'), 'error');
+                    }
+                })
+                .catch(error => {
+                    loadingOverlay.remove();
+                    console.error('Error saving report:', error);
+                    showToast('Error saving report: ' + error.message, 'error');
                 });
             }
 
@@ -2113,9 +2363,13 @@
                 const boardNameDisplay = document.getElementById('board-name-display');
                 const lastUpdated = document.getElementById('last-updated');
 
-                // Update the title with board name
+                // Get current sprint number
+                const currentSprintNumberElement = document.getElementById('current-sprint-number');
+                const sprintNumber = currentSprintNumberElement ? currentSprintNumberElement.textContent : '';
+
+                // Update the title with sprint number and board name
                 if (boardDetails.name) {
-                    pointsTitle.textContent = `Points from ${boardDetails.name}`;
+                    pointsTitle.textContent = `Sprint ${sprintNumber} - ${boardDetails.name}`;
                     boardNameDisplay.textContent = boardDetails.name;
                     boardNameDisplay.classList.remove('hidden');
                 }
@@ -2131,31 +2385,124 @@
             function updateSummaryData(storyPoints) {
                 if (!storyPoints) return;
 
-                // Check if we have a saved plan point value for this board
-                const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
+                // ตรวจสอบว่ามีค่า plan point จากฐานข้อมูลหรือไม่
+                const boardSelector = document.getElementById('board-selector');
+                const currentBoardId = boardSelector ? boardSelector.value : '';
 
-                if (savedPlanPoints) {
-                    // Use the saved value if it exists
-                    planPointsInput.value = savedPlanPoints;
+                if (currentBoardId) {
+                    // ใช้ AJAX เพื่อโหลดค่า plan point จากฐานข้อมูล
+                    fetch(`{{ url('/trello/get-plan-point') }}?board_id=${currentBoardId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.plan_point !== null && data.plan_point !== undefined) {
+                            // ใช้ค่าจากฐานข้อมูล
+                            console.log('Loaded plan point from database:', data.plan_point);
+                            planPointsInput.value = data.plan_point;
+
+                            // อัปเดต localStorage
+                            localStorage.setItem(`planPoints_${currentBoardId}`, data.plan_point);
+                            localStorage.setItem(`planPointEdited_${currentBoardId}`, 'true');
+
+                            // อัปเดต cached data
+                            if (window.cachedData && window.cachedData.storyPoints) {
+                                window.cachedData.storyPoints.planPoints = parseFloat(data.plan_point);
+                            }
+
+                            // อัปเดตการคำนวณอื่นๆ
+                            updateMetricsBasedOnPlanPoints();
+
+                            // เพิ่มการเรียกใช้ updateTotals เพื่อให้แน่ใจว่ามีการคำนวณค่าทั้งหมด
+                            if (typeof updateTotals === 'function') {
+                                updateTotals();
+                            }
+                        } else {
+                            // ถ้าไม่มีข้อมูลในฐานข้อมูล ให้ใช้ logic เดิม
+                            fallbackToPreviousLogic();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading plan point from database:', error);
+                        // ถ้าเกิดข้อผิดพลาด ให้ใช้ logic เดิม
+                        fallbackToPreviousLogic();
+                    });
                 } else {
-                    // Initialize with total points from API on first fetch
-                    planPointsInput.value = storyPoints.total || 0;
-                    // Save this initial value
-                    if (currentBoardId) {
-                        localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
+                    // ถ้าไม่มี board ID ให้ใช้ logic เดิม
+                    fallbackToPreviousLogic();
+                }
+
+                // ฟังก์ชันสำหรับใช้ logic เดิมเมื่อไม่มีข้อมูลจากฐานข้อมูล
+                function fallbackToPreviousLogic() {
+                    // Check if we have a saved plan point value for this board
+                    const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
+
+                    // Check if this is the first data load or a refresh
+                    const isFirstLoad = !localStorage.getItem(`dataLoaded_${currentBoardId}`);
+
+                    // Mark that data has been loaded for this board
+                    if (currentBoardId && isFirstLoad) {
+                        localStorage.setItem(`dataLoaded_${currentBoardId}`, 'true');
+                    }
+
+                    if (savedPlanPoints) {
+                        // Use the saved value if it exists
+                        planPointsInput.value = savedPlanPoints;
+                    } else {
+                        // Calculate total personal points from team members
+                        const totalPersonalPoints = document.getElementById('total-personal')?.textContent || "0";
+
+                        // Always use team member points total as the default value for plan points (if available)
+                        if (parseFloat(totalPersonalPoints) > 0) {
+                            planPointsInput.value = totalPersonalPoints;
+
+                            // Save this initial value if it's the first load
+                            if (currentBoardId && isFirstLoad) {
+                                localStorage.setItem(`planPoints_${currentBoardId}`, totalPersonalPoints);
+
+                                // Also update cached data if available
+                                if (window.cachedData && window.cachedData.storyPoints) {
+                                    window.cachedData.storyPoints.planPoints = parseFloat(totalPersonalPoints);
+                                    console.log('Set initial plan points to total personal points:', totalPersonalPoints);
+                                }
+                            }
+                        } else {
+                            // Only fall back to total points from API if we don't have team member data
+                            planPointsInput.value = storyPoints.total || 0;
+
+                            // Save this initial value
+                            if (currentBoardId && isFirstLoad) {
+                                localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
+                            }
+                        }
+                    }
+
+                    // อัปเดตการคำนวณอื่นๆ
+                    updateMetricsBasedOnPlanPoints();
+
+                    // เพิ่มการเรียกใช้ updateTotals เพื่อให้แน่ใจว่ามีการคำนวณค่าทั้งหมด
+                    if (typeof updateTotals === 'function') {
+                        updateTotals();
                     }
                 }
 
-                // Note: We'll update the Actual Point in buildMemberTable when we have the final point total
-                // We're still initializing it here to ensure it's reset if needed
-                document.getElementById('actual-points').textContent = '0';
+                // ฟังก์ชันอัปเดตการคำนวณต่างๆ
+                function updateMetricsBasedOnPlanPoints() {
+                    // Note: We'll update the Actual Point in buildMemberTable when we have the final point total
+                    // We're still initializing it here to ensure it's reset if needed
+                    document.getElementById('actual-points').textContent = '0';
 
-                // Calculate values for other metrics based on plan points
-                const planPoints = parseFloat(planPointsInput.value) || 0;
+                    // Calculate values for other metrics based on plan points
+                    const planPoints = parseFloat(planPointsInput.value) || 0;
 
-                // Other calculations will be updated once we have the actual point from team data
-                document.getElementById('remain-percent').textContent = '0%';
-                document.getElementById('percent-complete').textContent = '0%';
+                    // Other calculations will be updated once we have the actual point from team data
+                    document.getElementById('remain-percent').textContent = '0%';
+                    document.getElementById('percent-complete').textContent = '0%';
+                }
             }
 
             function buildMemberTable(members) {
@@ -2196,8 +2543,8 @@
                     // Use saved extra point value if available, otherwise use the one from the data
                     const extraPoint = savedExtraPoint || parseFloat(member.extraPoint || 0);
 
-                    // Recalculate final point with the updated extra point
-                    const finalPoint = passPoint + extraPoint;
+                    // Recalculate final point which should equal pass points only
+                    const finalPoint = passPoint;
 
                     // Update running totals
                     totals.personal += pointPersonal;
@@ -2261,13 +2608,35 @@
                 // 5. Point Current Sprint (sum of member personal points)
                 document.getElementById('current-sprint-points').textContent = totals.personal.toFixed(1);
 
-                // 6. Actual Point Current Sprint (sum of final points)
-                document.getElementById('actual-current-sprint').textContent = totals.final.toFixed(1);
+                // 6. Actual Point Current Sprint (sum of final points + extra points)
+                document.getElementById('actual-current-sprint').textContent = (totals.final + totals.extra).toFixed(1);
+
+                // Check if we need to update plan points to match total personal points
+                // ตรวจสอบว่าเราควรอัปเดต plan point จาก total personal หรือไม่
+                const planPointsInput = document.getElementById('plan-points');
+                const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
+                const isPlanPointManuallySet = localStorage.getItem(`planPointEdited_${currentBoardId}`);
+
+                // ถ้ายังไม่มีการแก้ไขค่า plan point ด้วยตนเอง และมีการเปลี่ยนแปลงใน total personal
+                if (!isPlanPointManuallySet && (!savedPlanPoints || parseFloat(totals.personal.toFixed(1)) !== parseFloat(savedPlanPoints))) {
+                    // อัปเดตค่า plan point ให้เท่ากับ total personal
+                    planPointsInput.value = totals.personal.toFixed(1);
+
+                    // บันทึกค่าใหม่ลง localStorage
+                    if (currentBoardId) {
+                        localStorage.setItem(`planPoints_${currentBoardId}`, totals.personal.toFixed(1));
+
+                        // อัปเดต cachedData ด้วย
+                        if (window.cachedData && window.cachedData.storyPoints) {
+                            window.cachedData.storyPoints.planPoints = totals.personal;
+                            console.log('Updated plan points to match new total personal points:', totals.personal);
+                        }
+                    }
+                }
 
                 // Now update the Actual Point using the total final points
-                // 2. Actual Point = Final Point + Backlog Point + Extra Point
-                // (Backlog and Extra are set to 0 as requested)
-                const actualPoints = totals.final + 0 + 0; // Use totals.final instead of completedPoints
+                // 2. Actual Point = Final Point (not +Extra Point)
+                const actualPoints = totals.final; // Use totals.final instead of completedPoints
                 document.getElementById('actual-points').textContent = actualPoints.toFixed(1);
 
                 // Now recalculate remaining metrics based on the actual point from team data
@@ -2280,7 +2649,7 @@
                 }
                 document.getElementById('remain-percent').textContent = `${remainPercent}%`;
 
-                // 4. Percent = Actual / Plan Point * 100
+                // 4. Percent Complete = (Actual Point / Plan Point) * 100
                 let percentComplete = 0;
                 if (planPoints > 0) {
                     percentComplete = Math.round((actualPoints / planPoints) * 100);
@@ -2288,6 +2657,10 @@
                 document.getElementById('percent-complete').textContent = `${percentComplete}%`;
 
                 console.log('Team member table updated with', members.length, 'members');
+
+                // เรียกใช้ updateTotals() เพื่อให้มั่นใจว่ามีการคำนวณค่าทั้งหมดเมื่อข้อมูลใหม่เข้ามา
+                // นี่จะช่วยแก้ปัญหาการที่ค่า Actual Point, Remain Percent และ Percent Complete ไม่คำนวณหลังโหลดข้อมูล
+                updateTotals();
             }
 
             function showNoMembersMessage() {
@@ -3312,14 +3685,18 @@
                 if (row) {
                     const extraCell = row.querySelector('td:nth-child(6)');
                     const finalCell = row.querySelector('td:nth-child(7)');
-                    const passCell = row.querySelector('td:nth-child(3)');
+                    const pointPersonalCell = row.querySelector('td:nth-child(2)');
+                    const bugCell = row.querySelector('td:nth-child(4)');
 
                     // Update extra points cell
                     extraCell.textContent = extraPoints.toFixed(1);
 
-                    // Recalculate final points (pass points + extra points)
-                    const passPoints = parseFloat(passCell.textContent) || 0;
-                    const finalPoints = passPoints + extraPoints;
+                    // Get values from cells
+                    const pointPersonal = parseFloat(pointPersonalCell.textContent) || 0;
+                    const bugPoints = parseFloat(bugCell.textContent) || 0;
+
+                    // Recalculate final points (personal points - bug points)
+                    const finalPoints = pointPersonal - bugPoints;
                     finalCell.textContent = finalPoints.toFixed(1);
 
                     // Save the extra points to localStorage
@@ -3328,14 +3705,24 @@
                         const storageKey = `extraPoints_${currentBoardId}_${currentMemberId}`;
                         localStorage.setItem(storageKey, extraPoints);
 
-                        // Also update the cached data if we have it
+                        // Also update the cachedData if we have it
                         if (window.cachedData && window.cachedData.memberPoints) {
-                            const memberIndex = window.cachedData.memberPoints.findIndex(m => m.id ===
-                                currentMemberId);
+                            const memberIndex = window.cachedData.memberPoints.findIndex(m => m.id === currentMemberId);
                             if (memberIndex >= 0) {
                                 window.cachedData.memberPoints[memberIndex].extraPoint = extraPoints;
+
+                                // Make sure we're using the right property name consistently
+                                const member = window.cachedData.memberPoints[memberIndex];
+
+                                // Update final point in the cached data
                                 window.cachedData.memberPoints[memberIndex].finalPoint = finalPoints;
+
+                                console.log('Updated cached data:', window.cachedData.memberPoints[memberIndex]);
+                            } else {
+                                console.warn('Member not found in cached data:', currentMemberId);
                             }
+                        } else {
+                            console.warn('No cached member points data available');
                         }
                     }
 
@@ -3378,10 +3765,29 @@
 
                 // Update actual points and recalculate percentages for the sprint summary
                 document.getElementById('actual-points').textContent = totals.final.toFixed(1);
-                document.getElementById('actual-current-sprint').textContent = totals.final.toFixed(1);
+                document.getElementById('actual-current-sprint').textContent = (totals.final + totals.extra).toFixed(1);
+
+                // Check if we have a user-input plan point value
+                const planPointsInput = document.getElementById('plan-points');
+                const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
+
+                // If no saved value or the saved value equals the previous total personal points,
+                // update plan points to match the new total personal points
+                if (!savedPlanPoints || parseFloat(savedPlanPoints) === parseFloat(planPointsInput.getAttribute('data-previous-total') || '0')) {
+                    planPointsInput.value = totals.personal.toFixed(1);
+                    // Save this as the new default
+                    if (currentBoardId) {
+                        localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
+                    }
+                }
+
+                // Store current total for future reference
+                planPointsInput.setAttribute('data-previous-total', totals.personal.toFixed(1));
+
+                // Get plan points (either user input or automatically set)
+                const planPoints = parseFloat(planPointsInput.value) || 0;
 
                 // Recalculate percentages
-                const planPoints = parseFloat(document.getElementById('plan-points').value) || 0;
                 if (planPoints > 0) {
                     const remainPercent = Math.round(((planPoints - totals.final) / planPoints) * 100);
                     const percentComplete = Math.round((totals.final / planPoints) * 100);
