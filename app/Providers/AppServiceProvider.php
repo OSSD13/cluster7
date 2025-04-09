@@ -7,6 +7,8 @@ use App\Helpers\DateHelper;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
+use App\Http\Controllers\SprintSettingsController;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -47,6 +49,13 @@ class AppServiceProvider extends ServiceProvider
         // Add custom Blade directives for sprint dates
         Blade::directive('formatSprintDate', function ($expression) {
             return "<?php echo \App\Helpers\DateHelper::formatSprintDate($expression); ?>";
+        });
+
+        // Share sprint number with all views
+        View::composer('*', function ($view) {
+            $sprintSettingsController = new SprintSettingsController();
+            $sprintNumber = $sprintSettingsController->getCurrentSprintNumber();
+            $view->with('sprintNumber', $sprintNumber);
         });
     }
 }

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -181,13 +180,11 @@
                                 stroke-width="2"
                                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-
-                        <div class="ml-3 transition-opacity duration-200"
-                            :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
-                            <div class="text-xs rounded-full text-black bg-[#13A7FD] px-2 py-1">
-                                Ongoing Sprint {{$sprintNumber ?? '-'}}
+                        <span class="ml-2 rounded-full text-white bg-sky-300  px-2 py-1  transition-colors duration-200"> Ongoing
+                        </span>
+                        <div class="ml-4 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
+                            Sprint {{$sprintNumber ?? '-'}}
                             </div>
-                        </div>
                     </a>
 
                     <a href="{{ route('minorcases') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('minorcases') ?  'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
