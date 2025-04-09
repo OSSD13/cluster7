@@ -206,9 +206,11 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
+                   
                     <div x-show="open" @click.away="open = false"
                         class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                         <div class="py-1">
+                        @if(auth()->user()->isAdmin())
                             <!-- Save Report Button with Sprint Auto-Save Hint -->
                             <button id="create-new-report-btn"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
@@ -218,6 +220,7 @@
                                         d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 Create New Report
+                                @endif
                             </button>
                             <button id="refresh-report-btn"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
@@ -247,6 +250,7 @@
                                 Export to CSV
                             </button>
                         </div>
+                        @if(auth()->user()->isAdmin())
                         <div class="py-1">
                             <a href="{{ route('saved-reports.index') }}"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
@@ -257,6 +261,7 @@
                                 </svg>
                                 Saved Reports
                             </a>
+                            @endif
                             <a href="{{ route('trello.teams.index') }}"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
@@ -266,6 +271,7 @@
                                 </svg>
                                 View Teams
                             </a>
+                             @if(auth()->user()->isAdmin())
                             <a href="{{ route('trello.settings.index') }}"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
@@ -277,6 +283,7 @@
                                 </svg>
                                 Trello Settings
                             </a>
+                            @endif
                         </div>
                     </div>
                 </div>
