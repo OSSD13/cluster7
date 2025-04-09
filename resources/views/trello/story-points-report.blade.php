@@ -118,37 +118,48 @@
     </style>
 
     <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-start mb-6">
-            <div>
-                <div class="flex items-center space-x-4 mb-2">
-                    <div class="w-12 h-12 rounded-full bg-primary-100 flex justify-center items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                    </div>
-                    @php
-                        // Get the current sprint number
-                        $sprintNumber = null;
-                        $currentSprint = \App\Models\Sprint::getCurrentSprint();
-                        if ($currentSprint) {
-                            $sprintNumber = $currentSprint->sprint_number;
-                        } else {
-                            // Fallback to next sprint number if no current sprint
-                            $sprintNumber = \App\Models\Sprint::getNextSprintNumber();
-                        }
-                    @endphp
-                    <div>
-                        <div class="flex items-center">
-                            <h1 class="text-2xl font-bold">Sprint: {{ $sprintNumber }}</h1>
-                            <span
-                                class="ml-3 px-3 py-1 text-xs font-medium bg-primary-100 text-primary-800 rounded-full">Report</span>
+        @if($error)
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+                <p>{{ $error }}</p>
+            </div>
+        @endif
+
+        @if(count($boards) === 0)
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+                <p>You don't have access to any Trello boards. Please contact your administrator if you believe this is an error.</p>
+            </div>
+        @else
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <div class="flex items-center space-x-4 mb-2">
+                        <div class="w-12 h-12 rounded-full bg-primary-100 flex justify-center items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
                         </div>
-                        <h2 class="text-xl text-gray-600">Current Sprint Report</h2>
+                        @php
+                            // Get the current sprint number
+                            $sprintNumber = null;
+                            $currentSprint = \App\Models\Sprint::getCurrentSprint();
+                            if ($currentSprint) {
+                                $sprintNumber = $currentSprint->sprint_number;
+                            } else {
+                                // Fallback to next sprint number if no current sprint
+                                $sprintNumber = \App\Models\Sprint::getNextSprintNumber();
+                            }
+                        @endphp
+                        <div>
+                            <div class="flex items-center">
+                                <h1 class="text-2xl font-bold">Sprint: {{ $sprintNumber }}</h1>
+                                <span
+                                    class="ml-3 px-3 py-1 text-xs font-medium bg-primary-100 text-primary-800 rounded-full">Report</span>
+                            </div>
+                            <h2 class="text-xl text-gray-600">Current Sprint Report</h2>
+                        </div>
                     </div>
                 </div>
-            </div>
 
             <!-- Action Menu -->
             <div class="flex space-x-2 items-center">
@@ -195,9 +206,11 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
+                   
                     <div x-show="open" @click.away="open = false"
                         class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                         <div class="py-1">
+                        @if(auth()->user()->isAdmin())
                             <!-- Save Report Button with Sprint Auto-Save Hint -->
                             <button id="create-new-report-btn"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
@@ -207,6 +220,7 @@
                                         d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 Create New Report
+                                @endif
                             </button>
                             <button id="refresh-report-btn"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
@@ -236,6 +250,7 @@
                                 Export to CSV
                             </button>
                         </div>
+                        @if(auth()->user()->isAdmin())
                         <div class="py-1">
                             <a href="{{ route('saved-reports.index') }}"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
@@ -246,6 +261,7 @@
                                 </svg>
                                 Saved Reports
                             </a>
+                            @endif
                             <a href="{{ route('trello.teams.index') }}"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
@@ -255,6 +271,7 @@
                                 </svg>
                                 View Teams
                             </a>
+                             @if(auth()->user()->isAdmin())
                             <a href="{{ route('trello.settings.index') }}"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
@@ -266,6 +283,7 @@
                                 </svg>
                                 Trello Settings
                             </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -782,7 +800,7 @@
                 </div>
             </div>
             <!-- Backlog Section -->
-            @if (isset($backlogData) && isset($backlogData['allBugs']) && $backlogData['allBugs']->count() > 0)
+            @if ((isset($backlogData) && isset($backlogData['allBugs']) && count($backlogData['allBugs']) > 0))
                 <div class="mt-8">
                     <div class="bg-gray-50 shadow rounded-lg p-6 mb-8 border-l-4 border-amber-500">
                         <h2 class="text-xl font-semibold mb-2 flex items-center">
@@ -3422,5 +3440,6 @@
                 });
             }
         });
-    </script>
+    </script>         
+@endif
 @endsection
