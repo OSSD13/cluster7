@@ -122,7 +122,7 @@ class MinorCasesController extends Controller
                 \Log::error('Error fetching user teams: ' . $e->getMessage());
             }
         }
-        
         return $userTeams;
     }
+    
 } 
