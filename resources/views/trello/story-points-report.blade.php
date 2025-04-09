@@ -206,7 +206,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
-                   
+
                     <div x-show="open" @click.away="open = false"
                         class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                         <div class="py-1">
@@ -1031,7 +1031,7 @@
                         return;
                     }
 
-                    const response = await fetch(`/api/minor-cases?board_id=${encodeURIComponent(boardId)}`);
+                    const response = await fetch(`/minor-cases/api?board_id=${encodeURIComponent(boardId)}`);
 
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1078,7 +1078,7 @@
 
                     if (id) {
                         // Edit existing case
-                        response = await fetch(`/api/minor-cases/${id}`, {
+                        response = await fetch(`/minor-cases/api/${id}`, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1090,7 +1090,7 @@
                         });
                     } else {
                         // Add new case
-                        response = await fetch('/api/minor-cases', {
+                        response = await fetch('/minor-cases/api', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1370,7 +1370,7 @@
                     const id = deleteBtn.dataset.id;
                     if (confirm('Are you sure you want to delete this minor case?')) {
                         try {
-                            const response = await fetch(`/api/minor-cases/${id}`, {
+                            const response = await fetch(`/minor-cases/api/${id}`, {
                                 method: 'DELETE',
                                 headers: {
                                     'X-CSRF-TOKEN': document.querySelector(
@@ -3454,6 +3454,6 @@
                 });
             }
         });
-    </script>         
+    </script>
 @endif
 @endsection

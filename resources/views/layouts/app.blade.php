@@ -178,7 +178,7 @@
                             Current Sprint Report
                         </span>
                     </a>
-                    <a href="{{ route('minorcases') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('minorcases') ?  'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                    <a href="{{ route('minor-cases.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('minor-cases.*') ?  'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
                             <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z" />
                         </svg>
