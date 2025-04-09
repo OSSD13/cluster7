@@ -28,16 +28,29 @@
                         d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623M4 7v4a4 4 0 0 0 3.5 3.97V7zm4.5 0v7.97A4 4 0 0 0 12 11V7zM12 6a4 4 0 0 0-1.334-2.982A3.98 3.98 0 0 0 8 2a3.98 3.98 0 0 0-2.667 1.018A4 4 0 0 0 4 6z" />
                 </svg>
             </div>
+            
             <p
                 class="mt-2 ms-3 pb-3 font-style: italic font-weight: text-[#009eff] text-6xl font-bold inline-block align-middle ">
                 Backlog</p>
-            <span class="mt-8 ms-7 min-w-40 h-8 text-sm font-bold bg-amber-100 text-amber-800 flex justify-center items-center rounded-full col-start-4">
-                {{ $allBugs->count() }} {{ Str::plural('bug', $allBugs->count()) }}
-                ({{ $allBugs->sum('points') }} {{ Str::plural('point', $allBugs->sum('points')) }})
-            </span>
+                <!-- Total Bug Count -->
+                <span id="totalBugCount" class="ml-4 mt-6 flex items-center justify-center font-bold text-sm bg-amber-100 text-amber-800 pt-2 py-1 px-2 min-w-40 max-w-full h-10 rounded-full">
+                    
+                    {{ $allBugs->count() }} {{ Str::plural('bug', $allBugs->count()) }}
+                    ({{ $allBugs->sum('points') }} {{ Str::plural('point', $allBugs->sum('points')) }})
+                </span>
+                <!-- Team Count Badges -->
+                <div id="teamCountBadges">
+                @foreach($bugsByTeam as $teamName => $bugs)
+                <span class="ml-4 mt-6 flex items-center justify-center font-bold text-sm bg-amber-100 text-amber-800 pt-2 py-1 px-2 min-w-40 max-w-full h-10 rounded-full team-count-badge" data-team="{{ $teamName }}">
+                    {{ $bugs->count() }} {{ Str::plural('bug', $bugs->count()) }}
+                    ({{ $bugs->sum('points') }} {{ Str::plural('point', $bugs->sum('points')) }})
+                </span>
+                @endforeach
+                </div>
 
+                
             <!-- Dropdown-->
-            <div class="ms-60 grid grid-rows-2 gap-1">
+            <div class="ms-[150px] grid grid-rows-2 gap-1">
                 <div>
                     <!-- Dropdown Teams-->
                     <div class="flex w-full">
@@ -170,13 +183,14 @@
 
                     <div class="col-span-8 text-left h-20 overflow-auto ">โค้ดที่คุณให้มาคือการใช้ Tailwind Tailwind Tailาจอที่ใช้งาน
                     </div>
+                    <!-- Edit Button -->
                     <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center ms-3 h-8 w-8 col-start-9">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-pencil-square" viewBox="0 0 16 16 ">
                             <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                             <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
                         </svg>
                     </button>
-
+                    <!-- Delete Button -->
                     <button type="button" class="text-[#FF0004] bg-[#FFACAE] hover:bg-[#FF7C7E] focus:outline-none font-medium rounded-full px-2 py-2 text-center  h-8 w-8  col-start-11">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
                             <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
@@ -278,7 +292,8 @@
                     const sprintRange = this.getAttribute('data-sprint-range');
                     filterBySprint(sprintRange);
                 } else if (menuId === "teamDropdownMenu") {
-                    filterByTeam(this.getAttribute('data-team'));
+                    const teamValue = this.getAttribute('data-team');
+                    filterByTeam(teamValue);
                 }
             });
         });
@@ -336,6 +351,31 @@
             }
         }
         
+        // Show/hide total bug count and team count badges based on selected team
+        const totalBugCount = document.getElementById('totalBugCount');
+        const teamCountBadges = document.getElementById('teamCountBadges');
+        
+        if (selectedTeam === 'all') {
+            // Show total bug count and hide team count badges
+            totalBugCount.style.display = 'inline-block';
+            teamCountBadges.style.display = 'none';
+        } else {
+            // Hide total bug count and show team count badges
+            totalBugCount.style.display = 'none';
+            teamCountBadges.style.display = 'inline-block';
+            
+            // Hide all team count badges first
+            document.querySelectorAll('.team-count-badge').forEach(badge => {
+                badge.style.display = 'none';
+            });
+            
+            // Show only the selected team's count badge
+            const selectedTeamBadge = document.querySelector(`.team-count-badge[data-team="${selectedTeam}"]`);
+            if (selectedTeamBadge) {
+                selectedTeamBadge.style.display = 'inline-block';
+            }
+        }
+        
         bugCards.forEach(card => {
             const cardTeam = card.getAttribute('data-team');
             const cardSprint = parseInt(card.getAttribute('data-sprint')) || 999;
@@ -361,6 +401,31 @@
         const bugCards = document.querySelectorAll('.bug-card');
         const [startSprint, endSprint] = sprintRange.split('-').map(Number);
         const selectedTeam = document.getElementById('selectedTeam').textContent;
+        
+        // Show/hide total bug count and team count badges based on selected team
+        const totalBugCount = document.getElementById('totalBugCount');
+        const teamCountBadges = document.getElementById('teamCountBadges');
+        
+        if (selectedTeam === 'All') {
+            // Show total bug count and hide team count badges
+            totalBugCount.style.display = 'inline-block';
+            teamCountBadges.style.display = 'none';
+        } else {
+            // Hide total bug count and show team count badges
+            totalBugCount.style.display = 'none';
+            teamCountBadges.style.display = 'inline-block';
+            
+            // Hide all team count badges first
+            document.querySelectorAll('.team-count-badge').forEach(badge => {
+                badge.style.display = 'none';
+            });
+            
+            // Show only the selected team's count badge
+            const selectedTeamBadge = document.querySelector(`.team-count-badge[data-team="${selectedTeam}"]`);
+            if (selectedTeamBadge) {
+                selectedTeamBadge.style.display = 'inline-block';
+            }
+        }
         
         bugCards.forEach(card => {
             const cardSprint = parseInt(card.getAttribute('data-sprint'));
@@ -405,6 +470,16 @@
         
         // Automatically sort bugs by sprint when page loads
         sortBugsBySprint();
+        
+        // Initialize team filtering
+        const selectedTeam = document.getElementById('selectedTeam').textContent;
+        if (selectedTeam !== 'All') {
+            filterByTeam(selectedTeam.toLowerCase());
+        } else {
+            // Show total bug count and hide team count badges
+            document.getElementById('totalBugCount').style.display = 'inline-block';
+            document.getElementById('teamCountBadges').style.display = 'none';
+        }
     });
     
     function sortBugsBySprint() {
