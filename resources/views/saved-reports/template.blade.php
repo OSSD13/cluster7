@@ -165,7 +165,7 @@
                     <td class="border-b border-r border-black bg-red-600 text-center font-bold text-white font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">Remain</td>
                     <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">
                         @php
-                            $remain = $planPoint > 0 ? round((($planPoint - $actualPoint)/$planPoint)*100,2) : 0;
+                            $remain = $planPoint > 0 ? round((($planPoint - $actualPoint)/$planPoint)*100) : 0;
                         @endphp
                         {{ $remain }}%
                     </td>
@@ -173,7 +173,7 @@
                     <td class="border-b border-r border-black bg-cyan-500 text-center font-bold text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">Percent</td>
                     <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">
                         @php
-                            $percent = $planPoint > 0 ? round(($actualPoint / $planPoint) * 100, 2) : 0;
+                            $percent = $planPoint > 0 ? round(($actualPoint / $planPoint) * 100) : 0;
                         @endphp
                         {{ $percent }}%
                     </td>
@@ -231,7 +231,15 @@
                     <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->point_personal }}</td>
                     <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->test_pass }}</td>
                     <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->bug }}</td>
-                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->final_pass_point }}</td>
+                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">
+                        @php
+                            // Calculate pass percentage: (passPoint / pointPersonal) * 100
+                            $passPercentage = $developer->point_personal > 0 ?
+                                round(($developer->test_pass / $developer->point_personal) * 100) :
+                                0;
+                        @endphp
+                        {{ $passPercentage }}%
+                    </td>
                     <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->cancel }}</td>
                     <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->sum_final }}</td>
                     <td class="border-b border-r border-black bg-white text-left text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->remark }}</td>
