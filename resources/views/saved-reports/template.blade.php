@@ -1,10 +1,6 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    @php
-    // Check if storyPointsData was provided
-    $storyPointsData = $storyPointsData ?? null;
-    @endphp
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -147,15 +143,8 @@
                                 $sumPersonalPoints += $dev->point_personal;
                             }
 
-                            // Use storyPointsData.planPoints first, then input value if it exists, otherwise use sum of personal points
-                            $planPoint = 0;
-                            if (isset($storyPointsData) && isset($storyPointsData['planPoints'])) {
-                                $planPoint = $storyPointsData['planPoints'];
-                            } elseif (isset($report->plan_point)) {
-                                $planPoint = $report->plan_point;
-                            } else {
-                                $planPoint = $sumPersonalPoints;
-                            }
+                            // Use input value if it exists, otherwise use sum of personal points
+                            $planPoint = isset($report->plan_point) ? $report->plan_point : $sumPersonalPoints;
                         @endphp
                         {{ $planPoint }}
                     </td>
@@ -385,8 +374,7 @@
                 totalCompletedPoints: window.cachedData.storyPoints.completed || window.cachedData.storyPoints.totalCompletedPoints || 0,
                 inProgress: window.cachedData.storyPoints.inProgress || 0,
                 todo: window.cachedData.storyPoints.todo || 0,
-                percentComplete: window.cachedData.storyPoints.percentComplete || 0,
-                planPoints: window.cachedData.storyPoints.planPoints || window.cachedData.storyPoints.totalPoints || 0
+                percentComplete: window.cachedData.storyPoints.percentComplete || 0
             };
             console.log('Fixed Story Points Data:', window.storyPointsData);
         }

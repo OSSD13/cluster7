@@ -2048,6 +2048,11 @@
                             
                             // อัปเดตการคำนวณอื่นๆ
                             updateMetricsBasedOnPlanPoints();
+                            
+                            // เพิ่มการเรียกใช้ updateTotals เพื่อให้แน่ใจว่ามีการคำนวณค่าทั้งหมด
+                            if (typeof updateTotals === 'function') {
+                                updateTotals();
+                            }
                         } else {
                             // ถ้าไม่มีข้อมูลในฐานข้อมูล ให้ใช้ logic เดิม
                             fallbackToPreviousLogic();
@@ -2110,6 +2115,11 @@
                     
                     // อัปเดตการคำนวณอื่นๆ
                     updateMetricsBasedOnPlanPoints();
+                    
+                    // เพิ่มการเรียกใช้ updateTotals เพื่อให้แน่ใจว่ามีการคำนวณค่าทั้งหมด
+                    if (typeof updateTotals === 'function') {
+                        updateTotals();
+                    }
                 }
                 
                 // ฟังก์ชันอัปเดตการคำนวณต่างๆ
@@ -2279,6 +2289,10 @@
                 document.getElementById('percent-complete').textContent = `${percentComplete}%`;
 
                 console.log('Team member table updated with', members.length, 'members');
+                
+                // เรียกใช้ updateTotals() เพื่อให้มั่นใจว่ามีการคำนวณค่าทั้งหมดเมื่อข้อมูลใหม่เข้ามา
+                // นี่จะช่วยแก้ปัญหาการที่ค่า Actual Point, Remain Percent และ Percent Complete ไม่คำนวณหลังโหลดข้อมูล
+                updateTotals();
             }
 
             function showNoMembersMessage() {
