@@ -107,7 +107,6 @@
                 <img src="{{ asset('Group 553.png') }}" class="mr-0 rounded-lg w-96" />
             </div>
 
-            <hr class="w-full my-4 border-t border-gray-300">
 
             <div class="mb-10 font-sans text-2xl font-bold text-center black text te">
                 <h1>Create an account</h1>
@@ -198,17 +197,16 @@
                         Create account
                     </button>
                 </div>
+                <div class="flex flex-col items-center mb-14">
+                    <p class="mt-2 text-sm text-center text-gray-600">
+                        Or
+                        <a href="{{ route('login') }}" class="font-medium text-primary-600 hover:text-primary-500">
+                            sign in to your account
+                        </a>
+                    </p>
+                </div>
+
             </form>
-
-            <div class="flex flex-col items-center">
-                <p class="mt-2 text-sm text-center text-gray-600">
-                    Or
-                    <a href="{{ route('login') }}" class="font-medium text-primary-600 hover:text-primary-500">
-                        sign in to your account
-                    </a>
-                </p>
-            </div>
-
             <div class="absolute text-sm text-gray-500 -translate-x-1/2 bottom-5 left-1/2">
                 © 2025 TTT Developer Performance
             </div>
