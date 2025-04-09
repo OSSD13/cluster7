@@ -2017,40 +2017,114 @@
             function updateSummaryData(storyPoints) {
                 if (!storyPoints) return;
 
-                // Check if we have a saved plan point value for this board
-                const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
-
-                if (savedPlanPoints) {
-                    // Use the saved value if it exists
-                    planPointsInput.value = savedPlanPoints;
+                // ตรวจสอบว่ามีค่า plan point จากฐานข้อมูลหรือไม่
+                const boardSelector = document.getElementById('board-selector');
+                const currentBoardId = boardSelector ? boardSelector.value : '';
+                
+                if (currentBoardId) {
+                    // ใช้ AJAX เพื่อโหลดค่า plan point จากฐานข้อมูล
+                    fetch(`{{ url('/trello/get-plan-point') }}?board_id=${currentBoardId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.plan_point !== null && data.plan_point !== undefined) {
+                            // ใช้ค่าจากฐานข้อมูล
+                            console.log('Loaded plan point from database:', data.plan_point);
+                            planPointsInput.value = data.plan_point;
+                            
+                            // อัปเดต localStorage
+                            localStorage.setItem(`planPoints_${currentBoardId}`, data.plan_point);
+                            localStorage.setItem(`planPointEdited_${currentBoardId}`, 'true');
+                            
+                            // อัปเดต cached data
+                            if (window.cachedData && window.cachedData.storyPoints) {
+                                window.cachedData.storyPoints.planPoints = parseFloat(data.plan_point);
+                            }
+                            
+                            // อัปเดตการคำนวณอื่นๆ
+                            updateMetricsBasedOnPlanPoints();
+                        } else {
+                            // ถ้าไม่มีข้อมูลในฐานข้อมูล ให้ใช้ logic เดิม
+                            fallbackToPreviousLogic();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading plan point from database:', error);
+                        // ถ้าเกิดข้อผิดพลาด ให้ใช้ logic เดิม
+                        fallbackToPreviousLogic();
+                    });
                 } else {
-                    // Calculate total personal points from team members
-                    const totalPersonalPoints = document.getElementById('total-personal')?.textContent || "0";
-                    
-                    // If we have team member data with personal points, use that total
-                    if (parseFloat(totalPersonalPoints) > 0) {
-                        planPointsInput.value = totalPersonalPoints;
-                    } else {
-                        // Fallback to total points from API on first fetch
-                        planPointsInput.value = storyPoints.total || 0;
-                    }
-                    
-                    // Save this initial value
-                    if (currentBoardId) {
-                        localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
-                    }
+                    // ถ้าไม่มี board ID ให้ใช้ logic เดิม
+                    fallbackToPreviousLogic();
                 }
+                
+                // ฟังก์ชันสำหรับใช้ logic เดิมเมื่อไม่มีข้อมูลจากฐานข้อมูล
+                function fallbackToPreviousLogic() {
+                    // Check if we have a saved plan point value for this board
+                    const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
+                    
+                    // Check if this is the first data load or a refresh
+                    const isFirstLoad = !localStorage.getItem(`dataLoaded_${currentBoardId}`);
+                    
+                    // Mark that data has been loaded for this board
+                    if (currentBoardId && isFirstLoad) {
+                        localStorage.setItem(`dataLoaded_${currentBoardId}`, 'true');
+                    }
 
-                // Note: We'll update the Actual Point in buildMemberTable when we have the final point total
-                // We're still initializing it here to ensure it's reset if needed
-                document.getElementById('actual-points').textContent = '0';
+                    if (savedPlanPoints) {
+                        // Use the saved value if it exists
+                        planPointsInput.value = savedPlanPoints;
+                    } else {
+                        // Calculate total personal points from team members
+                        const totalPersonalPoints = document.getElementById('total-personal')?.textContent || "0";
+                        
+                        // Always use team member points total as the default value for plan points (if available)
+                        if (parseFloat(totalPersonalPoints) > 0) {
+                            planPointsInput.value = totalPersonalPoints;
+                            
+                            // Save this initial value if it's the first load
+                            if (currentBoardId && isFirstLoad) {
+                                localStorage.setItem(`planPoints_${currentBoardId}`, totalPersonalPoints);
+                                
+                                // Also update cached data if available
+                                if (window.cachedData && window.cachedData.storyPoints) {
+                                    window.cachedData.storyPoints.planPoints = parseFloat(totalPersonalPoints);
+                                    console.log('Set initial plan points to total personal points:', totalPersonalPoints);
+                                }
+                            }
+                        } else {
+                            // Only fall back to total points from API if we don't have team member data
+                            planPointsInput.value = storyPoints.total || 0;
+                            
+                            // Save this initial value
+                            if (currentBoardId && isFirstLoad) {
+                                localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
+                            }
+                        }
+                    }
+                    
+                    // อัปเดตการคำนวณอื่นๆ
+                    updateMetricsBasedOnPlanPoints();
+                }
+                
+                // ฟังก์ชันอัปเดตการคำนวณต่างๆ
+                function updateMetricsBasedOnPlanPoints() {
+                    // Note: We'll update the Actual Point in buildMemberTable when we have the final point total
+                    // We're still initializing it here to ensure it's reset if needed
+                    document.getElementById('actual-points').textContent = '0';
 
-                // Calculate values for other metrics based on plan points
-                const planPoints = parseFloat(planPointsInput.value) || 0;
+                    // Calculate values for other metrics based on plan points
+                    const planPoints = parseFloat(planPointsInput.value) || 0;
 
-                // Other calculations will be updated once we have the actual point from team data
-                document.getElementById('remain-percent').textContent = '0%';
-                document.getElementById('percent-complete').textContent = '0%';
+                    // Other calculations will be updated once we have the actual point from team data
+                    document.getElementById('remain-percent').textContent = '0%';
+                    document.getElementById('percent-complete').textContent = '0%';
+                }
             }
 
             function buildMemberTable(members) {
@@ -2158,6 +2232,29 @@
 
                 // 6. Actual Point Current Sprint (sum of final points + extra points)
                 document.getElementById('actual-current-sprint').textContent = (totals.final + totals.extra).toFixed(1);
+
+                // Check if we need to update plan points to match total personal points
+                // ตรวจสอบว่าเราควรอัปเดต plan point จาก total personal หรือไม่
+                const planPointsInput = document.getElementById('plan-points');
+                const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
+                const isPlanPointManuallySet = localStorage.getItem(`planPointEdited_${currentBoardId}`);
+                
+                // ถ้ายังไม่มีการแก้ไขค่า plan point ด้วยตนเอง และมีการเปลี่ยนแปลงใน total personal
+                if (!isPlanPointManuallySet && (!savedPlanPoints || parseFloat(totals.personal.toFixed(1)) !== parseFloat(savedPlanPoints))) {
+                    // อัปเดตค่า plan point ให้เท่ากับ total personal
+                    planPointsInput.value = totals.personal.toFixed(1);
+                    
+                    // บันทึกค่าใหม่ลง localStorage
+                    if (currentBoardId) {
+                        localStorage.setItem(`planPoints_${currentBoardId}`, totals.personal.toFixed(1));
+                        
+                        // อัปเดต cachedData ด้วย
+                        if (window.cachedData && window.cachedData.storyPoints) {
+                            window.cachedData.storyPoints.planPoints = totals.personal;
+                            console.log('Updated plan points to match new total personal points:', totals.personal);
+                        }
+                    }
+                }
 
                 // Now update the Actual Point using the total final points
                 // 2. Actual Point = Final Point (not +Extra Point)
@@ -3635,14 +3732,72 @@
                 // Save to localStorage
                 const boardSelector = document.getElementById('board-selector');
                 const currentBoardId = boardSelector ? boardSelector.value : '';
+                const boardName = boardSelector ? boardSelector.options[boardSelector.selectedIndex].text : '';
+                
                 if (currentBoardId) {
+                    // บันทึกค่า plan points
                     localStorage.setItem(`planPoints_${currentBoardId}`, planPoints);
+                    
+                    // ตั้งค่าสถานะว่ามีการแก้ไขด้วยตนเองแล้ว
+                    localStorage.setItem(`planPointEdited_${currentBoardId}`, 'true');
                     
                     // Update cached data if available
                     if (window.cachedData && window.cachedData.storyPoints) {
                         window.cachedData.storyPoints.planPoints = planPoints;
                         console.log('Updated cached plan points data:', window.cachedData.storyPoints);
                     }
+                    
+                    // ส่ง AJAX Request เพื่อบันทึกค่าลงฐานข้อมูล
+                    // เรียก API endpoint เพื่อบันทึกค่า Plan Point
+                    savePlanPointsBtn.disabled = true;
+                    savePlanPointsBtn.textContent = 'Saving...';
+                    
+                    fetch('{{ route('trello.save.plan.point') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            board_id: currentBoardId,
+                            board_name: boardName,
+                            plan_point: planPoints
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Plan point saved to database:', data);
+                            
+                            // Show success toast
+                            if (typeof showToast === 'function') {
+                                showToast('Plan points saved to database successfully', 'success');
+                            }
+                        } else {
+                            console.error('Error saving plan point:', data.error);
+                            
+                            // Show error toast
+                            if (typeof showToast === 'function') {
+                                showToast('Error saving plan point: ' + (data.error || 'Unknown error'), 'error');
+                            }
+                        }
+                        
+                        // Re-enable button
+                        savePlanPointsBtn.disabled = false;
+                        savePlanPointsBtn.textContent = 'Save';
+                    })
+                    .catch(error => {
+                        console.error('Error saving plan point:', error);
+                        
+                        // Show error toast
+                        if (typeof showToast === 'function') {
+                            showToast('Error saving plan point: ' + error.message, 'error');
+                        }
+                        
+                        // Re-enable button
+                        savePlanPointsBtn.disabled = false;
+                        savePlanPointsBtn.textContent = 'Save';
+                    });
                 }
                 
                 // Recalculate metrics
@@ -3668,11 +3823,6 @@
                 
                 // Close the modal
                 closePlanPointsModal();
-                
-                // Show success toast if function exists
-                if (typeof showToast === 'function') {
-                    showToast('Plan points updated successfully', 'success');
-                }
             });
         });
     </script>

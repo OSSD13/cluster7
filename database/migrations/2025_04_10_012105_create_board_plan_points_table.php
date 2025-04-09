@@ -1,0 +1,30 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('board_plan_points', function (Blueprint $table) {
+            $table->id();
+            $table->string('board_id')->unique(); // Trello board ID ต้องไม่ซ้ำ
+            $table->string('board_name')->nullable(); // ชื่อบอร์ด
+            $table->decimal('plan_point', 8, 2)->default(0); // ค่า plan point ทศนิยม 2 ตำแหน่ง
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('board_plan_points');
+    }
+};
