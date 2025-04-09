@@ -26,6 +26,8 @@ final class MinorCase extends Model
         'points',
         'user_id',
     ];
+    
+    protected $table = 'minor_cases';
 
     /**
      * The attributes that should be cast.
@@ -56,11 +58,11 @@ final class MinorCase extends Model
     public static function getByBoard(string $boardId, ?int $userId = null): \Illuminate\Database\Eloquent\Collection
     {
         $query = self::where('board_id', $boardId);
-        
+
         if ($userId) {
             $query->where('user_id', $userId);
         }
-        
+
         return $query->orderBy('created_at', 'desc')->get();
     }
-} 
+}
