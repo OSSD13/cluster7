@@ -45,14 +45,14 @@ final class MinorCaseService
     public function update(int $id, array $data, ?int $userId = null): MinorCase
     {
         $query = MinorCase::where('id', $id);
-        
+
         if ($userId) {
             $query->where('user_id', $userId);
         }
-        
+
         $minorCase = $query->firstOrFail();
         $minorCase->update($data);
-        
+
         return $minorCase->fresh();
     }
 
@@ -67,13 +67,13 @@ final class MinorCaseService
     public function delete(int $id, ?int $userId = null): bool
     {
         $query = MinorCase::where('id', $id);
-        
+
         if ($userId) {
             $query->where('user_id', $userId);
         }
-        
+
         $minorCase = $query->firstOrFail();
-        
+
         return $minorCase->delete();
     }
-} 
+}
