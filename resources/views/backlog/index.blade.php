@@ -5,7 +5,59 @@
 @section('page-title', 'Bug Backlog')
 
 @section('content')
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl min-h-screen mx-auto">
+
+    <!-- Edit Bug Modal -->
+    <div id="editBugModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Bug</h3>
+                <form id="editBugForm" class="mt-4">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="bugId" name="id">
+                    
+                    <div class="mb-4">
+                        <label for="bugName" class="block text-sm font-medium text-gray-700">Bug Name</label>
+                        <input type="text" id="bugName" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="bugTeam" class="block text-sm font-medium text-gray-700">Team</label>
+                        <select id="bugTeam" name="team" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="Alpha">Alpha</option>
+                            <option value="Beta">Beta</option>
+                            <option value="Delta">Delta</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="bugPoints" class="block text-sm font-medium text-gray-700">Points</label>
+                        <input type="number" id="bugPoints" name="points" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="bugAssigned" class="block text-sm font-medium text-gray-700">Assigned To</label>
+                        <input type="text" id="bugAssigned" name="assigned" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="bugDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea id="bugDescription" name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"></textarea>
+                    </div>
+
+                    <div class="mt-5 flex justify-end space-x-2">
+                        <button type="button" id="cancelEditBug" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- No Bugs Message (Only shown if there are no backlog bugs) -->
     @if($allBugs->count() == 0)
@@ -150,7 +202,7 @@
         </p>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
             @foreach($allBugs as $bug)
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow bug-card" data-team="{{ $bug['team'] ?? 'all' }}" data-name="{{ $bug['name'] ?? '' }}" data-sprint="{{ $bug['sprint_origin'] ?? $bug['sprint_number'] ?? '?' }}">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow bug-card" data-team="{{ $bug['team'] ?? 'all' }}" data-name="{{ $bug['name'] ?? '' }}" data-sprint="{{ $bug['sprint_origin'] ?? $bug['sprint_number'] ?? '?' }}" data-id="{{ $bug['id'] }}">
                 <!-- Card Header with Bug ID and Priority -->
                 <div class="flex justify-between items-center p-4 border-b border-gray-100 ">
                     <div class="flex items-center">
@@ -509,5 +561,89 @@
         // Update the count of visible bugs
         updateBugCount();
     }
+
+    // Edit Bug Modal Functions
+    function openEditModal(bugId) {
+        const bugCard = document.querySelector(`.bug-card[data-id="${bugId}"]`);
+        const modal = document.getElementById('editBugModal');
+        const form = document.getElementById('editBugForm');
+
+        // Set form values
+        form.querySelector('#bugId').value = bugId;
+        form.querySelector('#bugName').value = bugCard.querySelector('a').textContent;
+        form.querySelector('#bugTeam').value = bugCard.getAttribute('data-team');
+        form.querySelector('#bugPoints').value = bugCard.querySelector('.rounded-full').textContent.trim();
+        form.querySelector('#bugAssigned').value = bugCard.querySelector('.ml-2.px-2.py-1.text-xs.font-medium.rounded-full:last-child').textContent.trim();
+        form.querySelector('#bugDescription').value = bugCard.querySelector('.col-span-8').textContent.trim();
+
+        // Show modal
+        modal.classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editBugModal').classList.add('hidden');
+    }
+
+    // Edit form submission
+    document.getElementById('editBugForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const bugId = this.querySelector('#bugId').value;
+        const formData = new FormData(this);
+        
+        try {
+            const response = await fetch(`/backlog/${bugId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Close modal
+                closeEditModal();
+                
+                // Update the bug card in the UI
+                const bugCard = document.querySelector(`.bug-card[data-id="${bugId}"]`);
+                bugCard.querySelector('a').textContent = formData.get('name');
+                bugCard.setAttribute('data-team', formData.get('team'));
+                bugCard.querySelector('.rounded-full').textContent = formData.get('points');
+                bugCard.querySelector('.ml-2.px-2.py-1.text-xs.font-medium.rounded-full:last-child').textContent = formData.get('assigned') || 'Unassigned';
+                bugCard.querySelector('.col-span-8').textContent = formData.get('description');
+                
+                // Show success message
+                alert('Bug updated successfully');
+                
+                // Refresh the page to update all data
+                window.location.reload();
+            } else {
+                throw new Error(data.error || 'Failed to update bug');
+            }
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
+    // Cancel button click handler
+    document.getElementById('cancelEditBug').addEventListener('click', closeEditModal);
+
+    // Close modal when clicking outside
+    document.getElementById('editBugModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeEditModal();
+        }
+    });
+
+    // Connect edit buttons to modal
+    document.querySelectorAll('.bi-pencil-square').forEach(button => {
+        button.closest('button').addEventListener('click', function() {
+            const bugId = this.closest('.bug-card').getAttribute('data-id');
+            openEditModal(bugId);
+        });
+    });
 </script>
 @endsection

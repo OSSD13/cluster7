@@ -126,6 +126,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     // Backlog Routes
     Route::get('/backlog', [\App\Http\Controllers\BacklogController::class, 'index'])->name('backlog.index');
     Route::delete('/backlog/{id}', [\App\Http\Controllers\BacklogController::class, 'destroy'])->name('backlog.destroy');
+    Route::put('/backlog/{id}', [\App\Http\Controllers\BacklogController::class, 'update'])->name('backlog.update');
 });
 
 // Only enable in development environment
