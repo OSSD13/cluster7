@@ -9,7 +9,7 @@
     <div class="mb-6">
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold">Sprint Settings</h1>
-            
+
             <a href="{{ route('dashboard') }}" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -60,7 +60,7 @@
     <div class="bg-white shadow rounded-lg p-6">
         <form action="{{ route('settings.sprint.update') }}" method="POST">
             @csrf
-            
+
             <div class="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
                 <div class="sm:col-span-2">
                     <h2 class="text-lg font-medium text-gray-900 mb-2">Sprint Configuration</h2>
@@ -68,86 +68,86 @@
                         Configure how sprint reports are generated automatically. Reports will be saved at the end of each sprint period.
                     </p>
                 </div>
-                
+
                 <!-- Sprint Duration -->
                 <div>
                     <label for="sprint_duration" class="block text-sm font-medium text-gray-700">Sprint Duration</label>
                     <select name="sprint_duration" id="sprint_duration" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
-                        <option value="7" @if($sprintDuration == 7) selected @endif>1 Week</option>
-                        <option value="14" @if($sprintDuration == 14) selected @endif>2 Weeks</option>
-                        <option value="21" @if($sprintDuration == 21) selected @endif>3 Weeks</option>
-                        <option value="28" @if($sprintDuration == 28) selected @endif>4 Weeks</option>
+                        <option value="7" {{ (int)$sprintDuration === 7 ? 'selected' : '' }}>1 Week (7 days)</option>
+                        <option value="14" {{ (int)$sprintDuration === 14 ? 'selected' : '' }}>2 Weeks (14 days)</option>
+                        <option value="21" {{ (int)$sprintDuration === 21 ? 'selected' : '' }}>3 Weeks (21 days)</option>
+                        <option value="28" {{ (int)$sprintDuration === 28 ? 'selected' : '' }}>4 Weeks (28 days)</option>
                     </select>
                     <p class="mt-1 text-sm text-gray-500">How long each sprint lasts. Sprints are counted from January 1st of the current year.</p>
                 </div>
-                
+
                 <div>
                     <label for="sprint_start_day" class="block text-sm font-medium text-gray-700">Sprint Start Day</label>
                     <select name="sprint_start_day" id="sprint_start_day" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
-                        <option value="1" @if($sprintStartDay == 1) selected @endif>Monday</option>
-                        <option value="2" @if($sprintStartDay == 2) selected @endif>Tuesday</option>
-                        <option value="3" @if($sprintStartDay == 3) selected @endif>Wednesday</option>
-                        <option value="4" @if($sprintStartDay == 4) selected @endif>Thursday</option>
-                        <option value="5" @if($sprintStartDay == 5) selected @endif>Friday</option>
-                        <option value="6" @if($sprintStartDay == 6) selected @endif>Saturday</option>
-                        <option value="0" @if($sprintStartDay == 0) selected @endif>Sunday</option>
+                        <option value="1" {{ (int)$sprintStartDay === 1 ? 'selected' : '' }}>Monday</option>
+                        <option value="2" {{ (int)$sprintStartDay === 2 ? 'selected' : '' }}>Tuesday</option>
+                        <option value="3" {{ (int)$sprintStartDay === 3 ? 'selected' : '' }}>Wednesday</option>
+                        <option value="4" {{ (int)$sprintStartDay === 4 ? 'selected' : '' }}>Thursday</option>
+                        <option value="5" {{ (int)$sprintStartDay === 5 ? 'selected' : '' }}>Friday</option>
+                        <option value="6" {{ (int)$sprintStartDay === 6 ? 'selected' : '' }}>Saturday</option>
+                        <option value="0" {{ (int)$sprintStartDay === 0 ? 'selected' : '' }}>Sunday</option>
                     </select>
                     <p class="mt-1 text-sm text-gray-500">Day of the week when sprints start.</p>
                 </div>
-                
+
                 <div>
                     <label for="sprint_end_time" class="block text-sm font-medium text-gray-700">Sprint End Time</label>
                     <select name="sprint_end_time" id="sprint_end_time" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
-                        <option value="16:00" @if($sprintEndTime == '16:00') selected @endif>16:00</option>
-                        <option value="17:00" @if($sprintEndTime == '17:00') selected @endif>17:00</option>
-                        <option value="18:00" @if($sprintEndTime == '18:00') selected @endif>18:00</option>
-                        <option value="23:59" @if($sprintEndTime == '23:59') selected @endif>23:59 (End of day)</option>
+                        <option value="16:00" {{ $sprintEndTime === '16:00' ? 'selected' : '' }}>16:00</option>
+                        <option value="17:00" {{ $sprintEndTime === '17:00' ? 'selected' : '' }}>17:00</option>
+                        <option value="18:00" {{ $sprintEndTime === '18:00' ? 'selected' : '' }}>18:00</option>
+                        <option value="23:59" {{ $sprintEndTime === '23:59' ? 'selected' : '' }}>23:59 (End of day)</option>
                     </select>
                     <p class="mt-1 text-sm text-gray-500">Time when sprint reports are generated (24-hour format).</p>
                 </div>
-                
+
                 <div>
                     <label for="auto_save_enabled" class="block text-sm font-medium text-gray-700">Auto-Save Reports</label>
                     <select name="auto_save_enabled" id="auto_save_enabled" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
-                        <option value="1" @if($autoSaveEnabled) selected @endif>Enabled</option>
-                        <option value="0" @if(!$autoSaveEnabled) selected @endif>Disabled</option>
+                        <option value="1" {{ $autoSaveEnabled === true ? 'selected' : '' }}>Enabled</option>
+                        <option value="0" {{ $autoSaveEnabled === false ? 'selected' : '' }}>Disabled</option>
                     </select>
                     <p class="mt-1 text-sm text-gray-500">Automatically save reports at the end of each sprint.</p>
                 </div>
-                
+
                 <div class="sm:col-span-2">
                     <h2 class="text-lg font-medium text-gray-900 mt-6 mb-2">Current Sprint Information</h2>
                     <div class="bg-gray-50 p-4 rounded-md">
                         <p class="text-sm text-gray-700">
-                            <strong>Current Sprint:</strong> {{ $currentSprintNumber }} 
+                            <strong>Current Sprint:</strong> {{ $currentSprintNumber }}
                             <span class="text-gray-500 ml-2">(Week {{ $currentWeekNumber }} of the year)</span>
                         </p>
                         <p class="text-sm text-gray-700 mt-1">
                             <strong>Next Sprint Report:</strong> {{ $nextReportDate }}
                         </p>
-                        
+
                         <!-- Sprint Timeline Visualization -->
                         <div class="mt-4">
                             <h3 class="text-sm font-medium text-gray-700 mb-2">Sprint Timeline</h3>
                             <div class="relative bg-gray-200 h-12 rounded-md overflow-hidden">
                                 <!-- Sprint Progress Bar -->
                                 <div class="absolute top-0 left-0 h-full bg-primary-100" style="width: {{ $sprintProgressPercent }}%"></div>
-                                
+
                                 <!-- Sprint Number Badge -->
                                 <div class="absolute top-0 right-4 bg-primary-500 text-white px-2 py-1 rounded-b-md text-xs font-bold">
                                     Sprint {{ $currentSprintNumber }}
                                 </div>
-                                
+
                                 <!-- Start Date -->
                                 <div class="absolute top-2 left-2 text-xs font-semibold">
                                     {{ $currentSprintStartDate }}
                                 </div>
-                                
+
                                 <!-- End Date -->
                                 <div class="absolute top-2 right-24 text-xs font-semibold">
                                     {{ $currentSprintEndDate }}
                                 </div>
-                                
+
                                 <!-- Current Day Marker -->
                                 @if($sprintProgressPercent > 0 && $sprintProgressPercent < 100)
                                 <div class="absolute top-0 h-full" style="left: {{ $sprintProgressPercent }}%;">
@@ -166,13 +166,23 @@
                                     </div>
                                 </div>
                                 @endif
-                                
+
                                 <!-- Duration Label -->
                                 <div class="absolute bottom-1 text-xs font-medium text-gray-700 left-1/2 transform -translate-x-1/2">
-                                    {{ $sprintDuration == 7 ? '1 Week' : ($sprintDuration / 7) . ' Weeks' }} Duration
+                                    @if($sprintDuration == 7)
+                                        1 Week Duration
+                                    @elseif($sprintDuration == 14)
+                                        2 Weeks Duration
+                                    @elseif($sprintDuration == 21)
+                                        3 Weeks Duration
+                                    @elseif($sprintDuration == 28)
+                                        4 Weeks Duration
+                                    @else
+                                        {{ $sprintDuration }} Days Duration
+                                    @endif
                                 </div>
                             </div>
-                            
+
                             <!-- Sprint Stats -->
                             <div class="flex justify-between mt-2 text-xs text-gray-500">
                                 <div>{{ $daysElapsed }} {{ Str::plural('day', $daysElapsed) }} elapsed</div>
@@ -182,7 +192,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="mt-8 flex justify-end">
                 <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                     Save Settings
@@ -190,20 +200,20 @@
             </div>
         </form>
     </div>
-    
+
     <div class="bg-white shadow rounded-lg p-6 mt-6">
         <h2 class="text-lg font-medium text-gray-900 mb-4">Sprint Override</h2>
         <p class="text-sm text-gray-500 mb-4">
             You can manually set the current sprint number if needed. This will override the automatically calculated sprint number.
         </p>
-        
+
         <form action="{{ route('settings.sprint.set-current') }}" method="POST" class="mt-4">
             @csrf
             <div class="flex items-end space-x-4">
                 <div class="w-1/4">
                     <label for="current_sprint_number" class="block text-sm font-medium text-gray-700 mb-1">Current Sprint Number</label>
-                    <input type="number" name="current_sprint_number" id="current_sprint_number" 
-                        class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md" 
+                    <input type="number" name="current_sprint_number" id="current_sprint_number"
+                        class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md"
                         min="1" value="{{ $currentSprintNumber }}" placeholder="Enter sprint number">
                 </div>
                 <div>
@@ -223,13 +233,13 @@
             </p>
         </form>
     </div>
-    
+
     <div class="bg-white shadow rounded-lg p-6 mt-6">
         <h2 class="text-lg font-medium text-gray-900 mb-4">Manual Sprint Reports</h2>
         <p class="text-sm text-gray-500 mb-4">
             You can manually trigger a sprint report generation for all boards. This will create reports with the current sprint information.
         </p>
-        
+
         <form action="{{ route('settings.sprint.generate-now') }}" method="POST" class="mt-4">
             @csrf
             <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -240,13 +250,13 @@
             </button>
         </form>
     </div>
-    
+
     <div class="bg-white shadow rounded-lg p-6 mt-6">
         <h2 class="text-lg font-medium text-gray-900 mb-4">On-going Sprint Reports</h2>
         <p class="text-sm text-gray-500 mb-4">
             View and monitor the current on-going sprint reports and track your team's progress.
         </p>
-        
+
         <div class="mt-4">
             <a href="{{ route('saved-reports.index', ['filter' => 'sprint']) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -257,4 +267,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

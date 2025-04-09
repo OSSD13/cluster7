@@ -30,11 +30,11 @@ Route::prefix('minor-cases')->group(function () {
 // Add a route to get available boards
 Route::get('/boards', function () {
     $trelloService = app(App\Services\TrelloService::class);
-    
+
     try {
         $boards = $trelloService->getBoards(['id', 'name']);
         return response()->json($boards);
     } catch (\Exception $e) {
         return response()->json([]);
     }
-}); 
+});

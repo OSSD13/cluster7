@@ -22,38 +22,42 @@ class SprintFactory extends Factory
      */
     public function definition(): array
     {
-        $now = Carbon::now();
-        $startDate = $now->copy()->subDays($this->faker->numberBetween(0, 60));
-        $duration = $this->faker->randomElement([7, 14, 21, 28]);
-        $endDate = $startDate->copy()->addDays($duration - 1);
-        
+        $currentYear = Carbon::now()->year;
+        $startOfYear = Carbon::create($currentYear, 1, 1)->startOfWeek();
+
+        // Generate a random sprint with 7-day duration
+        $randomSprintNumber = $this->faker->numberBetween(1, 52); // Max 52 weeks in a year
+
+        // Calculate start date (Monday) and end date (Sunday)
+        $startDate = $startOfYear->copy()->addWeeks($randomSprintNumber - 1);
+        $endDate = $startDate->copy()->addDays(6); // Monday + 6 days = Sunday
+        $duration = 7; // 7 days per sprint
+
         // Calculate progress based on current date's relationship to the sprint dates
+        $now = Carbon::now();
         $daysElapsed = 0;
         $daysRemaining = 0;
         $progressPercentage = 0;
-        $status = 'planned';
-        
+        $status = 'completed'; // Default status
+
         if ($now->gte($startDate) && $now->lte($endDate)) {
-            // Active sprint
             $status = 'active';
             $daysElapsed = $startDate->diffInDays($now) + 1;
             $daysRemaining = $now->diffInDays($endDate);
             $progressPercentage = min(100, round(($daysElapsed / $duration) * 100, 1));
-        } elseif ($now->gt($endDate)) {
-            // Completed sprint
-            $status = 'completed';
+        } else {
             $daysElapsed = $duration;
             $daysRemaining = 0;
             $progressPercentage = 100;
-        } else {
-            // Planned sprint
-            $daysElapsed = 0;
-            $daysRemaining = $duration;
-            $progressPercentage = 0;
         }
-        
+
+        // Format sprint number with year (e.g., 2024/01)
+        $formattedSprintNumber = sprintf('%d/%02d', $currentYear, $randomSprintNumber);
+
         return [
-            'sprint_number' => $this->faker->unique()->numberBetween(1, 20),
+            'sprint_number' => $randomSprintNumber,
+            'sprint_year' => $currentYear,
+            'sprint_year_number' => $formattedSprintNumber,
             'start_date' => $startDate,
             'end_date' => $endDate,
             'duration' => $duration,
@@ -61,12 +65,12 @@ class SprintFactory extends Factory
             'progress_percentage' => $progressPercentage,
             'days_elapsed' => $daysElapsed,
             'days_remaining' => $daysRemaining,
-            'notes' => $this->faker->optional(0.7)->sentence(),
-            'created_at' => $startDate->copy()->subDays(7),
+            'notes' => "Sprint {$formattedSprintNumber} (Week of {$startDate->format('Y-m-d')})",
+            'created_at' => $startDate->copy()->subDays(1),
             'updated_at' => $now,
         ];
     }
-    
+
     /**
      * Configure the factory to generate a planned sprint.
      *
@@ -76,9 +80,9 @@ class SprintFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $startDate = Carbon::now()->addDays(rand(1, 14));
-            $duration = $attributes['duration'] ?? 14;
+            $duration = 7; // Fixed 7-day duration
             $endDate = $startDate->copy()->addDays($duration - 1);
-            
+
             return [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
@@ -89,7 +93,7 @@ class SprintFactory extends Factory
             ];
         });
     }
-    
+
     /**
      * Configure the factory to generate an active sprint.
      *
@@ -99,13 +103,13 @@ class SprintFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $now = Carbon::now();
-            $duration = $attributes['duration'] ?? 14;
+            $duration = 7; // Fixed 7-day duration
             $daysElapsed = rand(1, $duration - 1);
             $startDate = $now->copy()->subDays($daysElapsed);
             $endDate = $startDate->copy()->addDays($duration - 1);
             $daysRemaining = max(0, $endDate->diffInDays($now));
             $progressPercentage = min(100, round(($daysElapsed / $duration) * 100, 1));
-            
+
             return [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
@@ -116,7 +120,7 @@ class SprintFactory extends Factory
             ];
         });
     }
-    
+
     /**
      * Configure the factory to generate a completed sprint.
      *
@@ -126,9 +130,9 @@ class SprintFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $endDate = Carbon::now()->subDays(rand(1, 30));
-            $duration = $attributes['duration'] ?? 14;
+            $duration = 7; // Fixed 7-day duration
             $startDate = $endDate->copy()->subDays($duration - 1);
-            
+
             return [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
@@ -139,11 +143,11 @@ class SprintFactory extends Factory
             ];
         });
     }
-    
+
     /**
      * Configure the factory to generate sequential sprint numbers.
      *
-     * @param int $startNumber 
+     * @param int $startNumber
      * @return $this
      */
     public function sequential(int $startNumber = 1)
@@ -152,4 +156,4 @@ class SprintFactory extends Factory
             fn ($sequence) => ['sprint_number' => $startNumber + $sequence->index]
         );
     }
-} 
+}

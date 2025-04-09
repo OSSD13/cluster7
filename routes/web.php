@@ -63,7 +63,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
         Route::get('/minorcases', [App\Http\Controllers\MinorCasesController::class, 'index'])->name('minorcases');
         Route::get('/minor-cases/data', [App\Http\Controllers\MinorCasesController::class, 'getMinorCasesData'])->name('minor-cases.data');
     });
-    
+
     // Admin Only Routes
     Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
         // Admin User Management Routes
@@ -181,17 +181,17 @@ Route::prefix('trello-api-test')->name('trello.api.test.')->group(function () {
     Route::get('/connection', function () {
         $trelloService = app(App\Services\TrelloService::class);
         $result = $trelloService->testConnection();
-        
+
         return response()->json([
             'success' => $result['success'] ?? false,
             'message' => $result['message'] ?? 'Connection test failed',
             'user' => $result['user'] ?? null,
         ]);
     })->name('connection');
-    
+
     Route::get('/boards', function () {
         $trelloService = app(App\Services\TrelloService::class);
-        
+
         try {
             $boards = $trelloService->getBoards(
                 ['name', 'desc', 'url', 'idOrganization', 'closed', 'shortUrl'],
@@ -201,7 +201,7 @@ Route::prefix('trello-api-test')->name('trello.api.test.')->group(function () {
                     'organization_fields' => 'name,displayName'
                 ]
             );
-            
+
             return response()->json([
                 'success' => true,
                 'boards' => $boards
@@ -213,10 +213,10 @@ Route::prefix('trello-api-test')->name('trello.api.test.')->group(function () {
             ], 500);
         }
     })->name('boards');
-    
+
     Route::get('/board/{boardId}/cards', function ($boardId) {
         $trelloService = app(App\Services\TrelloService::class);
-        
+
         try {
             $response = Http::withOptions(['verify' => false])->get($trelloService->getBaseUrl() . "boards/{$boardId}/cards", [
                 'key' => Setting::get('trello_api_key'),
@@ -226,7 +226,7 @@ Route::prefix('trello-api-test')->name('trello.api.test.')->group(function () {
                 'member_fields' => 'id,fullName,username',
                 'limit' => 10
             ]);
-            
+
             if ($response->successful()) {
                 return response()->json([
                     'success' => true,
@@ -256,7 +256,7 @@ Route::delete('/api/minor-cases/{id}', [App\Http\Controllers\MinorCaseController
 // Add a route for boards
 Route::get('/api/boards', function () {
     $trelloService = app(App\Services\TrelloService::class);
-    
+
     try {
         $boards = $trelloService->getBoards(['id', 'name']);
         return response()->json($boards);
