@@ -17,9 +17,6 @@ use App\Http\Controllers\CompleteController;
 use App\Http\Controllers\MinorCasesController;
 use Illuminate\Support\Facades\Http;
 use App\Models\Setting;
-use App\Http\Controllers\MinorCaseController;
-
-use App\Http\Controllers\MinorCaseController;
 use App\Http\Controllers\TrelloPlanPointController;
 
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
@@ -109,10 +106,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
         Route::get("home", function () {
             return view('dashboard');
         })->name('home');
-        
+
         // Add route for trello.log
         Route::post('log', [TrelloController::class, 'logMessage'])->name('log');
-        
+
         // Add routes for Plan Points
         Route::post('save-plan-point', [TrelloPlanPointController::class, 'savePlanPoint'])->name('save.plan.point');
         Route::get('get-plan-point', [TrelloPlanPointController::class, 'getPlanPoint'])->name('get.plan.point');
