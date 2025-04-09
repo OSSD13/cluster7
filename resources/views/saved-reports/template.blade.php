@@ -7,7 +7,7 @@
     <style type="text/css">
         @page {
             size: A4 landscape;
-            margin: 1cm;
+            margin: 0.3cm;
         }
 
         @media print {
@@ -22,7 +22,7 @@
                 height: 100%;
                 margin: 0;
                 padding: 0;
-                font-size: 11pt;
+                font-size: 9pt;
             }
 
             .print-container {
@@ -36,7 +36,7 @@
                 table-layout: fixed;
                 width: 100%;
                 page-break-inside: auto;
-                font-size: 9pt;
+                font-size: 8pt;
             }
 
             tr {
@@ -238,6 +238,33 @@
                     </td>
                 </tr>
             </tbody>
+        </table>
+
+        <!-- Signature Section -->
+        <table class="w-full border-collapse mt-2">
+            <tr>
+                <td class="w-1/5 text-center py-2">
+                    <div class="text-center">
+                        <p class="font-['docs-TH_SarabunPSK',Arial] text-10pt">Software Tester</p>
+                        <p class="font-['docs-TH_SarabunPSK',Arial] text-10pt">ลงชื่อ: (................................................)</p>
+                        <p class="font-['docs-TH_SarabunPSK',Arial] text-10pt">วันที่: ................................................</p>
+                    </div>
+                </td>
+                <td class="w-1/5 text-center py-2">
+                    <div class="text-center">
+                        <p class="font-['docs-TH_SarabunPSK',Arial] text-10pt">Developer Team</p>
+                        <p class="font-['docs-TH_SarabunPSK',Arial] text-10pt">ลงชื่อ: (................................................)</p>
+                        <p class="font-['docs-TH_SarabunPSK',Arial] text-10pt">วันที่: ................................................</p>
+                    </div>
+                </td>
+                <td class="w-1/5 text-center py-2">
+                    <div class="text-center">
+                        <p class="font-['docs-TH_SarabunPSK',Arial] text-10pt">Project Manager</p>
+                        <p class="font-['docs-TH_SarabunPSK',Arial] text-10pt">ลงชื่อ: (................................................)</p>
+                        <p class="font-['docs-TH_SarabunPSK',Arial] text-10pt">วันที่: ................................................</p>
+                    </div>
+                </td>
+            </tr>
         </table>
     </div>
 
