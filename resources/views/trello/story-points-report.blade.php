@@ -5,6 +5,7 @@
 @section('page-title', 'Story Points Report')
 
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
         // Add base URL for API endpoints
         const apiBaseUrl = '{{ url('/') }}';
@@ -120,6 +121,44 @@
             }
         }
     </style>
+
+    <!-- Edit Backlog Task Modal -->
+    <div id="edit-backlog-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50" style="display: none;">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Edit Backlog Task</h3>
+                <form id="edit-backlog-form" class="space-y-4">
+                    <input type="hidden" id="edit-bug-id">
+                    <div>
+                        <label for="edit-bug-name" class="block text-sm font-medium text-gray-700">Bug Name</label>
+                        <input type="text" id="edit-bug-name" name="name" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    <div>
+                        <label for="edit-bug-description" class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea id="edit-bug-description" name="description" rows="3"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"></textarea>
+                    </div>
+                    <div>
+                        <label for="edit-bug-points" class="block text-sm font-medium text-gray-700">Story Points</label>
+                        <input type="number" id="edit-bug-points" name="points" min="0"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    <div class="mt-4 flex justify-end space-x-2">
+                        <button type="button" id="cancel-edit-backlog" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                            Cancel
+                        </button>
+                        <button type="button" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600" id="deleteBugBtn">
+                            Delete
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <div class="max-w-7xl mx-auto">
         @if($error)
@@ -467,7 +506,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2m0 0V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                                d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                         Board: <span id="board-name" class="font-medium"></span>
                     </div>
@@ -864,19 +903,25 @@
                                             <!-- Bug Name/Description/button -->
                                             <div class="p-4 grid grid-cols-9">
                                                 <div class="col-span-8 text-left h-20 overflow-auto">
-                                                    {{ $bug['description'] ?? 'No description available' }}
+                                                    {!! nl2br(e($bug['description'] ?? 'No description available')) !!}
                                                 </div>
-                                                <button type="button"
-                                                    class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center ms-3 h-8 w-8 col-start-9">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                        fill="currentColor" class="bi bi-pencil-square"
-                                                        viewBox="0 0 16 16">
-                                                        <path
-                                                            d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                                        <path fill-rule="evenodd"
-                                                            d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                                    </svg>
-                                                </button>
+                                                <div class="col-start-9 flex flex-col space-y-2">
+                                                    <button type="button"
+                                                        class="edit-backlog-task text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center h-8 w-8"
+                                                        data-bug-id="{{ $bug['id'] ?? '' }}"
+                                                        data-bug-name="{{ $bug['name'] ?? '' }}"
+                                                        data-bug-description="{{ $bug['description'] ?? '' }}"
+                                                        data-bug-points="{{ $bug['points'] ?? 0 }}">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                            fill="currentColor" class="bi bi-pencil-square"
+                                                            viewBox="0 0 16 16">
+                                                            <path
+                                                                d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                                            <path fill-rule="evenodd"
+                                                                d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             <!-- Card Footer with Assignment -->
@@ -993,6 +1038,21 @@
             });
         </script>
         @endif
+
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="hidden">
+            <div class="flex justify-center items-center bg-white shadow rounded-lg p-6 mb-6">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-500" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                        stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+                <span>Loading data from Trello...</span>
+            </div>
+        </div>
     </div>
     </div>
     </div>
@@ -1666,6 +1726,20 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         ${sprintBadge}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <button class="edit-backlog-task px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200"
+                            data-bug-id="${bug.id ?? ''}"
+                            data-bug-name="${bug.name ?? ''}"
+                            data-bug-description="${bug.description ?? ''}"
+                            data-bug-points="${bug.points ?? 0}">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button class="delete-backlog-task px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 hover:bg-red-200"
+                            data-bug-id="${bug.id ?? ''}"
+                            data-bug-name="${bug.name ?? ''}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </td>
                 `;
 
@@ -2949,8 +3023,91 @@
                     showNoMembersMessage();
                 }
 
+                // Update backlog data if available
+                if (data.backlogData) {
+                    updateBacklogTable(data.backlogData);
+                }
+
                 // Fetch sprint information
                 fetchSprintInfo();
+            }
+
+            // Function to update the backlog table with new data
+            function updateBacklogTable(backlogData) {
+                // Update the total points badge
+                const backlogTotalPoints = document.getElementById('backlogTotalPoints');
+                if (backlogTotalPoints) {
+                    backlogTotalPoints.textContent = backlogData.totalBugPoints || '0';
+                }
+
+                // Get the table body
+                const tableBody = document.querySelector('#backlog-table tbody');
+                if (!tableBody) return;
+
+                // Clear existing rows
+                tableBody.innerHTML = '';
+
+                // Check if we have bugs to display
+                if (!backlogData.allBugs || backlogData.allBugs.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                                No backlog tasks found.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Add new rows
+                Object.values(backlogData.allBugs).forEach(bug => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="text-sm font-medium text-gray-900">
+                                    <a href="${bug.url || '#'}" target="_blank" class="hover:text-primary-600">
+                                        ${bug.name}
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                ${bug.team}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${bug.points || '-'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            Sprint ${bug.sprint_origin || bug.sprint_number || '?'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bug.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                ${bug.status ? bug.status.charAt(0).toUpperCase() + bug.status.slice(1) : 'In Progress'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <button class="edit-backlog-task px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200"
+                                data-bug-id="${bug.id ?? ''}"
+                                data-bug-name="${bug.name ?? ''}"
+                                data-bug-description="${bug.description ?? ''}"
+                                data-bug-points="${bug.points ?? 0}">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="delete-backlog-task px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 hover:bg-red-200"
+                                data-bug-id="${bug.id ?? ''}"
+                                data-bug-name="${bug.name ?? ''}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
             }
 
             // Add event listener for Save Report button
@@ -3492,6 +3649,192 @@
                                 showToast('Error saving report: ' + error.message, 'error');
                             });
                     });
+                });
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Edit Modal Elements
+            const editModal = document.getElementById('edit-backlog-modal');
+            const editForm = document.getElementById('edit-backlog-form');
+            const cancelEditBtn = document.getElementById('cancel-edit-backlog');
+            const editBugId = document.getElementById('edit-bug-id');
+            const editBugName = document.getElementById('edit-bug-name');
+            const editBugDescription = document.getElementById('edit-bug-description');
+            const editBugPoints = document.getElementById('edit-bug-points');
+
+            // Debug check if elements exist
+            console.log('Modal elements:', {
+                editModal: !!editModal,
+                editForm: !!editForm,
+                cancelEditBtn: !!cancelEditBtn,
+                editBugId: !!editBugId,
+                editBugName: !!editBugName,
+                editBugDescription: !!editBugDescription,
+                editBugPoints: !!editBugPoints
+            });
+
+            // Use event delegation for edit buttons
+            document.addEventListener('click', function(e) {
+                const editButton = e.target.closest('.edit-backlog-task');
+                if (editButton) {
+                    console.log('Edit button clicked');
+                    const bugId = editButton.getAttribute('data-bug-id');
+                    const bugName = editButton.getAttribute('data-bug-name');
+                    const bugDescription = editButton.getAttribute('data-bug-description');
+                    const bugPoints = editButton.getAttribute('data-bug-points');
+
+                    console.log('Bug data:', { bugId, bugName, bugDescription, bugPoints });
+
+                    if (editModal && editBugId && editBugName && editBugDescription && editBugPoints) {
+                        editBugId.value = bugId;
+                        editBugName.value = bugName;
+                        editBugDescription.value = bugDescription;
+                        editBugPoints.value = bugPoints;
+
+                        // Remove both hidden class and display:none style
+                        editModal.classList.remove('hidden');
+                        editModal.style.display = 'block';
+                        console.log('Modal should be visible now');
+                    } else {
+                        console.error('Some modal elements are missing');
+                    }
+                }
+            });
+
+            // Cancel Button
+            if (cancelEditBtn) {
+                cancelEditBtn.addEventListener('click', () => {
+                    console.log('Cancel button clicked');
+                    editModal.classList.add('hidden');
+                    editModal.style.display = 'none';
+                    editForm.reset();
+                });
+            }
+
+            // Close modal when clicking outside
+            if (editModal) {
+                editModal.addEventListener('click', function(e) {
+                    if (e.target === editModal) {
+                        console.log('Clicked outside modal');
+                        editModal.classList.add('hidden');
+                        editModal.style.display = 'none';
+                        editForm.reset();
+                    }
+                });
+            }
+
+            // Form Submit Handler
+            if (editForm) {
+                editForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    console.log('Form submitted');
+                    const bugId = editBugId.value;
+
+                    try {
+                        const formData = {
+                            name: editBugName.value,
+                            description: editBugDescription.value,
+                            points: parseInt(editBugPoints.value) || 0,
+                            team: document.querySelector('input[name="team"]')?.value || 'Unknown Team', // Add team field
+                            assigned: document.querySelector('input[name="assigned"]')?.value || null // Add assigned field
+                        };
+
+                        // Use the correct API endpoint
+                        const apiUrl = `${apiBaseUrl}/backlog/${bugId}`;
+                        console.log('Sending data:', formData);
+                        console.log('To URL:', apiUrl);
+
+                        const response = await fetch(apiUrl, {
+                            method: 'PUT', // Changed back to PUT to match the route definition
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify(formData)
+                        });
+
+                        console.log('Response status:', response.status);
+
+                        let data;
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            data = await response.json();
+                        } else {
+                            const text = await response.text();
+                            console.error('Received non-JSON response:', text);
+                            throw new Error('Server returned an invalid response format');
+                        }
+
+                        if (!response.ok) {
+                            throw new Error(data.message || 'Failed to update task');
+                        }
+
+                        // Show success message
+                        alert('Task updated successfully');
+
+                        // Close modal and refresh page
+                        editModal.classList.add('hidden');
+                        editModal.style.display = 'none';
+                        editForm.reset();
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Error updating backlog task:', error);
+                        alert('Failed to update the task. Please check the console for details.');
+                    }
+                });
+            }
+
+            // Add delete button handler
+            const deleteBugBtn = document.getElementById('deleteBugBtn');
+            if (deleteBugBtn) {
+                deleteBugBtn.addEventListener('click', async function() {
+                    if (!confirm('Are you sure you want to delete this bug?')) {
+                        return;
+                    }
+
+                    const bugId = editBugId.value;
+                    try {
+                        const bugId = editBugId.value;
+                        // Extract the numeric ID from the bug ID (e.g., "BUG-720" -> "720")
+                        const numericId = bugId.split('-').pop();
+                        const apiUrl = `${window.location.origin}/backlog/${numericId}`; // Use the numeric ID
+                        const response = await fetch(apiUrl, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+
+                        if (!response.ok) {
+                            const data = await response.json();
+                            throw new Error(data.error || 'Failed to delete bug');
+                        }
+
+                        // Show success message
+                        alert('Bug deleted successfully');
+
+                        // Close modal and refresh page
+                        editModal.classList.add('hidden');
+                        editModal.style.display = 'none';
+                        editForm.reset();
+
+                        // Remove the bug from the UI
+                        const bugElement = document.querySelector(`[data-bug-id="${bugId}"]`);
+                        if (bugElement) {
+                            bugElement.remove();
+                        }
+
+                        // Optionally reload the page to refresh the data
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Error deleting bug:', error);
+                        alert('Failed to delete bug. Please try again.');
+                    }
                 });
             }
         });

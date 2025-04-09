@@ -183,9 +183,9 @@ class TrelloController extends Controller
             $cardsByList  = $this->organizeCardsByListWithPlugin($cards, $lists);
             $memberPoints = $this->calculateMemberStoryPoints($cards, $members, $boardId, $apiKey, $apiToken); // Add boardId and credentials here
 
-            // Get backlog data
+            // Get backlog data - always fetch fresh data
             $backlogController = app()->make(BacklogController::class);
-            $backlogData       = $backlogController->getBacklogData();
+            $backlogData = $backlogController->getBacklogData();
 
             // Ensure backlogData is properly formatted for collections
             if ($backlogData && isset($backlogData['allBugs']) && is_array($backlogData['allBugs'])) {
@@ -208,7 +208,7 @@ class TrelloController extends Controller
                 }
             }
 
-            // Save the data to the database for future use
+            // Save the data to the database for future use, but exclude backlog data
             \App\Models\TrelloBoardData::updateOrCreate(
                 ['board_id' => $boardId],
                 [
@@ -217,7 +217,6 @@ class TrelloController extends Controller
                     'cards_by_list'   => $cardsByList,
                     'member_points'   => $memberPoints,
                     'board_details'   => $boardDetails,
-                    'backlog_data'    => $backlogData,
                     'last_fetched_at' => now(),
                 ]
             );
@@ -229,8 +228,8 @@ class TrelloController extends Controller
                 'memberPoints'     => $memberPoints,
                 'boardDetails'     => $boardDetails,
                 'backlogData'      => $backlogData,
-                'timestamp'        => now()->toDateTimeString(), // Add timestamp
-                'requestedBoardId' => $boardId,                  // Add the requested board ID for verification
+                'timestamp'        => now()->toDateTimeString(),
+                'requestedBoardId' => $boardId,
                 'cached'           => false,
                 'lastFetched'      => 'just now',
             ])->header('Cache-Control', 'no-cache, no-store, must-revalidate')
@@ -575,7 +574,7 @@ class TrelloController extends Controller
 
             // Try to get boards for the user
             $boards = $this->fetchBoards($apiKey, $apiToken);
-            
+
             // Filter boards based on user role
             if (!$user->isAdmin()) {
                 // For testers and developers, filter boards they are members of
@@ -583,7 +582,7 @@ class TrelloController extends Controller
                     $userBoards = $this->filterBoardsForUser($boards, $apiKey, $apiToken);
                     // Replace the main boards array with filtered boards for non-admins
                     $boards = $userBoards;
-                    
+
                     \Log::info('Filtered boards for non-admin user', [
                         'user' => $user->name,
                         'role' => $user->role,
@@ -621,7 +620,7 @@ class TrelloController extends Controller
             } else {
                 // Multiple boards - set default or use the user's preference
                 $defaultBoardId = session('trello.default_board_id');
-                
+
                 // If no default board is set in session, or if the default board is not in the user's allowed boards
                 if (!$defaultBoardId || !collect($boards)->pluck('id')->contains($defaultBoardId)) {
                     $defaultBoardId = $boards[0]['id'];
@@ -658,18 +657,13 @@ class TrelloController extends Controller
                         'cardsByList' => $cachedData->cards_by_list,
                         'memberPoints' => $cachedData->member_points,
                         'boardDetails' => $cachedData->board_details,
-                        'backlogData' => $cachedData->backlog_data,
                         'lastFetched' => $cachedData->getLastFetchedFormatted(),
                     ];
-
-                    if (isset($cachedData->backlog_data) && $cachedData->backlog_data) {
-                        $backlogData = $cachedData->backlog_data;
-                    }
                 }
             }
 
-            // If we don't have backlog data from cache, try to get fresh data
-            if (!$backlogData && $defaultBoardId && ($user->isAdmin() || $userHasAccess)) {
+            // Always fetch fresh backlog data
+            if ($defaultBoardId && ($user->isAdmin() || $userHasAccess)) {
                 $backlogController = app()->make(BacklogController::class);
                 $backlogData = $backlogController->getBacklogData();
             }

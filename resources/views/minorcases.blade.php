@@ -25,7 +25,7 @@
 
         <!-- Container for both Dropdowns and add button -->
         <div class="absolute flex space-x-4 top-14 right-10">
-            
+
             <!-- Year Dropdown -->
             <div class="relative inline-block text-left py-3.5">
                 <button id="yearDropdownButton"

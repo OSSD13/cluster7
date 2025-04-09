@@ -39,12 +39,12 @@ class BacklogController extends Controller
     public function index()
     {
         $reports = SavedReport::with('sprint')->get();
-        
+
         // Initialize collections for backlog bugs
         $allBacklogBugs = collect();
         $backlogByTeam = [];
         $backlogBySprint = [];
-        
+
         // First pass: collect all bugs from reports (both current bugs and backlog)
         foreach ($reports as $report) {
             // Handle cases where report_data is already decoded or is a string
@@ -52,7 +52,7 @@ class BacklogController extends Controller
             if (is_string($reportData)) {
                 $reportData = json_decode($reportData, true);
             }
-            
+
             // Process current bug cards in this report
             if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
                 foreach ($reportData['bug_cards'] as $teamName => $bugs) {
@@ -66,7 +66,7 @@ class BacklogController extends Controller
                     }
                 }
             }
-            
+
             // Process backlog data in this report
             if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
                 foreach ($reportData['backlog'] as $teamName => $bugs) {
@@ -89,34 +89,34 @@ class BacklogController extends Controller
                 return in_array($bug['team'], $userTeams);
             });
         }
-        
+
         // Second pass: organize bugs by team and sprint
         foreach ($allBacklogBugs as $bug) {
             $teamName = $bug['team'];
             $sprintNumber = $bug['sprint_number'];
-            
+
             // Organize by team
             if (!isset($backlogByTeam[$teamName])) {
                 $backlogByTeam[$teamName] = collect();
             }
             $backlogByTeam[$teamName]->push($bug);
-            
+
             // Organize by sprint
             if (!isset($backlogBySprint[$sprintNumber])) {
                 $backlogBySprint[$sprintNumber] = collect();
             }
             $backlogBySprint[$sprintNumber]->push($bug);
         }
-        
+
         // Sort bugs by priority
         $sortedBacklogBugs = $allBacklogBugs->sortBy(function ($bug) {
             $priority = $this->getBugPriority($bug);
             return $this->getPriorityValue($priority);
         });
-        
+
         // Sort sprints by number
         $backlogBySprint = collect($backlogBySprint)->sortKeys();
-        
+
         return view('backlog.index', [
             'allBugs' => $sortedBacklogBugs,
             'bugsByTeam' => $backlogByTeam,
@@ -126,18 +126,18 @@ class BacklogController extends Controller
 
     /**
      * Get the backlog data for use in other controllers.
-     * 
+     *
      * @return array
      */
     public function getBacklogData()
     {
         $reports = SavedReport::with('sprint')->get();
-        
+
         // Initialize collections for backlog bugs
         $allBacklogBugs = collect();
         $backlogByTeam = [];
         $backlogBySprint = [];
-        
+
         // First pass: collect all bugs from reports (both current bugs and backlog)
         foreach ($reports as $report) {
             // Handle cases where report_data is already decoded or is a string
@@ -145,7 +145,7 @@ class BacklogController extends Controller
             if (is_string($reportData)) {
                 $reportData = json_decode($reportData, true);
             }
-            
+
             // Process current bug cards in this report
             if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
                 foreach ($reportData['bug_cards'] as $teamName => $bugs) {
@@ -159,7 +159,7 @@ class BacklogController extends Controller
                     }
                 }
             }
-            
+
             // Process backlog data in this report
             if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
                 foreach ($reportData['backlog'] as $teamName => $bugs) {
@@ -174,7 +174,7 @@ class BacklogController extends Controller
                 }
             }
         }
-        
+
         // If user is not admin, filter to show only their team's bugs
         if (!auth()->user()->isAdmin()) {
             $userTeams = $this->getUserTeams();
@@ -182,34 +182,34 @@ class BacklogController extends Controller
                 return in_array($bug['team'], $userTeams);
             });
         }
-        
+
         // Second pass: organize bugs by team and sprint
         foreach ($allBacklogBugs as $bug) {
             $teamName = $bug['team'];
             $sprintNumber = $bug['sprint_number'];
-            
+
             // Organize by team
             if (!isset($backlogByTeam[$teamName])) {
                 $backlogByTeam[$teamName] = collect();
             }
             $backlogByTeam[$teamName]->push($bug);
-            
+
             // Organize by sprint
             if (!isset($backlogBySprint[$sprintNumber])) {
                 $backlogBySprint[$sprintNumber] = collect();
             }
             $backlogBySprint[$sprintNumber]->push($bug);
         }
-        
+
         // Sort bugs by priority
         $sortedBacklogBugs = $allBacklogBugs->sortBy(function ($bug) {
             $priority = $this->getBugPriority($bug);
             return $this->getPriorityValue($priority);
         });
-        
+
         // Sort sprints by number
         $backlogBySprint = collect($backlogBySprint)->sortKeys();
-        
+
         return [
             'allBugs' => $sortedBacklogBugs,
             'bugsByTeam' => $backlogByTeam,
@@ -232,15 +232,15 @@ class BacklogController extends Controller
             try {
                 // Get current user's name
                 $userName = auth()->user()->name;
-                
+
                 // Get all boards with members
                 $options = [
                     'members' => true,
                     'member_fields' => 'fullName'
                 ];
-                
+
                 $boards = $this->trelloService->getBoards(['id', 'name'], $options);
-                
+
                 // Filter for boards where user is a direct member (not workspace-level access)
                 foreach ($boards as $board) {
                     if (isset($board['members']) && is_array($board['members'])) {
@@ -253,7 +253,7 @@ class BacklogController extends Controller
                         }
                     }
                 }
-                
+
                 // Allow users to see backlogs from all their teams
                 // Removed the limitation to only see the first team
             } catch (\Exception $e) {
@@ -261,7 +261,7 @@ class BacklogController extends Controller
                 \Log::error('Error fetching user teams: ' . $e->getMessage());
             }
         }
-        
+
         return $userTeams;
     }
 
@@ -276,7 +276,7 @@ class BacklogController extends Controller
                 }
             }
         }
-        
+
         // Default to Low priority if no priority label found
         return 'Low';
     }
@@ -319,7 +319,9 @@ class BacklogController extends Controller
                 if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
                     foreach ($reportData['bug_cards'] as $teamName => &$bugs) {
                         foreach ($bugs as $key => $bug) {
-                            if (isset($bug['id']) && $bug['id'] === $id) {
+                            // Compare with either numeric ID or full Trello-style ID
+                            if ((isset($bug['id']) && $bug['id'] === $id) ||
+                                (isset($bug['id']) && is_numeric($id) && strpos($bug['id'], $id) !== false)) {
                                 unset($bugs[$key]);
                                 $modified = true;
                                 $bugFound = true;
@@ -333,7 +335,9 @@ class BacklogController extends Controller
                 if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
                     foreach ($reportData['backlog'] as $teamName => &$bugs) {
                         foreach ($bugs as $key => $bug) {
-                            if (isset($bug['id']) && $bug['id'] === $id) {
+                            // Compare with either numeric ID or full Trello-style ID
+                            if ((isset($bug['id']) && $bug['id'] === $id) ||
+                                (isset($bug['id']) && is_numeric($id) && strpos($bug['id'], $id) !== false)) {
                                 unset($bugs[$key]);
                                 $modified = true;
                                 $bugFound = true;
@@ -352,12 +356,12 @@ class BacklogController extends Controller
             }
 
             if ($bugFound) {
-                return redirect()->route('backlog.index')->with('success', 'Bug deleted successfully');
+                return response()->json(['message' => 'Bug deleted successfully']);
             } else {
-                return redirect()->route('backlog.index')->with('error', 'Bug not found');
+                return response()->json(['error' => 'Bug not found'], 404);
             }
         } catch (\Exception $e) {
-            return redirect()->route('backlog.index')->with('error', 'Error deleting bug: ' . $e->getMessage());
+            return response()->json(['error' => 'Error deleting bug: ' . $e->getMessage()], 500);
         }
     }
 
