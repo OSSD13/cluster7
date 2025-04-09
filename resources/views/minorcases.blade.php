@@ -8,6 +8,9 @@
     <div class="bg-white rounded-lg shadow-md p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-semibold text-gray-800">Minor Cases</h2>
+            <button id="add-minor-case-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                Add Minor Case
+            </button>
         </div>
 
         <div class="overflow-x-auto">
@@ -56,7 +59,7 @@
 <div id="minor-case-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full" style="z-index: 1000;">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white max-w-md">
         <div class="mt-3">
-            <h3 class="text-lg leading-6 font-medium text-gray-900" id="minor-case-modal-title">Edit Minor Case</h3>
+            <h3 class="text-lg leading-6 font-medium text-gray-900" id="minor-case-modal-title">Add Minor Case</h3>
             <form id="minor-case-form" class="mt-4">
                 @csrf
                 <input type="hidden" id="minor-case-id">
@@ -96,9 +99,17 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const addMinorCaseBtn = document.getElementById('add-minor-case-btn');
     const minorCaseModal = document.getElementById('minor-case-modal');
     const minorCaseForm = document.getElementById('minor-case-form');
     const cancelMinorCaseBtn = document.getElementById('cancel-minor-case');
+
+    // Add minor case button click handler
+    addMinorCaseBtn.addEventListener('click', () => {
+        document.getElementById('minor-case-id').value = '';
+        minorCaseForm.reset();
+        minorCaseModal.classList.remove('hidden');
+    });
 
     // Cancel button click handler
     cancelMinorCaseBtn.addEventListener('click', () => {
@@ -114,8 +125,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const data = Object.fromEntries(formData.entries());
 
         try {
-            const response = await fetch(`/api/minor-cases/${id}`, {
-                method: 'PUT',
+            const response = await fetch(id ? `/api/minor-cases/${id}` : '/api/minor-cases', {
+                method: id ? 'PUT' : 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -124,15 +135,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update minor case');
+                throw new Error('Failed to save minor case');
             }
 
             minorCaseModal.classList.add('hidden');
             window.location.reload(); // Reload the page to show updated data
-            alert('Minor case updated successfully');
+            alert(id ? 'Minor case updated successfully' : 'Minor case created successfully');
         } catch (error) {
-            console.error('Error updating minor case:', error);
-            alert('Error updating minor case: ' + error.message);
+            console.error('Error saving minor case:', error);
+            alert('Error saving minor case: ' + error.message);
         }
     });
 
