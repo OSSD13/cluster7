@@ -1031,10 +1031,26 @@
                         return;
                     }
 
-                    const response = await fetch(`/minor-cases/api?board_id=${encodeURIComponent(boardId)}`);
+                    const response = await fetch(`/minor-cases/api?board_id=${encodeURIComponent(boardId)}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        credentials: 'same-origin'
+                    });
 
                     if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Server response:', errorText);
                         throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const text = await response.text();
+                        console.error('Unexpected response type:', contentType, 'Response:', text);
+                        throw new Error('Server did not return JSON');
                     }
 
                     const minorCases = await response.json();
@@ -1076,42 +1092,55 @@
                         points: parseFloat(points)
                     };
 
+                    const headers = {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    };
+
                     if (id) {
                         // Edit existing case
                         response = await fetch(`/minor-cases/api/${id}`, {
                             method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector(
-                                    'meta[name="csrf-token"]').content,
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify(data)
+                            headers,
+                            body: JSON.stringify(data),
+                            credentials: 'same-origin'
                         });
                     } else {
                         // Add new case
                         response = await fetch('/minor-cases/api', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector(
-                                    'meta[name="csrf-token"]').content,
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify(data)
+                            headers,
+                            body: JSON.stringify(data),
+                            credentials: 'same-origin'
                         });
                     }
 
-                    const responseData = await response.json();
-
                     if (!response.ok) {
-                        // Handle validation errors
-                        if (response.status === 422 && responseData.errors) {
-                            const errors = Object.values(responseData.errors || {}).flat();
-                            throw new Error(errors.join('\n'));
+                        const errorText = await response.text();
+                        console.error('Server response:', errorText);
+
+                        // Try to parse error response as JSON
+                        try {
+                            const errorJson = JSON.parse(errorText);
+                            if (errorJson.errors) {
+                                throw new Error(Object.values(errorJson.errors).flat().join('\n'));
+                            }
+                        } catch (e) {
+                            // If parsing fails, throw the original error
+                            throw new Error(`Server error: ${response.status}`);
                         }
-                        throw new Error('Failed to save minor case');
                     }
+
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const text = await response.text();
+                        console.error('Unexpected response type:', contentType, 'Response:', text);
+                        throw new Error('Server did not return JSON');
+                    }
+
+                    const responseData = await response.json();
 
                     // Refresh the minor cases list
                     await loadMinorCasesFromServer();
@@ -1373,15 +1402,27 @@
                             const response = await fetch(`/minor-cases/api/${id}`, {
                                 method: 'DELETE',
                                 headers: {
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                        'meta[name="csrf-token"]').content,
-                                    'Accept': 'application/json'
-                                }
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                credentials: 'same-origin'
                             });
 
                             if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
+                                const errorText = await response.text();
+                                console.error('Server response:', errorText);
+                                throw new Error(`Server error: ${response.status}`);
                             }
+
+                            const contentType = response.headers.get('content-type');
+                            if (!contentType || !contentType.includes('application/json')) {
+                                const text = await response.text();
+                                console.error('Unexpected response type:', contentType, 'Response:', text);
+                                throw new Error('Server did not return JSON');
+                            }
+
+                            const responseData = await response.json();
 
                             // Refresh the minor cases list
                             await loadMinorCasesFromServer();
