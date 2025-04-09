@@ -294,4 +294,152 @@ class BacklogController extends Controller
                 return 3;
         }
     }
+
+    /**
+     * Remove a bug from the backlog.
+     *
+     * @param  string  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        try {
+            // Get all reports
+            $reports = SavedReport::with('sprint')->get();
+            $bugFound = false;
+
+            // Iterate through each report to find and remove the bug
+            foreach ($reports as $report) {
+                $reportData = $report->report_data;
+                if (is_string($reportData)) {
+                    $reportData = json_decode($reportData, true);
+                }
+                $modified = false;
+                // Check in bug_cards section
+                if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
+                    foreach ($reportData['bug_cards'] as $teamName => &$bugs) {
+                        foreach ($bugs as $key => $bug) {
+                            if (isset($bug['id']) && $bug['id'] === $id) {
+                                unset($bugs[$key]);
+                                $modified = true;
+                                $bugFound = true;
+                            }
+                        }
+                        // Reindex array after removal
+                        $bugs = array_values($bugs);
+                    }
+                }
+                // Check in backlog section
+                if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
+                    foreach ($reportData['backlog'] as $teamName => &$bugs) {
+                        foreach ($bugs as $key => $bug) {
+                            if (isset($bug['id']) && $bug['id'] === $id) {
+                                unset($bugs[$key]);
+                                $modified = true;
+                                $bugFound = true;
+                            }
+                        }
+                        // Reindex array after removal
+                        $bugs = array_values($bugs);
+                    }
+                }
+
+                // If the report was modified, save it
+                if ($modified) {
+                    $report->report_data = $reportData;
+                    $report->save();
+                }
+            }
+
+            if ($bugFound) {
+                return redirect()->route('backlog.index')->with('success', 'Bug deleted successfully');
+            } else {
+                return redirect()->route('backlog.index')->with('error', 'Bug not found');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('backlog.index')->with('error', 'Error deleting bug: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update a bug in the backlog.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        try {
+            // Validate request data
+            $validated = $request->validate([
+                'name' => 'required|string',
+                'team' => 'required|string',
+                'points' => 'required|integer|min:1',
+                'assigned' => 'nullable|string',
+                'description' => 'nullable|string'
+            ]);
+
+            // Get all reports
+            $reports = SavedReport::with('sprint')->get();
+            $bugFound = false;
+
+            // Iterate through each report to find and update the bug
+            foreach ($reports as $report) {
+                $reportData = $report->report_data;
+                if (is_string($reportData)) {
+                    $reportData = json_decode($reportData, true);
+                }
+                $modified = false;
+
+                // Check in bug_cards section
+                if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
+                    foreach ($reportData['bug_cards'] as $teamName => &$bugs) {
+                        foreach ($bugs as $key => &$bug) {
+                            if (isset($bug['id']) && $bug['id'] === $id) {
+                                $bug['name'] = $validated['name'];
+                                $bug['team'] = $validated['team'];
+                                $bug['points'] = $validated['points'];
+                                $bug['assigned'] = $validated['assigned'];
+                                $bug['description'] = $validated['description'];
+                                $modified = true;
+                                $bugFound = true;
+                            }
+                        }
+                    }
+                }
+
+                // Check in backlog section
+                if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
+                    foreach ($reportData['backlog'] as $teamName => &$bugs) {
+                        foreach ($bugs as $key => &$bug) {
+                            if (isset($bug['id']) && $bug['id'] === $id) {
+                                $bug['name'] = $validated['name'];
+                                $bug['team'] = $validated['team'];
+                                $bug['points'] = $validated['points'];
+                                $bug['assigned'] = $validated['assigned'];
+                                $bug['description'] = $validated['description'];
+                                $modified = true;
+                                $bugFound = true;
+                            }
+                        }
+                    }
+                }
+
+                // If the report was modified, save it
+                if ($modified) {
+                    $report->report_data = $reportData;
+                    $report->save();
+                }
+            }
+
+            if ($bugFound) {
+                return response()->json(['message' => 'Bug updated successfully']);
+            } else {
+                return response()->json(['error' => 'Bug not found'], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error updating bug: ' . $e->getMessage()], 500);
+        }
+    }
 }

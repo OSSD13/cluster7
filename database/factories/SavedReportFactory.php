@@ -114,10 +114,8 @@ class SavedReportFactory extends Factory
             $priority = $this->getRandomPriority();
             $points = $this->faker->randomElement([1, 2, 3, 5, 8]);
             $totalBugPoints += $points;
-            
             // Randomly assign bugs to team members
             $assignee = $this->faker->randomElement($teamMembers);
-            
             $bugCards[] = [
                 'id' => 'BUG-' . $this->faker->numberBetween(100, 999),
                 'name' => 'Bug: ' . $this->getRandomBugTitle(),
