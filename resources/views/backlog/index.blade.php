@@ -8,47 +8,54 @@
 <div class="max-w-7xl min-h-screen mx-auto">
 
     <!-- Edit Bug Modal -->
-    <div id="editBugModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-3xl bg-white modal-content">
-            <div class="mt-3">
-                <h3 class="text-2xl leading-6 font-medium text-gray-900 ">Edit Bug</h3>
-                <form id="editBugForm" class="mt-5">
+    <div id="editBugModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full backdrop-blur-sm">
+        <div class="relative top-20 mx-auto p-8 w-[600px] shadow-xl rounded-[25px] bg-white modal-content">
+            <div class="mt-2">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 rounded-full bg-sky-100 flex justify-center items-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#13A7FD" class="bi bi-bug" viewBox="0 0 16 16">
+                            <path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623M4 7v4a4 4 0 0 0 3.5 3.97V7zm4.5 0v7.97A4 4 0 0 0 12 11V7zM12 6a4 4 0 0 0-1.334-2.982A3.98 3.98 0 0 0 8 2a3.98 3.98 0 0 0-2.667 1.018A4 4 0 0 0 4 6z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-gray-900">Edit Bug</h3>
+                </div>
+
+                <form id="editBugForm" class="mt-5 space-y-6">
                     @csrf
                     @method('PUT')
                     <input type="hidden" id="bugId" name="id">
                     
                     <div class="mb-4">
-                        <label for="bugName" class="block text-sm font-medium text-gray-700">Bug Name</label>
-                        <input type="text" id="bugName" name="name" class="mt-1 block w-full rounded-3xl border-gray-300 shadow-sm focus:border-[#13A7FD] focus:ring-primary-500">
+                    <label for="bugName" class="block text-sm font-medium text-gray-700 mb-2">Bug Name</label>
+                    <input type="text" id="bugName" name="name" class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200">
                     </div>
 
                     <div class="mb-4">
                         <label for="bugTeam" class="block text-sm font-medium text-gray-700 ">Team</label>
-                        <input type="text" id="bugTeam" name="team" class="mt-1 block w-full rounded-3xl border-gray-300 shadow-sm focus:border-[#13A7FD] focus:ring-primary-500">
+                        <texta type="text" id="bugTeam" name="team" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none"></textarea>
                     </div>
                     
-
                     <div class="mb-4">
                         <label for="bugPoints" class="block text-sm font-medium text-gray-700">Points</label>
-                        <input type="number" id="bugPoints" name="points" min="1" class="mt-1 block w-full rounded-3xl border-gray-300 shadow-sm focus:border-[#13A7FD] focus:border-[#13A7FD]">
+                        <input type="number" id="bugPoints" name="points" min="1" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none'' ">
                     </div>
 
                     <div class="mb-4">
                         <label for="bugAssigned" class="block text-sm font-medium text-gray-700">Assigned To</label>
-                        <input type="text" id="bugAssigned" name="assigned" class="mt-1 block w-full rounded-3xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                        <input type="text" id="bugAssigned" name="assigned" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none">
                     </div>
 
                     <div class="mb-4">
                         <label for="bugDescription" class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea id="bugDescription" name="description" rows="3" class="mt-1 block w-full rounded-3xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"></textarea>
+                        <textarea id="bugDescription" name="description" rows="3" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none"></textarea>
                     </div>
 
                     <div class="mt-5 flex space-x-3 ml-20">
-                        <button type="button" id="cancelEditBug" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        <button type="button" id="cancelEditBug" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
                             Cancel
                         </button>
-                        <button type="submit" class="px-4 py-2 bg-[#13A7FD] text-white rounded-full hover:bg-[#13A7FD] focus:outline-none focus:ring-2 focus:ring-[#13A7FD]">
-                            Save
+                        <button type="submit" class="px-6 py-2.5 bg-[#13A7FD] text-white rounded-full hover:bg-[#0090e0] focus:outline-none transition-all duration-200">
+                            Save 
                         </button>
                     </div>
                 </form>
@@ -196,7 +203,7 @@
         </p>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
             @foreach($allBugs as $bug)
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow bug-card" data-team="{{ $bug['team'] ?? 'all' }}" data-name="{{ $bug['name'] ?? '' }}" data-sprint="{{ $bug['sprint_origin'] ?? $bug['sprint_number'] ?? '?' }}" data-id="{{ $bug['id'] }}">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden  transition-shadow bug-card" data-team="{{ $bug['team'] ?? 'all' }}" data-name="{{ $bug['name'] ?? '' }}" data-sprint="{{ $bug['sprint_origin'] ?? $bug['sprint_number'] ?? '?' }}" data-id="{{ $bug['id'] }}">
                 <!-- Card Header with Bug ID and Priority -->
                 <div class="flex justify-between items-center p-4 border-b border-gray-100 ">
                     <div class="flex items-center">
