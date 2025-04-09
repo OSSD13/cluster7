@@ -35,31 +35,63 @@ class SprintReportController extends Controller
                 ->orderBy('sprint_number', 'desc')
                 ->get();
         } else {
-            // For non-admin users, filter reports based on their team membership
+            // For non-admin users, get their teams first
             $userTeams = $this->getUserTeams();
+            \Log::info('SprintReportController: User teams for filtering', ['user' => auth()->user()->name, 'teams' => $userTeams]);
 
-            // Get all sprints
-            $sprints = Sprint::with(['reports' => function($query) use ($userTeams) {
-                // Only include reports for teams the user belongs to
-                if (!empty($userTeams)) {
-                    $query->whereIn('board_name', $userTeams);
-                }
+            // Get all sprints initially, then filter reports
+            $sprints = Sprint::with(['reports' => function($query) {
+                // Order reports within the query
                 $query->orderBy('created_at', 'desc');
             }])
                 ->orderBy('sprint_number', 'desc')
                 ->get();
-                
-            // Remove sprints that don't have any reports for user's teams
+
+            // Now, filter the reports collection for each sprint
+            foreach ($sprints as $sprint) {
+                $initialReportCount = $sprint->reports->count();
+                if (!empty($userTeams)) {
+                    // Filter the loaded reports collection
+                    $sprint->reports = $sprint->reports->filter(function($report) use ($userTeams) {
+                        $boardName = $report->board_name ?? 'null'; // Handle null board names
+                        $isMember = isset($report->board_name) && in_array($report->board_name, $userTeams);
+                        // Log each comparison
+                        \Log::debug('SprintReportController: Filtering report', [
+                            'report_id' => $report->id,
+                            'report_board_name' => $boardName,
+                            'user_teams' => $userTeams,
+                            'is_member' => $isMember
+                        ]);
+                        return $isMember;
+                    });
+                } else {
+                    // If user has no teams, they should see no reports
+                    \Log::debug('SprintReportController: User has no teams, clearing reports for sprint', ['sprint_id' => $sprint->id]);
+                    $sprint->reports = collect([]);
+                }
+                $filteredReportCount = $sprint->reports->count();
+                if ($initialReportCount !== $filteredReportCount) {
+                    \Log::info('SprintReportController: Filtered reports for sprint', [
+                        'sprint_id' => $sprint->id,
+                        'sprint_number' => $sprint->sprint_number,
+                        'initial_count' => $initialReportCount,
+                        'filtered_count' => $filteredReportCount,
+                        'user_teams' => $userTeams
+                    ]);
+                }
+            }
+
+            // Remove sprints that have no reports *after* filtering
             $sprints = $sprints->filter(function($sprint) {
-                return $sprint->reports->count() > 0;
+                return $sprint->reports->isNotEmpty();
             });
-            
-            \Log::info('Filtered sprint reports for user: ' . auth()->user()->name, [
-                'user_teams' => $userTeams,
+
+            \Log::info('SprintReportController: Final sprint count for user', [
+                'user' => auth()->user()->name,
                 'sprint_count' => $sprints->count()
             ]);
         }
-            
+
         return view('reports.sprints.index', compact('sprints'));
     }
     
@@ -447,41 +479,50 @@ class SprintReportController extends Controller
     protected function getUserTeams()
     {
         $userTeams = [];
+        $user = auth()->user();
+        // Use full_name if available, otherwise fall back to name
+        $userName = $user->full_name ?? $user->name; 
 
-        if ($this->trelloService->hasValidCredentials()) {
-            try {
-                // Get current user's full name or name
-                $user = auth()->user();
-                $userName = $user->full_name ?? $user->name;
-                
-                // Get all boards with members
-                $options = [
-                    'members' => true,
-                    'member_fields' => 'fullName'
-                ];
-                
-                $boards = $this->trelloService->getBoards(['id', 'name'], $options);
-                
-                // Filter for boards where user is a direct member
-                foreach ($boards as $board) {
-                    if (isset($board['members']) && is_array($board['members'])) {
-                        foreach ($board['members'] as $member) {
-                            if (isset($member['fullName']) && $member['fullName'] === $userName) {
+        if (!$this->trelloService || !$this->trelloService->hasValidCredentials()) {
+            \Log::warning('SprintReportController: TrelloService not available or invalid credentials for getUserTeams');
+            return $userTeams;
+        }
+
+        try {
+            \Log::info('SprintReportController: Fetching boards for user team check', ['user_to_match' => $userName]);
+            // Get all boards with members
+            $options = [
+                'members' => 'all', // Ensure we get all members
+                'member_fields' => 'fullName' // Only need full name
+            ];
+
+            $boards = $this->trelloService->getBoards(['id', 'name'], $options);
+            \Log::debug('SprintReportController: Fetched boards from Trello', ['board_count' => count($boards)]);
+
+            // Filter for boards where the user is a member
+            foreach ($boards as $board) {
+                if (isset($board['members']) && is_array($board['members'])) {
+                    foreach ($board['members'] as $member) {
+                        // Use case-insensitive comparison with the potentially full name
+                        if (isset($member['fullName']) && strcasecmp($member['fullName'], $userName) === 0) {
+                            if (!in_array($board['name'], $userTeams)) {
                                 $userTeams[] = $board['name'];
-                                break;
                             }
+                            // Found the user, no need to check other members of this board
+                            break;
                         }
                     }
+                } else {
+                    \Log::warning('SprintReportController: Board missing members array', ['board_id' => $board['id'], 'board_name' => $board['name']]);
                 }
-                
-                // Allow users to see data from all teams they belong to
-                // Removed the limitation to only see the first team
-            } catch (\Exception $e) {
-                // Log error but don't fail - empty team list will result
-                \Log::error('Error fetching user teams: ' . $e->getMessage());
             }
+            \Log::info('SprintReportController: User teams identified', ['user_matched' => $userName, 'teams' => $userTeams]);
+
+        } catch (\Exception $e) {
+            // Log error but don't fail - empty team list will result
+            \Log::error('SprintReportController: Error fetching user teams from Trello: ' . $e->getMessage(), ['exception' => $e]);
         }
-        
+
         return $userTeams;
     }
 

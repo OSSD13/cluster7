@@ -80,9 +80,6 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
             Route::get('settings', [TrelloSettingsController::class, 'index'])->name('settings.index');
             Route::post('settings', [TrelloSettingsController::class, 'update'])->name('settings.update');
             Route::post('test-connection', [TrelloSettingsController::class, 'testApiConnection'])->name('test-connection');
-
-            // Admin-only refresh feature
-            Route::get('teams/refresh', [TrelloTeamController::class, 'refresh'])->name('teams.refresh');
         });
 
         // Sprint Settings
@@ -95,14 +92,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     });
 
     // Trello Teams - Accessible to all authenticated users
-    Route::middleware(['auth'])->prefix('trello')->name('trello.')->group(function () {
-        // Trello Teams (using boards as teams)
+    Route::prefix('trello')->name('trello.')->group(function () {
         Route::get('teams', [TrelloTeamController::class, 'index'])->name('teams.index');
-        Route::get('teams/{id}', [TrelloTeamController::class, 'show'])->name('teams.show');
-        Route::get('boards/{id}', [TrelloTeamController::class, 'viewBoard'])->name('boards.show');
-        Route::get("home", function () {
-            return view('dashboard');
-        })->name('home');
+        Route::get('teams/{organization}', [TrelloTeamController::class, 'show'])->name('teams.show');
+        Route::get('teams/refresh', [TrelloTeamController::class, 'refresh'])->name('teams.refresh');
     });
 
     // Non-admin routes
