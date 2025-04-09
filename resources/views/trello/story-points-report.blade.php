@@ -1338,52 +1338,47 @@
                 const deleteBtn = e.target.closest('.delete-minor-case');
 
                 if (editBtn) {
-                    const index = parseInt(editBtn.dataset.index);
-                    const minorCases = loadMinorCases();
-                    const caseToEdit = minorCases[index];
+                    const id = editBtn.dataset.id;
+                    // Get the row that contains the data
+                    const row = editBtn.closest('tr');
 
-                    if (caseToEdit) {
+                    if (row) {
                         document.getElementById('minor-case-modal-title').textContent = 'Edit Minor Case';
-                        document.getElementById('minor-case-id').value = caseToEdit.id;
-                        document.getElementById('minor-case-sprint').value = caseToEdit.sprint;
-                        document.getElementById('minor-case-card').value = caseToEdit.card;
-                        document.getElementById('minor-case-description').value = caseToEdit.description ||
-                            '';
+                        document.getElementById('minor-case-id').value = id;
+                        document.getElementById('minor-case-sprint').value = row.cells[0].textContent;
+                        document.getElementById('minor-case-card').value = row.cells[1].textContent;
+                        document.getElementById('minor-case-description').value = row.cells[2].querySelector('div').textContent.trim() === 'No description' ? '' : row.cells[2].querySelector('div').textContent.trim();
 
                         // Populate member dropdown before setting the value
                         populateMemberDropdown();
 
                         const memberSelect = document.getElementById('minor-case-member');
+                        const memberValue = row.cells[3].textContent;
 
                         // If the member doesn't exist in the dropdown, add it
                         let memberExists = false;
                         for (let i = 0; i < memberSelect.options.length; i++) {
-                            if (memberSelect.options[i].value === caseToEdit.member) {
+                            if (memberSelect.options[i].value === memberValue) {
                                 memberExists = true;
                                 break;
                             }
                         }
 
-                        if (!memberExists && caseToEdit.member) {
+                        if (!memberExists && memberValue) {
                             const option = document.createElement('option');
-                            option.value = caseToEdit.member;
-                            option.textContent = caseToEdit.member;
+                            option.value = memberValue;
+                            option.textContent = memberValue;
                             memberSelect.appendChild(option);
                         }
 
-                        memberSelect.value = caseToEdit.member;
-                        document.getElementById('minor-case-points').value = caseToEdit.points;
+                        memberSelect.value = memberValue;
+                        document.getElementById('minor-case-points').value = parseFloat(row.cells[4].textContent);
 
                         minorCaseModal.classList.remove('hidden');
                     }
                 } else if (deleteBtn) {
-                    const index = parseInt(deleteBtn.dataset.index);
-                    if (confirm('Are you sure you want to delete this minor case?')) {
-                        const minorCases = loadMinorCases();
-                        minorCases.splice(index, 1);
-                        saveMinorCases(minorCases);
-                        renderMinorCasesTable();
-                    }
+                    // Deletion is handled by the click event listener on minorCasesTableBody
+                    return;
                 }
             });
 
@@ -1419,14 +1414,15 @@
                                 throw new Error(`Server error: ${response.status}`);
                             }
 
-                            const contentType = response.headers.get('content-type');
-                            if (!contentType || !contentType.includes('application/json')) {
-                                const text = await response.text();
-                                console.error('Unexpected response type:', contentType, 'Response:', text);
-                                throw new Error('Server did not return JSON');
+                            // Try to parse as JSON, but don't fail if it's not JSON
+                            try {
+                                const contentType = response.headers.get('content-type');
+                                if (contentType && contentType.includes('application/json')) {
+                                    await response.json();
+                                }
+                            } catch (e) {
+                                console.warn('Response was not JSON, but deletion may have succeeded');
                             }
-
-                            const responseData = await response.json();
 
                             // Refresh the minor cases list
                             await loadMinorCasesFromServer();
