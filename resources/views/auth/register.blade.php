@@ -87,27 +87,27 @@
         <div class="w-full max-w-md p-8 space-y-8 ">
 
             <!-- วัตถุที่ 1 -->
-            <div class="absolute w-[500px] h-[350px] bg-blue-700 opacity-20 rounded-3xl blur-3xl"
+            <div class="-z-10 absolute w-[500px] h-[350px] bg-blue-700 opacity-20 rounded-3xl blur-3xl"
                 style="top: 15%; left: 25%; animation: moveCircle1 15s ease-in-out infinite alternate;"></div>
 
 
             <!-- วัตถุที่ 2 -->
-            <div class="absolute w-[550px] h-[400px] bg-blue-400 opacity-20 rounded-3xl blur-3xl"
+            <div class="-z-10 absolute w-[550px] h-[400px] bg-blue-400 opacity-20 rounded-3xl blur-3xl"
                 style="top: 55%; left: 65%; animation: moveCircle2 18s linear infinite alternate-reverse;"></div>
 
 
             <!-- วัตถุที่ 3 -->
-            <div class="absolute w-[450px] h-[320px] bg-blue-500 opacity-20 rounded-3xl blur-3xl"
+            <div class="-z-10 absolute w-[450px] h-[320px] bg-blue-500 opacity-20 rounded-3xl blur-3xl"
                 style="top: 35%; left: 40%; animation: moveCircle3 20s ease-in-out infinite alternate;"></div>
 
 
             <div></div>
             <!-- Logo -->
-            <div class="flex items-start mt-10 mb-4 ">
+            <div class="flex items-start mt-10 mb-4 -z-10 ">
                 <img src="{{ asset('Group 553.png') }}" class="mr-0 rounded-lg w-96" />
             </div>
 
-            <hr class="w-full my-4 border-t border-gray-300">
+            <hr class="w-full my-4 border-t border-gray-500">
 
             <div class="mb-10 font-sans text-2xl font-bold text-center black text te">
                 <h1>Create an account</h1>
