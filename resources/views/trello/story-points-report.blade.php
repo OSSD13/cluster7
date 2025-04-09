@@ -5,6 +5,10 @@
 @section('page-title', 'Story Points Report')
 
 @section('content')
+    <script>
+        // Add base URL for API endpoints
+        const apiBaseUrl = '{{ url('/') }}';
+    </script>
     <style>
         @media print {
             body {
@@ -1031,7 +1035,7 @@
                         return;
                     }
 
-                    const response = await fetch(`/minor-cases/api?board_id=${encodeURIComponent(boardId)}`, {
+                    const response = await fetch(`${apiBaseUrl}/minor-cases/api?board_id=${encodeURIComponent(boardId)}`, {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
@@ -1101,7 +1105,7 @@
 
                     if (id) {
                         // Edit existing case
-                        response = await fetch(`/minor-cases/api/${id}`, {
+                        response = await fetch(`${apiBaseUrl}/minor-cases/api/${id}`, {
                             method: 'PUT',
                             headers,
                             body: JSON.stringify(data),
@@ -1109,7 +1113,7 @@
                         });
                     } else {
                         // Add new case
-                        response = await fetch('/minor-cases/api', {
+                        response = await fetch(`${apiBaseUrl}/minor-cases/api`, {
                             method: 'POST',
                             headers,
                             body: JSON.stringify(data),
@@ -1399,7 +1403,7 @@
                     const id = deleteBtn.dataset.id;
                     if (confirm('Are you sure you want to delete this minor case?')) {
                         try {
-                            const response = await fetch(`/minor-cases/api/${id}`, {
+                            const response = await fetch(`${apiBaseUrl}/minor-cases/api/${id}`, {
                                 method: 'DELETE',
                                 headers: {
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -1822,7 +1826,7 @@
                     const customParam = this.getAttribute('data-custom-param');
                     const forceRefreshParam = customParam !== null ? customParam : '&force_refresh=true';
 
-                    fetch(`{{ url('/trello/data') }}?board_id=${boardId}&_nocache=${timestamp}-${randomStr}${forceRefreshParam}`, {
+                    fetch(`${apiBaseUrl}/trello/data?board_id=${boardId}&_nocache=${timestamp}-${randomStr}${forceRefreshParam}`, {
                             method: 'GET',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -2721,7 +2725,7 @@
                 const role = document.getElementById('role').dataset.role;
 
                 // Make API request
-                fetch('{{ url('/trello/data') }}?board_id=' + boardSelector.value)
+                fetch(`${apiBaseUrl}/trello/data?board_id=` + boardSelector.value)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Failed to fetch board data');
@@ -2754,7 +2758,7 @@
                 document.getElementById('cards-by-list-container').classList.remove('hidden');
 
                 // Make API request
-                fetch('{{ url('/trello/bug-cards') }}?board_id=' + boardSelector.value)
+                fetch(`${apiBaseUrl}/trello/bug-cards?board_id=` + boardSelector.value)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Failed to fetch bug cards');
@@ -2784,7 +2788,7 @@
 
             // Function to fetch sprint information
             function fetchSprintInfo() {
-                fetch('{{ url('/trello/sprint-info') }}')
+                fetch(`${apiBaseUrl}/trello/sprint-info`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Failed to fetch sprint information');
@@ -3077,7 +3081,7 @@
                     });
 
                     // Store board selection in session
-                    fetch('{{ route('save.board.selection') }}', {
+                    fetch(`${apiBaseUrl}/save/board-selection`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -3090,7 +3094,7 @@
                         .then(data => {
                             if (data.success) {
                                 // Redirect to create report form
-                                window.location.href = '{{ route('saved-reports.create') }}';
+                                window.location.href = `${apiBaseUrl}/saved-reports/create`;
                             } else {
                                 showToast('Error: ' + (data.message ||
                                     'Failed to save board selection'), 'error');
@@ -3426,7 +3430,7 @@
                         console.log('Saving report with data:', reportData);
 
                         // Submit directly to savedReports.store endpoint
-                        fetch('{{ route('report.save') }}', {
+                        fetch(`${apiBaseUrl}/report/save`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -3479,7 +3483,7 @@
                                     if (confirm(
                                             'Report saved successfully! View saved reports?')) {
                                         window.location.href =
-                                            '{{ route('saved-reports.index') }}';
+                                            `${apiBaseUrl}/saved-reports`;
                                     }
                                 } else {
                                     showToast(data.error || 'Error saving report', 'error');
