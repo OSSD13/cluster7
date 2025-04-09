@@ -484,13 +484,19 @@ class SavedReportController extends Controller
             'last_update' => $reportData['last_update'] ?? now()->format('Y-m-d H:i'),
             'team_name' => $reportData['board_name'] ?? 'Development Team',
 
-            // Use direct mappings from storyPointsData
-            'plan_point' => $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'],
-            'actual_point' => $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'],
-            'remain' => $storyPointsData['remain'] ?? $storyPointsData['remainPercent'],
-            'percent' => $storyPointsData['percent'] ?? $storyPointsData['percentComplete'],
-            'current_sprint_point' => $storyPointsData['current_sprint_point'] ?? $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'],
-            'current_sprint_actual_point' => $storyPointsData['current_sprint_actual_point'] ?? $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'],
+            // For plan_point: use planPoints from data or fallback to sum of personal points
+            'plan_point' => $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 
+                $storyPointsData['summary']['planPoints'] ?? $sumPointPersonal,
+            'actual_point' => $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ??
+                $storyPointsData['summary']['actualPoints'] ?? $sumTestPass,
+            'remain' => $storyPointsData['remain'] ?? $storyPointsData['remainPercent'] ??
+                $storyPointsData['summary']['remainPercent'] ?? '0%',
+            'percent' => $storyPointsData['percent'] ?? $storyPointsData['percentComplete'] ?? 
+                $storyPointsData['summary']['percentComplete'] ?? '0%',
+            'current_sprint_point' => $storyPointsData['current_sprint_point'] ?? 
+                $storyPointsData['summary']['currentSprintPoints'] ?? $sumPointPersonal,
+            'current_sprint_actual_point' => $storyPointsData['current_sprint_actual_point'] ?? 
+                $storyPointsData['summary']['actualCurrentSprint'] ?? $sumFinal,
 
             'developers' => $developers,
             'backlog' => $this->formatBacklogData([
@@ -507,8 +513,14 @@ class SavedReportController extends Controller
             'sum_final' => $sumFinal
         ];
 
-        // Log the final report for debugging
-        \Log::info('Final report data being sent to template:', $report);
+        // Log the plan point values for debugging
+        \Log::info('Plan Point Values:', [
+            'storyPointsData_plan_point' => $storyPointsData['plan_point'] ?? 'not found',
+            'storyPointsData_planPoints' => $storyPointsData['planPoints'] ?? 'not found',
+            'storyPointsData_summary_planPoints' => $storyPointsData['summary']['planPoints'] ?? 'not found',
+            'sumPointPersonal' => $sumPointPersonal,
+            'final_plan_point_value' => $report['plan_point']
+        ]);
 
         // Convert the report to an object to match the expected structure in the template
         $reportObject = json_decode(json_encode($report));
@@ -605,13 +617,19 @@ class SavedReportController extends Controller
             'last_update' => now()->format('Y-m-d H:i'),
             'team_name' => $request->input('board_name', 'Development Team'),
 
-            // Use direct mappings from storyPointsData
-            'plan_point' => $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 0,
-            'actual_point' => $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ?? 0,
-            'remain' => $storyPointsData['remain'] ?? $storyPointsData['remainPercent'] ?? 0,
-            'percent' => $storyPointsData['percent'] ?? $storyPointsData['percentComplete'] ?? 0,
-            'current_sprint_point' => $storyPointsData['current_sprint_point'] ?? $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 0,
-            'current_sprint_actual_point' => $storyPointsData['current_sprint_actual_point'] ?? $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ?? 0,
+            // For plan_point: use planPoints from data or fallback to sum of personal points
+            'plan_point' => $storyPointsData['plan_point'] ?? $storyPointsData['planPoints'] ?? 
+                $storyPointsData['summary']['planPoints'] ?? $sumPointPersonal,
+            'actual_point' => $storyPointsData['actual_point'] ?? $storyPointsData['actualPoints'] ??
+                $storyPointsData['summary']['actualPoints'] ?? $sumTestPass,
+            'remain' => $storyPointsData['remain'] ?? $storyPointsData['remainPercent'] ??
+                $storyPointsData['summary']['remainPercent'] ?? '0%',
+            'percent' => $storyPointsData['percent'] ?? $storyPointsData['percentComplete'] ?? 
+                $storyPointsData['summary']['percentComplete'] ?? '0%',
+            'current_sprint_point' => $storyPointsData['current_sprint_point'] ?? 
+                $storyPointsData['summary']['currentSprintPoints'] ?? $sumPointPersonal,
+            'current_sprint_actual_point' => $storyPointsData['current_sprint_actual_point'] ?? 
+                $storyPointsData['summary']['actualCurrentSprint'] ?? $sumFinal,
 
             'developers' => $developers,
             'backlog' => $this->formatBacklogData([
@@ -652,8 +670,14 @@ class SavedReportController extends Controller
             }
         }
 
-        // Log the final report for debugging
-        \Log::info('Final report data being sent to template:', $report);
+        // Log the plan point values for debugging
+        \Log::info('Plan Point Values:', [
+            'storyPointsData_plan_point' => $storyPointsData['plan_point'] ?? 'not found',
+            'storyPointsData_planPoints' => $storyPointsData['planPoints'] ?? 'not found',
+            'storyPointsData_summary_planPoints' => $storyPointsData['summary']['planPoints'] ?? 'not found',
+            'sumPointPersonal' => $sumPointPersonal,
+            'final_plan_point_value' => $report['plan_point']
+        ]);
 
         // Convert the report to an object to match the expected structure
         $reportObject = json_decode(json_encode($report));

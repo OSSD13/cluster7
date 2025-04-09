@@ -458,10 +458,10 @@
                         <div class="relative">
                             <input type="number" id="plan-points"
                                 class="text-2xl font-bold text-gray-800 bg-transparent w-full text-center py-1 border-b border-dashed border-gray-300 focus:outline-none focus:border-primary-500"
-                                value="0">
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                value="0" readonly>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <button id="edit-plan-points"
-                                    class="text-gray-400 hover:text-gray-600 pointer-events-auto">
+                                    class="text-gray-400 hover:text-gray-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1525,10 +1525,19 @@
 
                     // Add story points data from cached data
                     if (window.cachedData && window.cachedData.storyPoints) {
+                        // Get plan points from input field
+                        const planPointsValue = parseFloat(document.getElementById('plan-points').value) || 0;
+                        
+                        // Create a copy of storyPoints with the current plan points value
+                        const storyPointsData = {
+                            ...window.cachedData.storyPoints,
+                            planPoints: planPointsValue
+                        };
+                        
                         const storyPointsInput = document.createElement('input');
                         storyPointsInput.type = 'hidden';
                         storyPointsInput.name = 'story_points_data';
-                        storyPointsInput.value = JSON.stringify(window.cachedData.storyPoints);
+                        storyPointsInput.value = JSON.stringify(storyPointsData);
                         form.appendChild(storyPointsInput);
                     }
 
@@ -1545,7 +1554,7 @@
                     if (window.cachedData && window.cachedData.memberPoints) {
                         // Log the member points data for debugging
                         console.log('Member points data before print:', window.cachedData.memberPoints);
-                        
+
                         // Process and enhance member points data to ensure it contains valid extraPoint values
                         const processedMemberPoints = window.cachedData.memberPoints.map(member => {
                             // Check if there's a saved extra point in localStorage
@@ -1559,21 +1568,21 @@
                                     extraPoint = parseFloat(member.extraPoint) || 0;
                                 }
                             }
-                            
+
                             // Create a new object with the updated extraPoint
                             return {
                                 ...member,
                                 extraPoint: extraPoint
                             };
                         });
-                        
+
                         // Add the processed member points to the form
                         const memberPointsInput = document.createElement('input');
                         memberPointsInput.type = 'hidden';
                         memberPointsInput.name = 'member_points_data';
                         memberPointsInput.value = JSON.stringify(processedMemberPoints);
                         form.appendChild(memberPointsInput);
-                        
+
                         // Extract extra points data for each member
                         const extraPointsData = [];
                         processedMemberPoints.forEach(member => {
@@ -1584,9 +1593,9 @@
                                 });
                             }
                         });
-                        
+
                         console.log('Extracted extra points data:', extraPointsData);
-                        
+
                         // Add extra points data
                         if (extraPointsData.length > 0) {
                             const extraPointsInput = document.createElement('input');
@@ -2015,8 +2024,17 @@
                     // Use the saved value if it exists
                     planPointsInput.value = savedPlanPoints;
                 } else {
-                    // Initialize with total points from API on first fetch
-                    planPointsInput.value = storyPoints.total || 0;
+                    // Calculate total personal points from team members
+                    const totalPersonalPoints = document.getElementById('total-personal')?.textContent || "0";
+                    
+                    // If we have team member data with personal points, use that total
+                    if (parseFloat(totalPersonalPoints) > 0) {
+                        planPointsInput.value = totalPersonalPoints;
+                    } else {
+                        // Fallback to total points from API on first fetch
+                        planPointsInput.value = storyPoints.total || 0;
+                    }
+                    
                     // Save this initial value
                     if (currentBoardId) {
                         localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
@@ -2073,8 +2091,8 @@
                     // Use saved extra point value if available, otherwise use the one from the data
                     const extraPoint = savedExtraPoint || parseFloat(member.extraPoint || 0);
 
-                    // Recalculate final point with the updated extra point
-                    const finalPoint = pointPersonal - bugPoint;
+                    // Recalculate final point which should equal pass points only
+                    const finalPoint = passPoint;
 
                     // Update running totals
                     totals.personal += pointPersonal;
@@ -2138,13 +2156,12 @@
                 // 5. Point Current Sprint (sum of member personal points)
                 document.getElementById('current-sprint-points').textContent = totals.personal.toFixed(1);
 
-                // 6. Actual Point Current Sprint (sum of final points)
-                document.getElementById('actual-current-sprint').textContent = totals.final.toFixed(1);
+                // 6. Actual Point Current Sprint (sum of final points + extra points)
+                document.getElementById('actual-current-sprint').textContent = (totals.final + totals.extra).toFixed(1);
 
                 // Now update the Actual Point using the total final points
-                // 2. Actual Point = Final Point + Backlog Point + Extra Point
-                // (Backlog and Extra are set to 0 as requested)
-                const actualPoints = totals.final + 0 + 0; // Use totals.final instead of completedPoints
+                // 2. Actual Point = Final Point (not +Extra Point)
+                const actualPoints = totals.final; // Use totals.final instead of completedPoints
                 document.getElementById('actual-points').textContent = actualPoints.toFixed(1);
 
                 // Now recalculate remaining metrics based on the actual point from team data
@@ -2157,7 +2174,7 @@
                 }
                 document.getElementById('remain-percent').textContent = `${remainPercent}%`;
 
-                // 4. Percent = Actual / Plan Point * 100
+                // 4. Percent Complete = (Actual Point / Plan Point) * 100
                 let percentComplete = 0;
                 if (planPoints > 0) {
                     percentComplete = Math.round((actualPoints / planPoints) * 100);
@@ -3115,7 +3132,7 @@
                     // Get values from cells
                     const pointPersonal = parseFloat(pointPersonalCell.textContent) || 0;
                     const bugPoints = parseFloat(bugCell.textContent) || 0;
-                    
+
                     // Recalculate final points (personal points - bug points)
                     const finalPoints = pointPersonal - bugPoints;
                     finalCell.textContent = finalPoints.toFixed(1);
@@ -3131,13 +3148,13 @@
                             const memberIndex = window.cachedData.memberPoints.findIndex(m => m.id === currentMemberId);
                             if (memberIndex >= 0) {
                                 window.cachedData.memberPoints[memberIndex].extraPoint = extraPoints;
-                                
+
                                 // Make sure we're using the right property name consistently
                                 const member = window.cachedData.memberPoints[memberIndex];
-                                
+
                                 // Update final point in the cached data
                                 window.cachedData.memberPoints[memberIndex].finalPoint = finalPoints;
-                                
+
                                 console.log('Updated cached data:', window.cachedData.memberPoints[memberIndex]);
                             } else {
                                 console.warn('Member not found in cached data:', currentMemberId);
@@ -3186,10 +3203,29 @@
 
                 // Update actual points and recalculate percentages for the sprint summary
                 document.getElementById('actual-points').textContent = totals.final.toFixed(1);
-                document.getElementById('actual-current-sprint').textContent = totals.final.toFixed(1);
-
+                document.getElementById('actual-current-sprint').textContent = (totals.final + totals.extra).toFixed(1);
+                
+                // Check if we have a user-input plan point value
+                const planPointsInput = document.getElementById('plan-points');
+                const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
+                
+                // If no saved value or the saved value equals the previous total personal points,
+                // update plan points to match the new total personal points
+                if (!savedPlanPoints || parseFloat(savedPlanPoints) === parseFloat(planPointsInput.getAttribute('data-previous-total') || '0')) {
+                    planPointsInput.value = totals.personal.toFixed(1);
+                    // Save this as the new default
+                    if (currentBoardId) {
+                        localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
+                    }
+                }
+                
+                // Store current total for future reference
+                planPointsInput.setAttribute('data-previous-total', totals.personal.toFixed(1));
+                
+                // Get plan points (either user input or automatically set)
+                const planPoints = parseFloat(planPointsInput.value) || 0;
+                
                 // Recalculate percentages
-                const planPoints = parseFloat(document.getElementById('plan-points').value) || 0;
                 if (planPoints > 0) {
                     const remainPercent = Math.round(((planPoints - totals.final) / planPoints) * 100);
                     const percentComplete = Math.round((totals.final / planPoints) * 100);
@@ -3459,6 +3495,185 @@
                     });
                 });
             }
+        });
+    </script>
+    <!-- Minor Case Add/Edit Modal -->
+    <div id="minor-case-modal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full"
+        style="z-index: 1000;">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white max-w-md">
+            <div class="mt-3">
+                <h3 class="text-lg leading-6 font-medium text-gray-900" id="minor-case-modal-title">Add Minor Case
+                </h3>
+                <form id="minor-case-form" class="mt-4">
+                    <input type="hidden" id="minor-case-id">
+                    <div class="mb-4">
+                        <label for="minor-case-sprint"
+                            class="block text-sm font-medium text-gray-700">Sprint</label>
+                        <input type="text" id="minor-case-sprint"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                            required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="minor-case-card" class="block text-sm font-medium text-gray-700">Card
+                            Detail</label>
+                        <input type="text" id="minor-case-card"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                            required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="minor-case-description"
+                            class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea id="minor-case-description" rows="3"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label for="minor-case-member"
+                            class="block text-sm font-medium text-gray-700">Member</label>
+                        <input type="text" id="minor-case-member"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                            required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="minor-case-points" class="block text-sm font-medium text-gray-700">Personal
+                            Points</label>
+                        <input type="number" id="minor-case-points"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                            step="0.5" min="0" required>
+                    </div>
+                    <div class="mt-5 flex justify-end space-x-2">
+                        <button type="button" id="cancel-minor-case"
+                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                            Cancel
+                        </button>
+                        <button type="submit" id="save-minor-case"
+                            class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- End of Minor Case Add/Edit Modal -->
+    
+    <!-- Plan Points Modal -->
+    <div id="plan-points-modal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full"
+        style="z-index: 1000;">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Plan Points</h3>
+                <div class="mt-4">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Plan Points</label>
+                        <input type="number" id="plan-points-input"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                            step="0.5" min="0">
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">
+                        This value will be used for calculating sprint progress and completion metrics.
+                    </p>
+                </div>
+                <div class="mt-5 flex justify-end space-x-2">
+                    <button id="cancel-plan-points"
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        Cancel
+                    </button>
+                    <button id="save-plan-points"
+                        class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End of Plan Points Modal -->
+
+    <script>
+        // Plan Points Modal functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const planPointsModal = document.getElementById('plan-points-modal');
+            const planPointsInput = document.getElementById('plan-points-input');
+            const planPointsDisplay = document.getElementById('plan-points');
+            const editPlanPointsBtn = document.getElementById('edit-plan-points');
+            const cancelPlanPointsBtn = document.getElementById('cancel-plan-points');
+            const savePlanPointsBtn = document.getElementById('save-plan-points');
+            
+            if (!planPointsModal || !planPointsInput || !planPointsDisplay || !editPlanPointsBtn || !cancelPlanPointsBtn || !savePlanPointsBtn) {
+                console.error('Plan points modal elements not found');
+                return;
+            }
+
+            // Function to open plan points modal
+            function openPlanPointsModal() {
+                planPointsInput.value = planPointsDisplay.value || 0;
+                planPointsModal.classList.remove('hidden');
+            }
+
+            // Function to close plan points modal
+            function closePlanPointsModal() {
+                planPointsModal.classList.add('hidden');
+            }
+
+            // Add click handler for the edit button
+            editPlanPointsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                openPlanPointsModal();
+            });
+
+            // Cancel button handler
+            cancelPlanPointsBtn.addEventListener('click', closePlanPointsModal);
+
+            // Save button handler
+            savePlanPointsBtn.addEventListener('click', function() {
+                const planPoints = parseFloat(planPointsInput.value) || 0;
+                
+                // Update the display
+                planPointsDisplay.value = planPoints.toFixed(1);
+                
+                // Save to localStorage
+                const boardSelector = document.getElementById('board-selector');
+                const currentBoardId = boardSelector ? boardSelector.value : '';
+                if (currentBoardId) {
+                    localStorage.setItem(`planPoints_${currentBoardId}`, planPoints);
+                    
+                    // Update cached data if available
+                    if (window.cachedData && window.cachedData.storyPoints) {
+                        window.cachedData.storyPoints.planPoints = planPoints;
+                        console.log('Updated cached plan points data:', window.cachedData.storyPoints);
+                    }
+                }
+                
+                // Recalculate metrics
+                const actualPointsElement = document.getElementById('actual-points');
+                const remainPercentElement = document.getElementById('remain-percent');
+                const percentCompleteElement = document.getElementById('percent-complete');
+                
+                const actualPoints = parseFloat(actualPointsElement.textContent) || 0;
+                
+                // Calculate remain percent
+                let remainPercent = 0;
+                if (planPoints > 0) {
+                    remainPercent = Math.round(((planPoints - actualPoints) / planPoints) * 100);
+                }
+                remainPercentElement.textContent = remainPercent + '%';
+                
+                // Calculate percent complete
+                let percentComplete = 0;
+                if (planPoints > 0) {
+                    percentComplete = Math.round((actualPoints / planPoints) * 100);
+                }
+                percentCompleteElement.textContent = percentComplete + '%';
+                
+                // Close the modal
+                closePlanPointsModal();
+                
+                // Show success toast if function exists
+                if (typeof showToast === 'function') {
+                    showToast('Plan points updated successfully', 'success');
+                }
+            });
         });
     </script>
 @endsection

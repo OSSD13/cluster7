@@ -121,6 +121,44 @@ class SavedReport extends Model
     }
     
     /**
+     * Get the plan point value
+     * 
+     * @return float
+     */
+    public function getPlanPointAttribute()
+    {
+        // Default to 0 if no data available
+        $planPoint = 0;
+        $totalPersonalPoints = 0;
+        
+        // Get data from report_data
+        $data = $this->getStoryPointsStructuredAttribute();
+        
+        // Check if user input for plan_point exists
+        if (isset($data['summary']['planPoints']) && !empty($data['summary']['planPoints'])) {
+            // Use the user input value
+            return (float)$data['summary']['planPoints'];
+        }
+        
+        // Otherwise calculate from total personal points
+        if (isset($data['teamMembers']) && is_array($data['teamMembers'])) {
+            foreach ($data['teamMembers'] as $member) {
+                if (isset($member['pointPersonal'])) {
+                    $totalPersonalPoints += (float)$member['pointPersonal'];
+                }
+            }
+            return $totalPersonalPoints;
+        }
+        
+        // As a last fallback, check if there's a sum in the totals
+        if (isset($data['totals']['totalPersonal'])) {
+            return (float)$data['totals']['totalPersonal'];
+        }
+        
+        return $planPoint;
+    }
+    
+    /**
      * Get structured bug cards data
      * 
      * @return array

@@ -1,6 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
+    @php
+    // Check if storyPointsData was provided
+    $storyPointsData = $storyPointsData ?? null;
+    @endphp
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -135,27 +139,91 @@
                 </tr>
                 <tr>
                     <td class="border-b border-r border-black bg-blue-200 text-center font-bold text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">PlanPoint</td>
-                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">{{ $report->plan_point ?? 0 }}</td>
-                    <td class="border-r border-black bg-white text-left text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3"></td>
+                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">
+                        @php
+                            // Calculate sum of personal points
+                            $sumPersonalPoints = 0;
+                            foreach ($report->developers ?? [] as $dev) {
+                                $sumPersonalPoints += $dev->point_personal;
+                            }
+
+                            // Use storyPointsData.planPoints first, then input value if it exists, otherwise use sum of personal points
+                            $planPoint = 0;
+                            if (isset($storyPointsData) && isset($storyPointsData['planPoints'])) {
+                                $planPoint = $storyPointsData['planPoints'];
+                            } elseif (isset($report->plan_point)) {
+                                $planPoint = $report->plan_point;
+                            } else {
+                                $planPoint = $sumPersonalPoints;
+                            }
+                        @endphp
+                        {{ $planPoint }}
+                    </td>
+                    <td class="border-r border-black bg-white"></td>
                     <td class="border-b border-r border-black bg-blue-200 text-center font-bold text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">ActualPoint</td>
-                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">{{ $report->actual_point ?? 0 }}</td>
-                    <td class="bg-white text-left text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3"></td>
+                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">
+                        @php
+                            $actualPoint = 0;
+                            foreach ($report->developers ?? [] as $dev) {
+                                $actualPoint += $dev->test_pass;
+                            }
+                        @endphp
+                        {{ $actualPoint }}
+                    </td>
+                    <td class="bg-white"></td>
                 </tr>
                 <tr>
                     <td class="border-b border-r border-black bg-red-600 text-center font-bold text-white font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">Remain</td>
-                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">{{ $report->remain ?? 0 }}</td>
-                    <td class="border-r border-black bg-white text-left text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3"></td>
+                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">
+                        @php
+                            $remain = $planPoint > 0 ? round((($planPoint - $actualPoint)/$planPoint)*100,2) : 0;
+                        @endphp
+                        {{ $remain }}%
+                    </td>
+                    <td class="border-r border-black bg-white"></td>
                     <td class="border-b border-r border-black bg-cyan-500 text-center font-bold text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">Percent</td>
-                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">{{ $report->percent ?? 0 }}%</td>
-                    <td class="bg-white text-left text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3"></td>
+                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">
+                        @php
+                            $percent = $planPoint > 0 ? round(($actualPoint / $planPoint) * 100, 2) : 0;
+                        @endphp
+                        {{ $percent }}%
+                    </td>
+                    <td class="bg-white"></td>
                 </tr>
                 <tr>
                     <td class="border-b border-r border-black bg-blue-600 text-center font-bold text-white font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">Point Current Sprint</td>
-                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">{{ $report->current_sprint_point ?? 0 }}</td>
-                    <td class="border-r border-black bg-white text-left text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3"></td>
+                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">
+                        @php
+                            $currentSprintPoint = 0;
+                            foreach ($report->developers ?? [] as $dev) {
+                                $currentSprintPoint += $dev->point_personal;
+                            }
+                        @endphp
+                        {{ $currentSprintPoint }}
+                    </td>
+                    <td class="border-r border-black bg-white"></td>
                     <td class="border-b border-r border-black bg-blue-600 text-center font-bold text-white font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">ActualPoint Current Sprint</td>
-                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">{{ $report->current_sprint_actual_point ?? 0 }}</td>
-                    <td class="bg-white text-left text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3"></td>
+                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">
+                        @php
+                            $actualCurrentSprintPoint = 0;
+                            $totalExtraPoints = 0;
+
+                            // Calculate sum of final points
+                            foreach ($report->developers ?? [] as $dev) {
+                                $actualCurrentSprintPoint += $dev->test_pass;
+                            }
+
+                            // Calculate sum of extra points
+                            foreach ($report->extra_points ?? [] as $extraPoint) {
+                                $totalExtraPoints += $extraPoint->points ?? $extraPoint->extra_point ?? 0;
+                            }
+
+                            // Final value is sum of test_pass + extra points
+                            $actualCurrentSprintPoint += $totalExtraPoints;
+                        @endphp
+                        {{ $actualCurrentSprintPoint }}
+                    </td>
+                    <td class="bg-white"></td>
                 </tr>
                 <tr>
                     <td class="border-b border-r border-black bg-blue-200 text-center font-bold text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">Points from current sprint</td>
@@ -171,14 +239,14 @@
                 @foreach($report->developers ?? [] as $developer)
                 <tr>
                     <td class="border-b border-r border-black bg-white text-left text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3" colspan="2">{{ $developer->name }}</td>
-                    <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->point_personal ?? 0 }}</td>
-                    <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->test_pass ?? 0 }}</td>
-                    <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->bug ?? 0 }}</td>
-                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->final_pass_point ?? 0 }}</td>
-                    <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->cancel ?? 0 }}</td>
-                    <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->sum_final ?? 0 }}</td>
-                    <td class="border-b border-r border-black bg-white text-left text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->remark ?? '' }}</td>
-                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->day_off ?? 'Not Test' }}</td>
+                    <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->point_personal }}</td>
+                    <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->test_pass }}</td>
+                    <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->bug }}</td>
+                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->final_pass_point }}</td>
+                    <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->cancel }}</td>
+                    <td class="border-b border-r border-black bg-white text-right text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->sum_final }}</td>
+                    <td class="border-b border-r border-black bg-white text-left text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->remark }}</td>
+                    <td class="border-b border-r border-black bg-white text-center text-black font-['docs-TH_SarabunPSK',Arial] text-10pt py-2 px-3">{{ $developer->day_off }}</td>
                 </tr>
                 @endforeach
                 <tr>
@@ -317,7 +385,8 @@
                 totalCompletedPoints: window.cachedData.storyPoints.completed || window.cachedData.storyPoints.totalCompletedPoints || 0,
                 inProgress: window.cachedData.storyPoints.inProgress || 0,
                 todo: window.cachedData.storyPoints.todo || 0,
-                percentComplete: window.cachedData.storyPoints.percentComplete || 0
+                percentComplete: window.cachedData.storyPoints.percentComplete || 0,
+                planPoints: window.cachedData.storyPoints.planPoints || window.cachedData.storyPoints.totalPoints || 0
             };
             console.log('Fixed Story Points Data:', window.storyPointsData);
         }
