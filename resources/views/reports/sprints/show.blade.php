@@ -104,10 +104,10 @@
     <!-- Reports List -->
     <div class="bg-white shadow rounded-lg p-6">
         <h2 class="text-lg font-semibold mb-4">
-            Available Reports ({{ $sprint->reports->count() }})
+            Available Reports ({{ isset($sprint) ? $sprint->reports->count() : 1 }})
         </h2>
 
-        @if($sprint->reports->count() > 0)
+        @if(isset($reportsByTeam) && count($reportsByTeam) > 0)
             <!-- Team tabs -->
             <div class="border-b border-gray-200 mb-6">
                 <nav class="-mb-px flex space-x-8" aria-label="Teams">
@@ -164,6 +164,7 @@
                                             <a href="{{ route('sprint-reports.show', $report->id) }}" class="text-primary-600 hover:text-primary-900 mr-3">View</a>
                                             <!--if user is admin show edit and delete-->
                                             @if((auth()->user()->isAdmin() ) || (auth()->user()->role === 'tester'))
+                                            <a href="{{ route('sprint-reports.edit', $report->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
                                             <form action="{{ route('sprint-reports.delete', $report->id) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
@@ -183,7 +184,7 @@
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     // Show the first team by default
-                    const teams = @json(array_keys($reportsByTeam));
+                    const teams = @json(array_keys($reportsByTeam ?? []));
                     if (teams.length > 0) {
                         // Convert team name to a slug for use as ID
                         const firstTeamSlug = teams[0].replace(/[^a-z0-9]/gi, '-').toLowerCase();

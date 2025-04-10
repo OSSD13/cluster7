@@ -127,10 +127,13 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     // Sprint Reports Routes
     Route::get('/sprints', [\App\Http\Controllers\SprintReportController::class, 'index'])->name('sprints.index');
     Route::get('/sprints/{sprint}', [\App\Http\Controllers\SprintReportController::class, 'showSprint'])->name('sprints.show');
-    Route::get('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'showReport'])->name('sprint-reports.show');
+    Route::get('/sprint-reports/{report}', [SprintReportController::class, 'show'])->name('sprint-reports.show');
     Route::delete('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'delete'])
-        ->middleware(\App\Http\Middleware\AdminMiddleware::class)
         ->name('sprint-reports.delete');
+    Route::get('/sprint-reports/{report}/edit', [\App\Http\Controllers\SprintReportController::class, 'edit'])
+        ->name('sprint-reports.edit');
+    Route::put('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'update'])
+        ->name('sprint-reports.update');
     Route::get('reports', [\App\Http\Controllers\SprintReportController::class, 'getUserReports'])->name('reports');
 
     // Backlog Routes
