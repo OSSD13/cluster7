@@ -705,7 +705,7 @@
                 // ดึงข้อมูล Minor Cases จากฐานข้อมูลโดยตรง
                 $minorCases = [];
                 $teamName = $report->team_name ?? null;
-                
+
                 // สร้างรายการชื่อสมาชิกในทีม
                 $teamMembers = [];
                 if (!empty($report->developers)) {
@@ -715,31 +715,55 @@
                         }
                     }
                 }
-                
+
                 try {
-                    // ใช้ DB façade โดยตรงเพื่อหลีกเลี่ยงปัญหากับ Model
-                    $query = \Illuminate\Support\Facades\DB::table('minor_cases');
-                    
-                    // กรอง Sprint ถ้ามีการระบุ
-                    if (!empty($sprintNumber)) {
-                        $query->where('sprint', $sprintNumber);
-                    }
-                    
-                    // กรองตามรายชื่อสมาชิกในทีม (ถ้ามีสมาชิก)
-                    if (!empty($teamMembers)) {
-                        $query->whereIn('member', $teamMembers);
-                    }
-                    
-                    // ดึงข้อมูลเรียงตามวันที่สร้างล่าสุด
-                    $minorCases = $query->orderBy('created_at', 'desc')
+                    // ตรวจสอบว่ามีข้อมูลทั้งหมดกี่รายการ
+                    $allMinorCases = \Illuminate\Support\Facades\DB::table('minor_cases')->get();
+                    $totalMinorCases = count($allMinorCases);
+
+                    // ดึงข้อมูลโดยไม่กรองเพื่อตรวจสอบ
+                    $minorCases = \Illuminate\Support\Facades\DB::table('minor_cases')
+                        ->orderBy('created_at', 'desc')
                         ->limit(15)
                         ->get();
+
+                    // ถ้าพบข้อมูล และมี sprint number ที่ถูกระบุ
+                    if (!empty($sprintNumber) && $sprintNumber != 'N/A' && count($minorCases) > 0) {
+                        // กรองตาม sprint ที่ระบุ
+                        $filteredBySprint = \Illuminate\Support\Facades\DB::table('minor_cases')
+                            ->where('sprint', $sprintNumber)
+                            ->orderBy('created_at', 'desc')
+                            ->limit(15)
+                            ->get();
+
+                        // ถ้ากรองด้วย sprint แล้วได้ข้อมูล
+                        if (count($filteredBySprint) > 0) {
+                            $minorCases = $filteredBySprint;
+                        }
+                    }
+
+                    // ถ้าต้องการกรองตามทีม และมีสมาชิกในทีม
+                    if (!empty($teamMembers) && count($minorCases) > 0) {
+                        // เก็บข้อมูลไว้ก่อนกรอง
+                        $beforeFilter = $minorCases;
+
+                        // กรองตามรายชื่อสมาชิกในทีม
+                        $minorCases = $minorCases->filter(function($case) use ($teamMembers) {
+                            return in_array($case->member, $teamMembers);
+                        })->values();
+
+                        // หากกรองแล้วไม่มีข้อมูลใดๆ ให้ใช้ข้อมูลก่อนกรอง
+                        if (count($minorCases) == 0) {
+                            $minorCases = $beforeFilter;
+                        }
+                    }
                 } catch (\Exception $e) {
                     // บันทึกข้อผิดพลาด
                     \Illuminate\Support\Facades\Log::error('ไม่สามารถดึงข้อมูล Minor Case ได้: ' . $e->getMessage());
-                    
+
                     // ถ้าไม่สามารถดึงข้อมูลได้ให้ใช้ array ว่าง
                     $minorCases = [];
+                    $totalMinorCases = 0;
                 }
             @endphp
 
@@ -753,18 +777,18 @@
             </tr>
             @empty
             <tr>
-                <td class="text-center" colspan="5" style="font-size: 10pt; border: 1px solid black;">ไม่พบรายการ Minor Case สำหรับทีมนี้</td>
+                <td class="text-center" colspan="5" style="font-size: 10pt; border: 1px solid black;">not found Minor Case </td>
             </tr>
             @endforelse
-            
+
             @php
                 // คำนวณผลรวมคะแนน Minor Case
                 $totalMinorPoints = collect($minorCases)->sum('points');
             @endphp
-            
+
             @if(count($minorCases) > 0)
             <tr>
-                <td class="text-right font-bold" colspan="4" style="font-size: 10pt; border: 1px solid black; background-color: #f8f9fa;">รวมคะแนน Minor Case:</td>
+                <td class="text-right font-bold" colspan="4" style="font-size: 10pt; border: 1px solid black; background-color: #f8f9fa;">Total Minor Case:</td>
                 <td class="text-right font-bold" style="font-size: 10pt; border: 1px solid black; background-color: #f8f9fa;">{{ $totalMinorPoints }}</td>
             </tr>
             @endif
