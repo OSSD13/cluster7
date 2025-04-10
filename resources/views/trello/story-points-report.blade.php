@@ -159,6 +159,7 @@
                 </form>
                 <form action="" id="delete-backlog-form" method="POST" class="mt-4" onsubmit="return confirm('Are you sure you want to delete this bug?');">
                     @csrf
+                    @method('DELETE')
                     <div class="flex justify-end">
                         <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
                             Delete
@@ -4103,10 +4104,10 @@
                         editBugPoints.value = bugPoints;
                         editBugTeam.value = bugTeam || document.querySelector('#board-selector option:checked')?.text || '';
 
-                        // Update form actions
+                        // Update form actions with the correct routes
                         const numericId = bugId.includes('-') ? bugId.split('-').pop() : bugId;
-                        editForm.action = `${window.location.origin}/backlog/update/${numericId}`;
-                        deleteForm.action = `${window.location.origin}/backlog/remove/${numericId}`;
+                        editForm.action = `{{ route('backlog.update.post', ['id' => '__ID__']) }}`.replace('__ID__', numericId);
+                        deleteForm.action = `{{ route('backlog.destroy', ['id' => '__ID__']) }}`.replace('__ID__', numericId);
 
                         // Remove both hidden class and display:none style
                         editModal.classList.remove('hidden');
