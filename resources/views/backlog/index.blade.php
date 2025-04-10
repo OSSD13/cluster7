@@ -17,50 +17,54 @@
             </h1>
 
     <!-- Edit Bug Modal -->
-    <div id="editBugModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Bug</h3>
-                <form id="editBugForm" class="mt-4">
+    <div id="editBugModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full backdrop-blur-sm">
+        <div class="relative top-20 mx-auto p-8 w-[600px] shadow-xl rounded-[25px] bg-white modal-content">
+            <div class="mt-2">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 rounded-full bg-sky-100 flex justify-center items-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#13A7FD" class="bi bi-bug" viewBox="0 0 16 16">
+                            <path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623M4 7v4a4 4 0 0 0 3.5 3.97V7zm4.5 0v7.97A4 4 0 0 0 12 11V7zM12 6a4 4 0 0 0-1.334-2.982A3.98 3.98 0 0 0 8 2a3.98 3.98 0 0 0-2.667 1.018A4 4 0 0 0 4 6z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-gray-900">Edit Bug</h3>
+                </div>
+
+                <form id="editBugForm" class="mt-5 space-y-6">
                     @csrf
                     @method('PUT')
                     <input type="hidden" id="bugId" name="id">
                     
                     <div class="mb-4">
-                        <label for="bugName" class="block text-sm font-medium text-gray-700">Bug Name</label>
-                        <input type="text" id="bugName" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    <label for="bugName" class="block text-sm font-medium text-gray-700 mb-2">Bug Name</label>
+                    <input type="text" id="bugName" name="name" class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200">
                     </div>
 
                     <div class="mb-4">
-                        <label for="bugTeam" class="block text-sm font-medium text-gray-700">Team</label>
-                        <select id="bugTeam" name="team" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                            <option value="Alpha">Alpha</option>
-                            <option value="Beta">Beta</option>
-                            <option value="Delta">Delta</option>
-                        </select>
+                        <label for="bugTeam" class="block text-sm font-medium text-gray-700 ">team</label>
+                        <input type="text" id="bugTeam" name="team" class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200 " readonly>
                     </div>
-
+                    
                     <div class="mb-4">
                         <label for="bugPoints" class="block text-sm font-medium text-gray-700">Points</label>
-                        <input type="number" id="bugPoints" name="points" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                        <input type="number" id="bugPoints" name="points" min="1" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none'' ">
                     </div>
 
                     <div class="mb-4">
                         <label for="bugAssigned" class="block text-sm font-medium text-gray-700">Assigned To</label>
-                        <input type="text" id="bugAssigned" name="assigned" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                        <input type="text" id="bugAssigned" name="assigned" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none">
                     </div>
 
                     <div class="mb-4">
                         <label for="bugDescription" class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea id="bugDescription" name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"></textarea>
+                        <textarea id="bugDescription" name="description" rows="3" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none"></textarea>
                     </div>
 
-                    <div class="mt-5 flex justify-end space-x-2">
-                        <button type="button" id="cancelEditBug" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    <div class="mt-5 flex space-x-3 ml-20">
+                        <button type="button" id="cancelEditBug" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
                             Cancel
                         </button>
-                        <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                            Save
+                        <button type="submit" class="px-6 py-2.5 bg-[#13A7FD] text-white rounded-full hover:bg-[#0090e0] focus:outline-none transition-all duration-200">
+                            Save 
                         </button>
                     </div>
                 </form>
@@ -132,11 +136,8 @@
                                 class="hidden absolute right-0 mt-2 bg-white border rounded-[15px] w-[400px] shadow-lg overflow-hidden dropdown-menu">
                                 <ul class="text-gray-700">
                                     <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="all">All</a></li>
-                                    @php
-                                        $teams = $allBugs->pluck('team')->unique()->filter()->values()->toArray();
-                                    @endphp
-                                    @foreach($teams as $team)
-                                    <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="{{ $team }}">{{ $team }}</a></li>
+                                    @foreach($bugsByTeam as $teamName => $bugs)
+                                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b text-center" data-team="{{ $teamName }}">{{ $teamName }}</a></li>
                                     @endforeach
                                 </ul>
                             </div>
@@ -211,7 +212,7 @@
         </p>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
             @foreach($allBugs as $bug)
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow bug-card" data-team="{{ $bug['team'] ?? 'all' }}" data-name="{{ $bug['name'] ?? '' }}" data-sprint="{{ $bug['sprint_origin'] ?? $bug['sprint_number'] ?? '?' }}" data-id="{{ $bug['id'] }}">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden  transition-shadow bug-card" data-team="{{ $bug['team'] ?? 'all' }}" data-name="{{ $bug['name'] ?? '' }}" data-sprint="{{ $bug['sprint_origin'] ?? $bug['sprint_number'] ?? '?' }}" data-id="{{ $bug['id'] }}">
                 <!-- Card Header with Bug ID and Priority -->
                 <div class="flex justify-between items-center p-4 border-b border-gray-100 ">
                     <div class="flex items-center">
@@ -239,12 +240,14 @@
                 </div>
 
                 <!-- Bug Name/Description/buttom -->
-                <div class="p-4 grid grid-cols-9">
+                <div class="p-4 ">
 
-                    <div class="col-span-8 text-left h-20 overflow-auto ">โค้ดที่คุณให้มาคือการใช้ Tailwind Tailwind Tailาจอที่ใช้งาน
+                    <div class="col-span-8  flex items-end overflow-auto ">
                     </div>
                     <!-- Edit Button -->
-                    <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center ms-3 h-8 w-8 col-start-9">
+                    <div class="flex space-x-3 flex items-end ">
+ 
+                    <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center h-8 w-8 ">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-pencil-square" viewBox="0 0 16 16 ">
                             <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                             <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
@@ -254,14 +257,14 @@
                     <form action="{{ route('backlog.destroy', $bug['id']) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this bug?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="text-[#FF0004] bg-[#FFACAE] hover:bg-[#FF7C7E] focus:outline-none font-medium rounded-full px-2 py-2 text-center h-8 w-8 col-start-11">
+                        <button type="submit" class="text-[#FF0004] bg-[#FFACAE] hover:bg-[#FF7C7E] focus:outline-none font-medium rounded-full px-2 py-2 text-center h-8 w-8">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
                                 <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
                             </svg>
                         </button>
                     </form>
                 </div>
-
+                </div>
                 <!-- Card Footer with Assignment -->
                 <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
                     <div class="flex items-center">
@@ -279,7 +282,7 @@
                     <!-- Status indicator -->
                     <div>
                         <span class="px-2 py-1 text-xs font-medium rounded-full bg-[#DDFFEC] text-[#82DF3C]">
-                            Success
+                       success
                         </span>
                     </div>
                 </div>
@@ -319,21 +322,36 @@
             
             /* Fix for dropdown positioning */
             .dropdown-menu {
-                z-index: 50;
+                z-index: 20;
                 position: absolute;
             }
             
             /* Ensure dropdowns don't overlap */
             #teamDropdownMenu {
-                z-index: 50;
+                z-index: 20;
             }
             
             #yearDropdownMenu {
-                z-index: 49;
+                z-index: 19;
             }
             
             #sprintDropdownMenu {
-                z-index: 48;
+                z-index: 18;
+            }
+
+            /* Modal styling */
+            #editBugModal {
+                z-index: 100;
+            }
+
+            #editBugModal .relative {
+                z-index: 101;
+            }
+
+            /* Ensure modal content stays above the overlay */
+            .modal-content {
+                position: relative;
+                z-index: 102;
             }
         </style>
 
@@ -580,8 +598,8 @@
         // Set form values
         form.querySelector('#bugId').value = bugId;
         form.querySelector('#bugName').value = bugCard.querySelector('a').textContent;
-        form.querySelector('#bugTeam').value = bugCard.getAttribute('data-team');
-        form.querySelector('#bugPoints').value = bugCard.querySelector('.rounded-full').textContent.trim();
+        form.querySelector('#bugTeam').value = bugCard.getAttribute('data-team') || 'all';
+        form.querySelector('#bugPoints').value = bugCard.querySelector('.w-8.h-8.rounded-full').textContent.trim();
         form.querySelector('#bugAssigned').value = bugCard.querySelector('.ml-2.px-2.py-1.text-xs.font-medium.rounded-full:last-child').textContent.trim();
         form.querySelector('#bugDescription').value = bugCard.querySelector('.col-span-8').textContent.trim();
 
