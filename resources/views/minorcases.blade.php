@@ -25,33 +25,6 @@
 
         <!-- Container for both Dropdowns -->
         <div class="absolute top-14 right-10 flex space-x-4">
-            <!-- Year Dropdown -->
-            <div class="relative inline-block text-left py-3.5">
-                <button id="yearDropdownButton"
-                    class="flex items-center px-4 py-2 bg-white border rounded-[100px] shadow-md w-32 justify-between">
-                    <span id="selectedYear" class="block px-6">2025</span>
-                    <svg class="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </button>
-
-                <!-- Dropdown Menu -->
-                <div id="yearDropdownMenu"
-                    class="hidden absolute right-0 mt-2 w-32 bg-white border rounded-[15px] shadow-lg overflow-hidden">
-                    <ul class="text-gray-700">
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2025</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2024</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2023</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2022</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200 border-b">2021</a></li>
-                        <li><a href="#" class="block px-11 py-2 hover:bg-gray-200">2020</a></li>
-                    </ul>
-                </div>
-            </div>
-
             <!-- Sprint Dropdown -->
             <div class="relative inline-block text-left py-3.5 mb-10">
                 <button id="sprintDropdownButton"
@@ -140,45 +113,62 @@
         </div>
 
         <!-- Modal for Edit -->
-        <!-- Modal for Edit -->
         <div id="editModal"
             class="fixed justify-center inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden"
             style="z-index: 1000;">
-            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white max-w-md">
-                <h2 class="text-xl font-bold mb-4 text-gray-800">Edit Minor Case</h2>
-                <form id="editForm">
+            <div class="relative top-20 mx-auto p-5 border w-[600px] shadow-lg rounded-md bg-white">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="w-12 h-12 rounded-full bg-primary-100 flex justify-center items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold">Edit Minor Case</h2>
+                        <p class="text-gray-600">Update the minor case details</p>
+                    </div>
+                </div>
+
+                <form id="editForm" class="mt-4">
                     <input type="hidden" id="editId">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="editSprint">Sprint</label>
-                        <input type="text" id="editSprint" name="sprint"
-                            class="w-full px-3 py-2 border rounded shadow appearance-none">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="editSprint">Sprint</label>
+                            <input type="text" id="editSprint" name="sprint"
+                                class="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="editCard">Card</label>
+                            <input type="text" id="editCard" name="card"
+                                class="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="editCard">Card</label>
-                        <input type="text" id="editCard" name="card"
-                            class="w-full px-3 py-2 border rounded shadow appearance-none">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="editDescription">Description</label>
+                        <textarea id="editDescription" name="description" rows="3"
+                            class="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"></textarea>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2"
-                            for="editDescription">Description</label>
-                        <textarea id="editDescription" name="description" class="w-full px-3 py-2 border rounded shadow appearance-none"></textarea>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="editMember">Member</label>
+                            <select id="editMember" name="member"
+                                class="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                <option value="">Select Member</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="editPoints">Points</label>
+                            <input type="number" id="editPoints" name="points" step="0.5"
+                                class="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="editMember">Member</label>
-                        <select id="editMember" name="member"
-                            class="w-full px-3 py-2 border rounded shadow appearance-none">
-                            <option value="">Select Member</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="editPoints">Points</label>
-                        <input type="number" id="editPoints" name="points"
-                            class="w-full px-3 py-2 border rounded shadow appearance-none">
-                    </div>
-                    <div class="flex justify-end space-x-3">
+                    <div class="flex justify-end space-x-3 mt-6">
                         <button type="button" id="cancelEdit"
-                            class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</button>
-                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save
+                            class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">Cancel</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">Save
                             Changes</button>
                     </div>
                 </form>
@@ -322,7 +312,6 @@
 
                 // Functions
                 function setupDropdowns() {
-                    setupDropdown("yearDropdownButton", "yearDropdownMenu", "selectedYear");
                     setupDropdown("sprintDropdownButton", "sprintDropdownMenu", "selectedSprint");
                 }
 
@@ -338,8 +327,6 @@
 
                             if (menuId === "sprintDropdownMenu") {
                                 updateDisplayedSprints();
-                            } else if (menuId === "yearDropdownMenu") {
-                                updateDisplayedDate();
                             }
                         });
                     });
@@ -355,27 +342,37 @@
 
                 function openEditModal(id) {
                     // Fetch record data via AJAX
-                    fetch(`/api/minor-cases/${id}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            document.getElementById('editId').value = id;
-                            document.getElementById('editSprint').value = data.sprint;
-                            document.getElementById('editCard').value = data.card;
-                            document.getElementById('editDescription').value = data.description || '';
-                            document.getElementById('editPoints').value = data.points;
+                    fetch(`/api/minor-cases/${id}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById('editId').value = id;
+                        document.getElementById('editSprint').value = data.sprint;
+                        document.getElementById('editCard').value = data.card;
+                        document.getElementById('editDescription').value = data.description || '';
+                        document.getElementById('editPoints').value = data.points;
 
-                            // Populate member dropdown and set selected value
-                            populateMemberDropdown().then(() => {
-                                const memberSelect = document.getElementById('editMember');
-                                memberSelect.value = data.member;
-                            });
-
-                            editModal.classList.remove('hidden');
-                        })
-                        .catch(error => {
-                            console.error('Error fetching data:', error);
-                            alert('Error loading minor case data');
+                        // Populate member dropdown and set selected value
+                        populateMemberDropdown().then(() => {
+                            const memberSelect = document.getElementById('editMember');
+                            memberSelect.value = data.member;
                         });
+
+                        editModal.classList.remove('hidden');
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data:', error);
+                        showToast('Error loading minor case data', 'error');
+                    });
                 }
 
                 function openDeleteModal(id) {
@@ -403,35 +400,29 @@
                     };
 
                     fetch(`/api/minor-cases/${id}`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                    'content')
-                            },
-                            body: JSON.stringify(formData)
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.message) {
-                                // Refresh the page to show updated data
-                                location.reload();
-                            } else {
-                                throw new Error('Invalid response from server');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error updating:', error);
-                            alert('An error occurred while updating: ' + error.message);
-                        })
-                        .finally(() => {
-                            editModal.classList.add('hidden');
-                        });
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        showToast('Minor case updated successfully', 'success');
+                        editModal.classList.add('hidden');
+                        // Refresh the page to show updated data
+                        location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error updating:', error);
+                        showToast('Error updating minor case: ' + error.message, 'error');
+                    });
                 }
 
                 function deleteMinorCase(id) {
@@ -465,24 +456,6 @@
                         });
                 }
 
-                function updateDisplayedDate() {
-                    const selectedYear = document.getElementById('selectedYear').textContent;
-                    const yearValue = parseInt(selectedYear);
-
-                    document.querySelectorAll('.sprint-block').forEach(sprintBlock => {
-                        const sprintDateElement = sprintBlock.querySelector('.sprint-date');
-                        if (sprintDateElement) {
-                            const dateText = sprintDateElement.textContent;
-                            const yearMatch = dateText.match(/(\d{4})$/);
-                            if (yearMatch) {
-                                const sprintYear = parseInt(yearMatch[1]);
-                                sprintBlock.style.display = (sprintYear === yearValue) ? 'block' : 'none';
-                            }
-                        }
-                    });
-                }
-
-                // Update the updateDisplayedSprints function to filter table rows
                 function updateDisplayedSprints() {
                     const sprintRange = document.getElementById('selectedSprint').textContent;
                     const rangeMatch = sprintRange.match(/Sprint (\d+) ~ (\d+)/);
@@ -586,6 +559,19 @@
                     } catch (error) {
                         console.error('Error fetching members:', error);
                     }
+                }
+
+                function showToast(message, type = 'success') {
+                    const toast = document.createElement('div');
+                    toast.className = `fixed top-4 right-4 px-4 py-2 rounded-md text-white ${
+                        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                    }`;
+                    toast.textContent = message;
+                    document.body.appendChild(toast);
+
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 3000);
                 }
             });
         </script>

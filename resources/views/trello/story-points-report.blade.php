@@ -173,37 +173,37 @@
                 <p>You don't have access to any Trello boards. Please contact your administrator if you believe this is an error.</p>
             </div>
         @else
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <div class="flex items-center space-x-4 mb-2">
-                        <div class="w-12 h-12 rounded-full bg-primary-100 flex justify-center items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <div class="flex items-center space-x-4 mb-2">
+                    <div class="w-12 h-12 rounded-full bg-primary-100 flex justify-center items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    @php
+                        // Get the current sprint number
+                        $sprintNumber = null;
+                        $currentSprint = \App\Models\Sprint::getCurrentSprint();
+                        if ($currentSprint) {
+                            $sprintNumber = $currentSprint->sprint_number;
+                        } else {
+                            // Fallback to next sprint number if no current sprint
+                            $sprintNumber = \App\Models\Sprint::getNextSprintNumber();
+                        }
+                    @endphp
+                    <div>
+                        <div class="flex items-center">
+                            <h1 class="text-2xl font-bold">Sprint: {{ $sprintNumber }}</h1>
+                            <span
+                                class="ml-3 px-3 py-1 text-xs font-medium bg-primary-100 text-primary-800 rounded-full">Report</span>
                         </div>
-                        @php
-                            // Get the current sprint number
-                            $sprintNumber = null;
-                            $currentSprint = \App\Models\Sprint::getCurrentSprint();
-                            if ($currentSprint) {
-                                $sprintNumber = $currentSprint->sprint_number;
-                            } else {
-                                // Fallback to next sprint number if no current sprint
-                                $sprintNumber = \App\Models\Sprint::getNextSprintNumber();
-                            }
-                        @endphp
-                        <div>
-                            <div class="flex items-center">
-                                <h1 class="text-2xl font-bold">Sprint: {{ $sprintNumber }}</h1>
-                                <span
-                                    class="ml-3 px-3 py-1 text-xs font-medium bg-primary-100 text-primary-800 rounded-full">Report</span>
-                            </div>
-                            <h2 class="text-xl text-gray-600">Current Sprint Report</h2>
-                        </div>
+                        <h2 class="text-xl text-gray-600">Current Sprint Report</h2>
                     </div>
                 </div>
+            </div>
 
             <!-- Action Menu -->
             <div class="flex space-x-2 items-center">
@@ -387,9 +387,9 @@
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        Sprint Statistics
-                    </h2>
+                     </svg>
+                     Sprint Statistics
+                 </h2>
 
                     <!-- Date Display -->
                     <div id="sprint-date-range" class="mb-3 text-sm text-gray-500 flex items-center">
@@ -742,51 +742,51 @@
             <!-- Minor Case Section -->
             <div class="bg-white shadow rounded-lg px-3 pb-5 mt-5 mb-6">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center card">
-                    <h2 class="text-lg font-semibold text-gray-800">Minor Cases <span id="minor-case-count"
-                            class="text-sm font-normal text-gray-500">0 cases</span></h2>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm text-gray-500">
-                            Total Points: <span id="total-minor-points" class="font-semibold">0</span>
-                        </span>
-                        <button id="add-minor-case-btn"
-                            class="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm flex items-center">
+                <h2 class="text-lg font-semibold text-gray-800">Minor Cases <span id="minor-case-count"
+                        class="text-sm font-normal text-gray-500">0 cases</span></h2>
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-500">
+                        Total Points: <span id="total-minor-points" class="font-semibold">0</span>
+                    </span>
+                    <button id="add-minor-case-btn"
+                        class="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            Add Case
-                        </button>
-                    </div>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Add Case
+                    </button>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white">
-                        <thead>
-                            <tr class="bg-gray-100 text-gray-700">
-                                <th class="py-3 px-4 text-left">Sprint</th>
-                                <th class="py-3 px-4 text-left">Card Detail</th>
-                                <th class="py-3 px-4 text-left">Description</th>
-                                <th class="py-3 px-4 text-left">Member</th>
-                                <th class="py-3 px-4 text-center">Personal Point</th>
-                                <th class="py-3 px-4 text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="minor-cases-table-body">
-                            <tr id="no-minor-cases-row">
-                                <td colspan="6" class="py-4 px-4 text-center text-gray-500">No minor cases found. Click
-                                    "Add
-                                    Case" to add one.</td>
-                            </tr>
-                        </tbody>
-                        <tfoot class="bg-gray-50 font-semibold">
-                            <tr>
-                                <td colspan="4" class="py-3 px-4 text-right">Total Points:</td>
-                                <td id="minor-case-total-points" class="py-3 px-4 text-center">0</td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-700">
+                            <th class="py-3 px-4 text-left">Sprint</th>
+                            <th class="py-3 px-4 text-left">Card Detail</th>
+                            <th class="py-3 px-4 text-left">Description</th>
+                            <th class="py-3 px-4 text-left">Member</th>
+                            <th class="py-3 px-4 text-center">Personal Point</th>
+                            <th class="py-3 px-4 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="minor-cases-table-body">
+                        <tr id="no-minor-cases-row">
+                            <td colspan="6" class="py-4 px-4 text-center text-gray-500">No minor cases found. Click
+                                "Add
+                                Case" to add one.</td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="bg-gray-50 font-semibold">
+                        <tr>
+                            <td colspan="4" class="py-3 px-4 text-right">Total Points:</td>
+                            <td id="minor-case-total-points" class="py-3 px-4 text-center">0</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
             </div>
 
             <!-- Minor Case Add/Edit Modal -->
@@ -907,21 +907,21 @@
                                                     {!! nl2br(e($bug['description'] ?? 'No description available')) !!}
                                                 </div>
                                                 <div class="col-start-9 flex flex-col space-y-2">
-                                                    <button type="button"
+                                                <button type="button"
                                                         class="edit-backlog-task text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center h-8 w-8"
                                                         data-bug-id="{{ $bug['id'] ?? '' }}"
                                                         data-bug-name="{{ $bug['name'] ?? '' }}"
                                                         data-bug-description="{{ $bug['description'] ?? '' }}"
                                                         data-bug-points="{{ $bug['points'] ?? 0 }}">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                            fill="currentColor" class="bi bi-pencil-square"
-                                                            viewBox="0 0 16 16">
-                                                            <path
-                                                                d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                                            <path fill-rule="evenodd"
-                                                                d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                                        </svg>
-                                                    </button>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                        fill="currentColor" class="bi bi-pencil-square"
+                                                        viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                                        <path fill-rule="evenodd"
+                                                            d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                                                    </svg>
+                                                </button>
                                                 </div>
                                             </div>
 
@@ -980,7 +980,7 @@
                 // Simple alert as a fallback
                 alert(message);
             };
-
+            
             document.addEventListener('DOMContentLoaded', function() {
                 // Get backlog elements
                 const backlogCards = document.querySelectorAll('.backlog-bug-card');
@@ -1088,7 +1088,7 @@
                             </td>
                         </tr>
                     `;
-
+                    
                     const boardId = getCurrentBoardId();
                     if (!boardId) {
                         console.warn('No board ID available');
@@ -1104,7 +1104,7 @@
                         },
                         credentials: 'same-origin'
                     });
-
+                    
                     if (!response.ok) {
                         const errorText = await response.text();
                         console.error('Server response:', errorText);
@@ -1117,10 +1117,10 @@
                         console.error('Unexpected response type:', contentType, 'Response:', text);
                         throw new Error('Server did not return JSON');
                     }
-
+                    
                     const minorCases = await response.json();
                     console.log('Loaded minor cases:', minorCases);
-
+                    
                     renderMinorCasesTable(minorCases.data || []);
                 } catch (error) {
                     console.error('Error loading minor cases:', error);
@@ -1209,11 +1209,11 @@
 
                     // Refresh the minor cases list
                     await loadMinorCasesFromServer();
-
+                    
                     // Close the modal and reset form
                     minorCaseModal.classList.add('hidden');
                     minorCaseForm.reset();
-
+                    
                     // Show success message
                     alert(id ? 'Minor case updated successfully' : 'Minor case created successfully');
                 } catch (error) {
@@ -1226,7 +1226,7 @@
             const renderMinorCasesTable = (minorCases) => {
                 // Ensure minorCases is an array
                 minorCases = Array.isArray(minorCases) ? minorCases : [];
-
+                
                 // Update count and total points
                 minorCaseCountSpan.textContent = `${minorCases.length} cases`;
 
@@ -1307,9 +1307,9 @@
             function populateMemberDropdown() {
                 const memberSelect = document.getElementById('minor-case-member');
                 const teamMembersData = window.teamMembersData || [];
-
+                
                 console.log('Populating member dropdown with data:', teamMembersData);
-
+                
                 // Clear existing options except the first one
                 while (memberSelect.options.length > 1) {
                     memberSelect.remove(1);
@@ -1322,7 +1322,7 @@
                     if (memberTable) {
                         const memberRows = memberTable.querySelectorAll('tr');
                         console.log('Trying to get members from table, found rows:', memberRows.length);
-
+                        
                         memberRows.forEach(row => {
                             const memberNameCell = row.querySelector('td:first-child');
                             if (memberNameCell) {
@@ -1353,19 +1353,19 @@
                         }
                     });
                 }
-
+                
                 // Sort options alphabetically (excluding the first "Select a member" option)
                 const options = Array.from(memberSelect.options).slice(1);
                 options.sort((a, b) => a.text.localeCompare(b.text));
-
+                
                 // Remove all options except the first one
                 while (memberSelect.options.length > 1) {
                     memberSelect.remove(1);
                 }
-
+                
                 // Add sorted options back
                 options.forEach(option => memberSelect.add(option));
-
+                
                 console.log('Final dropdown options count:', memberSelect.options.length);
             }
 
@@ -1397,45 +1397,45 @@
             minorCasesTableBody.addEventListener('click', function(e) {
                 const editBtn = e.target.closest('.edit-minor-case');
                 const deleteBtn = e.target.closest('.delete-minor-case');
-
+                
                 if (editBtn) {
                     const id = editBtn.dataset.id;
                     // Get the row that contains the data
                     const row = editBtn.closest('tr');
 
                     if (row) {
-                        document.getElementById('minor-case-modal-title').textContent = 'Edit Minor Case';
+                    document.getElementById('minor-case-modal-title').textContent = 'Edit Minor Case';
                         document.getElementById('minor-case-id').value = id;
                         document.getElementById('minor-case-sprint').value = row.cells[0].textContent;
                         document.getElementById('minor-case-card').value = row.cells[1].textContent;
                         document.getElementById('minor-case-description').value = row.cells[2].querySelector('div').textContent.trim() === 'No description' ? '' : row.cells[2].querySelector('div').textContent.trim();
-
-                        // Populate member dropdown before setting the value
-                        populateMemberDropdown();
-
-                        const memberSelect = document.getElementById('minor-case-member');
+                    
+                    // Populate member dropdown before setting the value
+                    populateMemberDropdown();
+                    
+                    const memberSelect = document.getElementById('minor-case-member');
                         const memberValue = row.cells[3].textContent;
-
-                        // If the member doesn't exist in the dropdown, add it
-                        let memberExists = false;
-                        for (let i = 0; i < memberSelect.options.length; i++) {
+                    
+                    // If the member doesn't exist in the dropdown, add it
+                    let memberExists = false;
+                    for (let i = 0; i < memberSelect.options.length; i++) {
                             if (memberSelect.options[i].value === memberValue) {
-                                memberExists = true;
-                                break;
-                            }
+                            memberExists = true;
+                            break;
                         }
-
+                    }
+                    
                         if (!memberExists && memberValue) {
-                            const option = document.createElement('option');
+                        const option = document.createElement('option');
                             option.value = memberValue;
                             option.textContent = memberValue;
-                            memberSelect.appendChild(option);
-                        }
-
+                        memberSelect.appendChild(option);
+                    }
+                    
                         memberSelect.value = memberValue;
                         document.getElementById('minor-case-points').value = parseFloat(row.cells[4].textContent);
-
-                        minorCaseModal.classList.remove('hidden');
+                    
+                    minorCaseModal.classList.remove('hidden');
                     }
                 } else if (deleteBtn) {
                     // Deletion is handled by the click event listener on minorCasesTableBody
@@ -1487,7 +1487,7 @@
 
                             // Refresh the minor cases list
                             await loadMinorCasesFromServer();
-
+                            
                             // Show success message
                             alert('Minor case deleted successfully');
                         } catch (error) {
@@ -2438,8 +2438,8 @@
 
                 // ฟังก์ชันสำหรับใช้ logic เดิมเมื่อไม่มีข้อมูลจากฐานข้อมูล
                 function fallbackToPreviousLogic() {
-                    // Check if we have a saved plan point value for this board
-                    const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
+                // Check if we have a saved plan point value for this board
+                const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
 
                     // Check if this is the first data load or a refresh
                     const isFirstLoad = !localStorage.getItem(`dataLoaded_${currentBoardId}`);
@@ -2449,10 +2449,10 @@
                         localStorage.setItem(`dataLoaded_${currentBoardId}`, 'true');
                     }
 
-                    if (savedPlanPoints) {
-                        // Use the saved value if it exists
-                        planPointsInput.value = savedPlanPoints;
-                    } else {
+                if (savedPlanPoints) {
+                    // Use the saved value if it exists
+                    planPointsInput.value = savedPlanPoints;
+                } else {
                         // Calculate total personal points from team members
                         const totalPersonalPoints = document.getElementById('total-personal')?.textContent || "0";
 
@@ -2472,11 +2472,11 @@
                             }
                         } else {
                             // Only fall back to total points from API if we don't have team member data
-                            planPointsInput.value = storyPoints.total || 0;
+                    planPointsInput.value = storyPoints.total || 0;
 
-                            // Save this initial value
+                    // Save this initial value
                             if (currentBoardId && isFirstLoad) {
-                                localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
+                        localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
                             }
                         }
                     }
@@ -2492,16 +2492,16 @@
 
                 // ฟังก์ชันอัปเดตการคำนวณต่างๆ
                 function updateMetricsBasedOnPlanPoints() {
-                    // Note: We'll update the Actual Point in buildMemberTable when we have the final point total
-                    // We're still initializing it here to ensure it's reset if needed
-                    document.getElementById('actual-points').textContent = '0';
+                // Note: We'll update the Actual Point in buildMemberTable when we have the final point total
+                // We're still initializing it here to ensure it's reset if needed
+                document.getElementById('actual-points').textContent = '0';
 
-                    // Calculate values for other metrics based on plan points
-                    const planPoints = parseFloat(planPointsInput.value) || 0;
+                // Calculate values for other metrics based on plan points
+                const planPoints = parseFloat(planPointsInput.value) || 0;
 
-                    // Other calculations will be updated once we have the actual point from team data
-                    document.getElementById('remain-percent').textContent = '0%';
-                    document.getElementById('percent-complete').textContent = '0%';
+                // Other calculations will be updated once we have the actual point from team data
+                document.getElementById('remain-percent').textContent = '0%';
+                document.getElementById('percent-complete').textContent = '0%';
                 }
             }
 
