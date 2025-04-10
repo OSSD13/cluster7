@@ -304,6 +304,14 @@ class BacklogController extends Controller
     public function destroy($id)
     {
         try {
+            DB::beginTransaction();
+
+            // Log the delete operation
+            Log::info('Backlog delete operation initiated', [
+                'bug_id' => $id,
+                'user' => Auth::user()->name
+            ]);
+
             // Get all reports
             $reports = SavedReport::with('sprint')->get();
             $bugFound = false;
@@ -355,12 +363,22 @@ class BacklogController extends Controller
                 }
             }
 
+            DB::commit();
+
             if ($bugFound) {
+                Log::info('Backlog bug deleted successfully', ['bug_id' => $id]);
                 return response()->json(['message' => 'Bug deleted successfully']);
             } else {
+                Log::warning('Attempted to delete non-existent backlog bug', ['bug_id' => $id]);
                 return response()->json(['error' => 'Bug not found'], 404);
             }
         } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting backlog bug', [
+                'bug_id' => $id,
+                'error' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString()
+            ]);
             return response()->json(['error' => 'Error deleting bug: ' . $e->getMessage()], 500);
         }
     }

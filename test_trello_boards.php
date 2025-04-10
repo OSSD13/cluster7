@@ -26,7 +26,7 @@ try {
     echo "Using API Token: " . substr($apiToken, 0, 4) . "..." . substr($apiToken, -4) . "\n\n";
 
     // Fetch boards from Trello API
-    $response = Http::withOptions(['verify' => false])->get('https://api.trello.com/1/members/me/boards', [
+    $response = Http::get('https://api.trello.com/1/members/me/boards', [
         'key' => $apiKey,
         'token' => $apiToken,
         'fields' => 'name,url,idOrganization,closed',
@@ -36,7 +36,7 @@ try {
     if ($response->successful()) {
         $boards = $response->json();
         echo "Successfully fetched " . count($boards) . " boards:\n\n";
-        
+
         foreach ($boards as $board) {
             echo "- " . $board['name'] . "\n";
             echo "  URL: " . $board['url'] . "\n";
@@ -53,4 +53,4 @@ try {
     exit(1);
 }
 
-echo "\nScript completed.\n"; 
+echo "\nScript completed.\n";

@@ -58,13 +58,13 @@ class TrelloService
     {
         $keyExists = !empty($this->apiKey);
         $tokenExists = !empty($this->apiToken);
-        
+
         // Log the status of credentials
         \Log::info('Trello credentials status', [
             'keyExists' => $keyExists,
             'tokenExists' => $tokenExists
         ]);
-        
+
         return $keyExists && $tokenExists;
     }
 
@@ -371,7 +371,7 @@ class TrelloService
     {
         return 'https://trello-avatars.s3.amazonaws.com/';
     }
-    
+
     /**
      * Get organization logo URL base.
      *
@@ -431,9 +431,9 @@ class TrelloService
                     'message' => 'Invalid API credentials. Please check your API key and token.'
                 ];
             }
-            
+
             $url = $this->baseUrl . 'members/me';
-            
+
             // Log the request details for debugging
             Log::info('Testing Trello connection', [
                 'url' => $url,
@@ -445,9 +445,8 @@ class TrelloService
                     'Accept' => 'application/json'
                 ]
             ]);
-            
+
             $response = Http::withOptions([
-                'verify' => false,  // Disable SSL verification for testing
                 'timeout' => 30,    // Increase timeout
                 'http_errors' => false // Don't throw exceptions for HTTP errors
             ])->get($url, [

@@ -38,10 +38,10 @@ class TrelloSettingsController extends Controller
         $apiKey = $this->getSetting('trello_api_key');
         $apiToken = $this->getSetting('trello_api_token');
         $boardId = $this->getSetting('trello_board_id');
-        
+
         // Initialize connectionStatus as null
         $connectionStatus = null;
-        
+
         // Check if credentials exist and test connection
         if ($apiKey && $apiToken) {
             try {
@@ -55,7 +55,7 @@ class TrelloSettingsController extends Controller
                     'board_fields' => 'name,url',
                     'board_limit' => 5
                 ]);
-                
+
                 if ($response->successful()) {
                     $user = $response->json();
                     $connectionStatus = [
@@ -70,7 +70,7 @@ class TrelloSettingsController extends Controller
                     $errorBody = $response->body();
                     $errorJson = json_decode($errorBody, true);
                     $errorMessage = $errorJson && isset($errorJson['message']) ? $errorJson['message'] : $errorBody;
-                    
+
                     // Log the error
                     \Log::warning('Trello API connection test failed on settings page', [
                         'status' => $response->status(),
@@ -78,7 +78,7 @@ class TrelloSettingsController extends Controller
                         'key_length' => strlen($apiKey),
                         'token_length' => strlen($apiToken)
                     ]);
-                    
+
                     $connectionStatus = [
                         'success' => false,
                         'message' => 'Failed to connect to Trello API: ' . $errorMessage,
@@ -93,7 +93,7 @@ class TrelloSettingsController extends Controller
                     'message' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
                 ]);
-                
+
                 $connectionStatus = [
                     'success' => false,
                     'message' => 'Error connecting to Trello API: ' . $e->getMessage(),
@@ -130,7 +130,7 @@ class TrelloSettingsController extends Controller
         // Save the settings to the database
         $this->saveSetting('trello_api_key', $request->trello_api_key);
         $this->saveSetting('trello_api_token', $request->trello_api_token);
-        
+
         // Only save board_id if it's present
         if ($request->has('board_id')) {
             $this->saveSetting('trello_board_id', $request->board_id);
@@ -163,7 +163,6 @@ class TrelloSettingsController extends Controller
             ]);
 
             $response = Http::withOptions([
-                'verify' => false,  // Try disabling SSL verification if needed
                 'timeout' => 15,    // Set a reasonable timeout
             ])->get('https://api.trello.com/1/members/me', [
                 'key' => $apiKey,
@@ -176,7 +175,7 @@ class TrelloSettingsController extends Controller
             if ($response->successful()) {
                 $user = $response->json();
                 $boards = array_slice($user['boards'] ?? [], 0, 5);
-                
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Successfully connected to Trello API. Welcome, ' . ($user['fullName'] ?? 'User') . '!',
@@ -200,7 +199,7 @@ class TrelloSettingsController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to connect to Trello API. Status code: ' . $response->status() . 
+                'message' => 'Failed to connect to Trello API. Status code: ' . $response->status() .
                              '. Error: ' . $errorMessage,
                 'details' => $errorJson ?? $errorBody
             ]);
