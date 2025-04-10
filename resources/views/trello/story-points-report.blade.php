@@ -2455,7 +2455,7 @@
                 } else {
                     // Calculate total personal points from team members
                     const totalPersonalPoints = document.getElementById('total-personal')?.textContent || "0";
-                    
+
                         // Always use team member points total as the default value for plan points (if available)
                     if (parseFloat(totalPersonalPoints) > 0) {
                         planPointsInput.value = totalPersonalPoints;
@@ -2473,7 +2473,7 @@
                     } else {
                             // Only fall back to total points from API if we don't have team member data
                         planPointsInput.value = storyPoints.total || 0;
-                    
+
                     // Save this initial value
                             if (currentBoardId && isFirstLoad) {
                         localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
@@ -3035,7 +3035,7 @@
                 editPlanPointsBtn.addEventListener('click', function() {
                     // สลับสถานะ readonly
                     planPointsInput.readOnly = !planPointsInput.readOnly;
-                    
+
                     if (!planPointsInput.readOnly) {
                         // เปิดให้แก้ไข
                         planPointsInput.classList.add('bg-yellow-50');
@@ -3043,16 +3043,16 @@
                     } else {
                         // บันทึกค่าใหม่
                         planPointsInput.classList.remove('bg-yellow-50');
-                        
+
                         // อัปเดตค่าใน localStorage และตั้งค่า flag ว่ามีการแก้ไขด้วยตนเอง
                         if (currentBoardId) {
                             localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
                             localStorage.setItem(`planPointEdited_${currentBoardId}`, 'true');
-                            
+
                             // บันทึกค่าลงฐานข้อมูลผ่าน API
                             const boardSelector = document.getElementById('board-selector');
                             const boardName = boardSelector ? boardSelector.options[boardSelector.selectedIndex].text : '';
-                            
+
                             fetch('{{ route("trello.save.plan.point") }}', {
                                 method: 'POST',
                                 headers: {
@@ -3069,12 +3069,12 @@
                             .then(data => {
                                 if (data.success) {
                                     showToast('Plan point saved successfully', 'success');
-                                    
+
                                     // อัปเดต cachedData
                                     if (window.cachedData && window.cachedData.storyPoints) {
                                         window.cachedData.storyPoints.planPoints = parseFloat(planPointsInput.value) || 0;
                                     }
-                                    
+
                                     // อัปเดตการคำนวณที่เกี่ยวข้อง
                                     updateTotals();
                                 } else {
@@ -3088,7 +3088,7 @@
                         }
                     }
                 });
-                
+
                 // ตรวจจับการกด Enter เพื่อบันทึก
                 planPointsInput.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter' && !planPointsInput.readOnly) {
@@ -3834,11 +3834,11 @@
                 // Update actual points and recalculate percentages for the sprint summary
                 document.getElementById('actual-points').textContent = totals.final.toFixed(1);
                 document.getElementById('actual-current-sprint').textContent = (totals.final + totals.extra).toFixed(1);
-                
+
                 // Check if we have a user-input plan point value
                 const planPointsInput = document.getElementById('plan-points');
                 const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
-                
+
                 // If no saved value or the saved value equals the previous total personal points,
                 // update plan points to match the new total personal points
                 if (!savedPlanPoints || parseFloat(savedPlanPoints) === parseFloat(planPointsInput.getAttribute('data-previous-total') || '0')) {
@@ -3848,13 +3848,13 @@
                         localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
                     }
                 }
-                
+
                 // Store current total for future reference
                 planPointsInput.setAttribute('data-previous-total', totals.personal.toFixed(1));
-                
+
                 // Get plan points (either user input or automatically set)
                 const planPoints = parseFloat(planPointsInput.value) || 0;
-                
+
                 // Recalculate percentages
                 if (planPoints > 0) {
                     const remainPercent = Math.round(((planPoints - totals.final) / planPoints) * 100);

@@ -9,11 +9,6 @@
     <div class="mb-6">
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold flex items-center">
-                Bug Backlog
-                <span class="ml-3 text-sm bg-amber-100 text-amber-800 py-1 px-2 rounded-full">
-                    {{ $allBugs->count() }} {{ Str::plural('bug', $allBugs->count()) }}
-                    ({{ $allBugs->sum('points') }} {{ Str::plural('point', $allBugs->sum('points')) }})
-                </span>
             </h1>
 
     <!-- Edit Bug Modal -->
@@ -31,7 +26,7 @@
 
                 <form id="editBugForm" method="POST" class="mt-5 space-y-6">
                     @csrf
-                    @method('POST')
+                    @method('PUT')
                     <input type="hidden" id="bugId" name="id">
 
                     <div class="mb-4">
@@ -243,7 +238,7 @@
                     <div class="flex space-x-3 flex items-end ">
 
                     <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center h-8 w-8 edit-backlog-task">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-pencil-square" viewBox="0 0 16 16">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                             <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                             <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
                         </svg>
@@ -595,7 +590,6 @@
         form.querySelector('#bugName').value = bugCard.querySelector('a').textContent;
         form.querySelector('#bugTeam').value = bugCard.getAttribute('data-team') || 'all';
         form.querySelector('#bugPoints').value = bugCard.querySelector('.w-8.h-8.rounded-full').textContent.trim();
-        form.querySelector('#bugAssigned').value = bugCard.querySelector('.ml-2.px-2.py-1.text-xs.font-medium.rounded-full:last-child').textContent.trim();
         form.querySelector('#bugDescription').value = bugCard.querySelector('.col-span-8').textContent.trim();
 
         // Show modal
@@ -631,8 +625,8 @@
                 const bugPoints = bugCard.querySelector('.rounded-full').textContent.trim();
                 const bugDescription = bugCard.querySelector('.col-span-8')?.textContent.trim() || '';
 
-                // Set form action
-                editForm.action = `/backlog/update/${bugId}`;
+                // Set form action with Laravel route helper
+                editForm.action = "{{ route('backlog.update', ['id' => '_ID_']) }}".replace('_ID_', bugId);
 
                 // Fill form fields
                 document.getElementById('bugId').value = bugId;
@@ -660,53 +654,14 @@
 
         // Handle form submission
         editForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
+            // Don't prevent the default form submission - let it go naturally
             if (!confirm('Are you sure you want to update this bug?')) {
-                return;
+                e.preventDefault();
+                return false;
             }
 
-            const bugId = this.querySelector('#bugId').value;
-            const formData = new FormData(this);
-
-            fetch(this.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: formData
-            })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                    return null;
-                }
-
-                if (!response.ok) {
-                    throw new Error('Update failed');
-                }
-
-                // Try to parse as JSON, if it fails, handle as regular response
-                return response.text().then(text => {
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        // If it's not JSON, just reload the page
-                        window.location.reload();
-                        return null;
-                    }
-                });
-            })
-            .then(data => {
-                if (data) {
-                    closeModal();
-                }
-                window.location.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to update bug. Please try again.');
-            });
+            // Let the form submit normally through Laravel's routing system
+            return true;
         });
     });
 </script>
