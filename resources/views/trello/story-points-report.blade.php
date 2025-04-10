@@ -115,7 +115,11 @@
                 transform: rotate(360deg);
             }
         }
+
+@import ('~lucide-static/font/Lucide.css');
     </style>
+
+    
 
     <div class="max-w-7xl mx-auto">
         @if($error)
@@ -152,11 +156,11 @@
                         @endphp
                         <div>
                             <div class="flex items-center">
-                                <h1 class="text-2xl font-bold">Sprint: {{ $sprintNumber }}</h1>
+                                <h1 class="text-4xl text-[#13A7FD] font-bold">Sprint {{ $sprintNumber }}</h1>
                                 <span
-                                    class="ml-3 px-3 py-1 text-xs font-medium bg-primary-100 text-primary-800 rounded-full">Report</span>
+                                    class="ml-3 px-3 py-1 text-xs font-medium bg-primary-100 text-primary-500 rounded-full">Report</span>
                             </div>
-                            <h2 class="text-xl text-gray-600">Current Sprint Report</h2>
+                            <h2 class="text-2xl text-grey-300">Current Sprint Report</h2>
                         </div>
                     </div>
                 </div>
@@ -166,10 +170,9 @@
                 <!-- Board/Team Selector -->
                 @if (auth()->user()->isAdmin() || !$singleBoard)
                     <div class="mr-2 flex items-center">
-                        <label for="board-selector" class="text-sm font-medium text-gray-700 mr-2">Team:</label>
                         @if (count($boards) > 0)
                             <select id="board-selector"
-                                class="rounded-md border-gray-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50">
+                                class="rounded-full border-gray-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50">
                                 @foreach ($boards as $board)
                                     <option value="{{ $board['id'] }}"
                                         {{ $board['id'] == $defaultBoardId ? 'selected' : '' }}>
@@ -192,14 +195,9 @@
                     </div>
                 @endif
 
-                <div class="relative" x-data="{ open: false }">
+                <div class="pe-2 relative" x-data="{ open: false }">
                     <button @click="open = !open"
-                        class="bg-white border border-gray-300 rounded-md px-4 py-2 flex items-center text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6h16M4 12h16M4 18h7" />
-                        </svg>
+                        class="flex bg-white border border-gray-300 rounded-full px-4 py-2 flex items-center text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500">
                         Menu
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
@@ -208,7 +206,7 @@
                     </button>
                    
                     <div x-show="open" @click.away="open = false"
-                        class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                        class="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                         <div class="py-1">
                         @if(auth()->user()->isAdmin())
                             <!-- Save Report Button with Sprint Auto-Save Hint -->
@@ -287,9 +285,8 @@
                         </div>
                     </div>
                 </div>
-
                 <button id="fetch-data-btn"
-                    class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded flex items-center">
+                    class="bg-[#13A7FD] hover:bg-[#148CD2] text-white px-4 py-2 rounded-full flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -334,24 +331,21 @@
                 <span>Loading data from Trello...</span>
             </div>
         </div>
-
         <div id="main-data-container" class="hidden">
             <div id="story-points-summary" class="hidden">
-                <div class="bg-white shadow rounded-lg p-6 mb-6">                 <h2 class="text-lg font-semibold mb-4 flex items-center">
-                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                     </svg>
-                     Sprint Statistics
-                 </h2>
-
+                <div class="bg-white shadow rounded-3xl p-6 mb-6">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <span class=" rounded-full text-white bg-[#13A7FD] px-2 py-1"> Sprint Statistics </span>
+                    </h2>
                     <!-- Date Display -->
-                    <div id="sprint-date-range" class="mb-3 text-sm text-gray-500 flex items-center">
+                    <div id="sprint-date-range" class=" text-sm text-gray-500 flex items-center">
+                        
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        Report Date: {{ $currentDate ?? Carbon\Carbon::now()->format('F d, Y') }}
+                        Report Date : {{ $currentDate ?? Carbon\Carbon::now()->format('F d Y') }}
                     </div>
 
                     <!-- Last Updated Display -->
@@ -403,10 +397,10 @@
                     <!-- Sprint Timeline Visualization -->
                     <div class="mt-4">
                         <h3 class="text-sm font-medium text-gray-700 mb-2">Sprint Timeline</h3>
-                        <div class="relative h-16 rounded-lg overflow-hidden bg-gray-100 shadow-inner">
+                        <div class="relative h-16 rounded-lg overflow-hidden bg-gray-100">
                             <!-- Progress Background with Gradient -->
                             <div id="sprint-progress-bar"
-                                class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary-400 to-primary-600"
+                                class="absolute top-0 left-0 h-full bg-gradient-to-r from-[#81D1FF] to-[#008FE2]"
                                 style="width: {{ $sprintProgressPercent ?? 0 }}%"></div>
 
                             <!-- Day Markers - generate markers for each day -->
@@ -418,7 +412,7 @@
                             @for ($i = 1; $i <= $totalDays; $i++)
                                 <div class="absolute top-0 h-2 border-r border-gray-300"
                                     style="left: {{ $markerWidth * $i }}%; width: 1px;"></div>
-                                <div class="absolute bottom-1 text-xs text-gray-500 font-medium"
+                                <div class="absolute bottom-1 text-xs text-white font-medium"
                                     style="left: {{ $markerWidth * ($i - 0.5) }}%">{{ $i }}</div>
                             @endfor
 
@@ -427,28 +421,28 @@
                                 <div class="absolute top-0 h-full" style="left: {{ $sprintProgressPercent ?? 0 }}%">
                                     <div class="w-0.5 h-full bg-white shadow-md"></div>
                                     <div
-                                        class="absolute -top-1.5 -translate-x-1/2 w-5 h-5 rounded-full bg-white shadow-md border-2 border-primary-600 flex items-center justify-center">
-                                        <span class="text-primary-700 text-xs font-bold">{{ $daysElapsed ?? 0 }}</span>
+                                        class="absolute -top-1.5 -translate-x-1/2 w-5 h-5 rounded-full bg-white shadow-md border-2 border-[#13A7FD] flex items-center justify-center">
+                                        <span class="text-[#13A7FD] text-xs font-bold">{{ $daysElapsed ?? 0 }}</span>
                                     </div>
                                 </div>
                             @endif
 
                             <!-- Sprint Number Badge -->
                             <div
-                                class="absolute top-0 right-0 bg-primary-600 text-white px-3 py-1 rounded-bl-md text-xs font-bold shadow-sm">
+                                class="absolute top-0 right-0 bg-[#13A7FD] text-white px-3 py-1 rounded-bl-md text-xs font-bold shadow-sm">
                                 Sprint {{ $currentSprintNumber ?? '-' }}
                             </div>
 
                             <!-- Start Date -->
                             <div
-                                class="absolute top-7 left-2 text-xs font-medium text-gray-700 bg-white/70 backdrop-blur-sm px-1 py-0.5 rounded">
-                                <span class="text-primary-700">Start:</span> {{ $currentSprintStartDate ?? '-' }}
+                                class="absolute top-2 left-2 text-xs font-medium text-gray-700 bg-white/70 backdrop-blur-sm px-1 py-0.5 rounded-full">
+                                <span class="text-gray-700">Start </span> {{ $currentSprintStartDate ?? '-' }}
                             </div>
 
                             <!-- End Date -->
                             <div
-                                class="absolute top-7 right-2 text-xs font-medium text-gray-700 bg-white/70 backdrop-blur-sm px-1 py-0.5 rounded">
-                                <span class="text-primary-700">End:</span> {{ $currentSprintEndDate ?? '-' }}
+                                class="absolute top-8 right-2 text-xs font-medium text-gray-700 bg-white/70 backdrop-blur-sm px-1 py-0.5 rounded">
+                                <span class="text-grey-700">End </span> {{ $currentSprintEndDate ?? '-' }}
                             </div>
                         </div>
                     </div>
@@ -456,18 +450,18 @@
 
                 <!-- Board Name Display -->
                 <div id="board-name-display" class="mb-4 hidden">
-                    <div class="flex items-center text-sm text-gray-500 mb-2">
+                    <div class="flex items-center text-lg  font-bold text-gray-500 mb-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2m0 0V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                         </svg>
-                        Board: <span id="board-name" class="font-medium"></span>
+                        Board : <span id="board-name" class="font-medium"></span>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
-                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-4 pb-5">
+                    <div class="bg-gray-100 rounded-lg p-4 text-center">
                         <div class="flex items-center justify-between mb-2">
                             <span
                                 class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-700">
@@ -488,11 +482,6 @@
                             <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                                 <button id="edit-plan-points"
                                     class="text-gray-400 hover:text-gray-600 pointer-events-auto">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
                                 </button>
                             </div>
                         </div>
@@ -550,7 +539,7 @@
                     <div class="bg-yellow-50 rounded-lg p-4 text-center">
                         <div class="flex items-center justify-between mb-2">
                             <span
-                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-200 text-yellow-700">
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-200 text-yellow-700 ">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -560,7 +549,7 @@
                             <span
                                 class="rounded-full bg-yellow-200 text-xs px-2 py-1 text-yellow-700 font-semibold">Current</span>
                         </div>
-                        <h3 class="text-sm font-medium text-yellow-500">Point Current Sprint</h3>
+                        <h3 class="text-sm font-medium text-yellow-500 ">Point Current Sprint</h3>
                         <p id="current-sprint-points" class="text-2xl font-bold text-yellow-600">0</p>
                     </div>
                     <div class="bg-red-50 rounded-lg p-4 text-center">
@@ -583,30 +572,40 @@
             </div>
 
             <!-- Team Member Points Table -->
-            <div id="team-member-points-container" class="bg-white shadow rounded-lg p-6 mb-6">
-                <h2 class="text-lg font-semibold mb-4">
-                    <span id="points-title">Points from Current Sprint</span>
-                    <span id="board-name-display"
-                        class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full hidden">
-                        Loading board name...
-                    </span>
-                    <span id="last-updated" class="text-xs text-gray-500 block mt-1 hidden">
-                        Last updated: ...
-                    </span>
-                </h2>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white border border-gray-200">
+            <div id="team-member-points-container" class="bg-white shadow rounded-3xl p-8 mb-8">
+                <div class="flex items-center mb-6 rounded-full">
+                    <!-- <svg xmlns="http://www.w3.org/2000/svg" width="30" height="31" fill="currentColor" class="bi bi-bar-chart-line mr-2 text-sky-400" viewBox="0 0 16 16">
+                        <path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1zm1 12h2V2h-2zm-3 0V7H7v7zm-5 0v-3H2v3z"/>
+                    </svg> -->
+                    <h2 class="text-xl font-semibold">
+                        <span id="points-title" class="rounded-full text-sky-400 bg-sky-100 px-3 py-2">Points from Current Sprint</span>
+                        <span id="board-name-display"
+                            class="ml-3 text-xs bg-blue-100 text-blue-800 px-3 py-2 rounded-full hidden">
+                            Loading board name...
+                        </span>
+                        <span id="last-updated" class="text-xs text-gray-500 block mt-2 hidden">
+                            Last updated: ...
+                        </span>
+                    </h2>
+                </div>
+                <div class="overflow-x-auto rounded-xl">
+                    <table class="min-w-full bg-white border-gray-200">
                         <thead>
                             <tr class="bg-gray-100">
-                                <th class="py-3 px-4 border-b text-left">Member</th>
-                                <th class="py-3 px-4 border-b text-center">Point Personal</th>
-                                <th class="py-3 px-4 border-b text-center">Pass</th>
-                                <th class="py-3 px-4 border-b text-center">Bug</th>
-                                <th class="py-3 px-4 border-b text-center">Cancel</th>
-                                <th class="py-3 px-4 border-b text-center cursor-pointer hover:bg-blue-50"
-                                    title="Click to add extra points">Extra</th>
-                                <th class="py-3 px-4 border-b text-center">Final</th>
-                                <th class="py-3 px-4 border-b text-center">Pass %</th>
+                                <th class="font-medium text-center py-2 rounded-full">
+                                    <span class="text-gray-600 px-2 text-sm font-medium">
+                                        Member
+                                    </span>
+                                </th>
+                                <th class="py-2 px-2 text-sm font-medium text-center rounded-full g-blue-100 text-blue-400 bg-sky-100">Point Personal</th>
+                                <th class="py-2 px-2 text-sm font-medium text-center rounded-full bg-green-100 text-green-600">Pass</th>
+                                <th class="py-2 px-2 text-sm font-medium text-center rounded-full bg-red-100 text-red-600">Bug</th>
+                                <th class="py-2 px-2 text-sm font-medium text-center rounded-full bg-orange-100 text-orange-600">Cancel</th>
+                                <th class="py-2 px-2 text-sm font-medium rounded-full text-center bg-cyan-50 text-cyan-600 cursor-pointer hover:bg-blue-100"
+                                    title="Click to add extra points rounded-full">Extra
+                                </th>
+                                <th class="py-2 px-2 text-sm font-medium text-center bg-purple-100 text-purple-600 rounded-full">Final</th>
+                                <th class="py-2 px-2 text-sm font-medium text-center bg-emerald-400 text-black rounded-full">Pass %</th>
                             </tr>
                         </thead>
                         <tbody id="team-members-table-body">
@@ -614,38 +613,47 @@
                                 <td colspan="8" class="py-4 px-4 text-center text-gray-500">Loading team data...</td>
                             </tr>
                         </tbody>
-                        <tfoot class="bg-gray-50 font-semibold">
+                        <tfoot class="font-semibold">
                             <tr>
-                                <td class="py-3 px-4 border-t text-left">Totals</td>
-                                <td id="total-personal" class="py-3 px-4 border-t text-center">0</td>
-                                <td id="total-pass" class="py-3 px-4 border-t text-center">0</td>
-                                <td id="total-bug" class="py-3 px-4 border-t text-center">0</td>
-                                <td id="total-cancel" class="py-3 px-4 border-t text-center">0</td>
-                                <td id="total-extra" class="py-3 px-4 border-t text-center">0</td>
-                                <td id="total-final" class="py-3 px-4 border-t text-center">0</td>
-                                <td class="py-3 px-4 border-t text-center">-</td>
+                                <td class="py-2 px-2 text-left">Totals</td>
+                                <td id="total-personal" class="py-2 px-2 border-t text-center">0</td>
+                                <td id="total-pass" class="py-2 px-2 border-t text-center">0</td>
+                                <td id="total-bug" class="py-2 px-2 border-t text-center">0</td>
+                                <td id="total-cancel" class="py-2 px-2 border-t text-center">0</td>
+                                <td id="total-extra" class="py-2 px-2 border-t text-center">0</td>
+                                <td id="total-final" class="py-2 px-2 border-t text-center">0</td>
+                                <td class="py-2 px-2 border-t text-center">-</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
             </div>
             <div class="mt-4 text-sm text-gray-600">
-                <p><strong>Note:</strong> Calculation methods:</p>
+                <p><strong>Note :</strong> Calculation methods</p>
                 <ul class="list-disc ml-5">
-                    <li>Pass: Points of cards in "Done" section/list or with "Done"/"Pass" labels</li>
-                    <li>Bug: Points of cards not in "Done" section and not in "Cancel" section</li>
-                    <li>Final: Equal to Pass points</li>
-                    <li>Pass %: (Pass / Point Personal) × 100</li>
+                    <li>Pass : Points of cards in "Done" section/list or with "Done"/"Pass" labels</li>
+                    <li>Bug : Points of cards not in "Done" section and not in "Cancel" section</li>
+                    <li>Final : Equal to Pass points</li>
+                    <li>Pass % : (Pass / Point Personal) × 100</li>
                 </ul>
             </div>
             <!-- Changed from Cards by List to Current Bug -->
             <div class="mt-8">
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                        <h2 class="text-lg font-semibold text-gray-800">Current Bug <span id="bug-count"
-                                class="text-sm font-normal text-gray-500">0 bugs</span></h2>
-                        <div class="text-sm text-gray-500">
-                            Total Points: <span id="total-bug-points" class="font-semibold">0</span>
+                <div class="bg-white rounded-3xl shadow-md overflow-hidden">
+                    <div class="px-6 py-5 flex justify-between items-center">
+                        <div class="flex items-center ">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="31" fill="currentColor" class="bi bi-bug mr-2 text-red-500" viewBox="0 0 16 16">
+                                <path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623M4 7v4a4 4 0 0 0 3.5 3.97V7zm4.5 0v7.97A4 4 0 0 0 12 11V7zM12 6a4 4 0 0 0-1.334-2.982A3.98 3.98 0 0 0 8 2a3.98 3.98 0 0 0-2.667 1.018A4 4 0 0 0 4 6z"/>
+                            </svg>
+                            <h2 class="rounded-full text-xl text-red-500 bg-red-100 px-2 py-1 font-bold">Current Bug 
+                                <span id="bug-count"
+                                    class="text-sm font-normal text-gray-500">0 bugs
+                                </span>
+                            </h2>
+                        </div>
+                        <div class="text-sm text-gray-500 font-medium rounded-full text-red-500 bg-red-100 px-2 py-1">
+                            Total Points  
+                            <span id="total-bug-points" class="font-semibold">0</span>
                         </div>
                     </div>
 
@@ -655,7 +663,7 @@
                         </div>
 
                         <div class="overflow-x-auto hide-scrollbar" style="scrollbar-width: none;">
-                            <div id="bug-cards-container" class="flex gap-4 p-4 overflow-x-auto min-h-[200px]"></div>
+                            <div id="bug-cards-container" class="flex gap-4 p-4 overflow-x-auto min-h-[200px] "></div>
                         </div>
                     </div>
                 </div>
@@ -665,26 +673,26 @@
             <div id="extra-points-modal"
                 class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full"
                 style="z-index: 1000;">
-                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                    <div class="mt-3">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900">Add Extra Points</h3>
+                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-2xl bg-white">
+                    <div class="mt-1">
+                        <h3 class="text-xl rounded-full text-[#13A7FD] font-bold">Add Extra Points</h3>
                         <div class="mt-4">
                             <input type="hidden" id="extra-points-member-id">
                             <input type="hidden" id="extra-points-row-index">
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700">Points</label>
                                 <input type="number" id="extra-points-input"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                    class="mt-1 block w-full rounded-full border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     step="0.5" min="0">
                             </div>
                         </div>
                         <div class="mt-5 flex justify-end space-x-2">
                             <button id="cancel-extra-points"
-                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
                                 Cancel
                             </button>
                             <button id="save-extra-points"
-                                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                class="px-4 py-2 bg-[#13A7FD] text-white rounded-full hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
                                 Save
                             </button>
                         </div>
@@ -693,15 +701,23 @@
             </div>
             <!-- End of Extra Points Modal -->
             <!-- Minor Case Section -->
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h2 class="text-lg font-semibold text-gray-800">Minor Cases <span id="minor-case-count"
-                        class="text-sm font-normal text-gray-500">0 cases</span></h2>
+        <div class="mt-8">
+            <div class="bg-white shadow rounded-3xl">
+                <div class="px-6 py-5 border-gray-200 flex justify-between items-center">
+                    <div class = "flex items-center">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="30" height="31" fill="currentColor " class="bi bi-send text-violet-400 " viewBox="0 0 16 16">
+                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                </svg>
+                    <h2 class="ml-2 rounded-full text-xl text-violet-400 bg-violet-100 px-2 py-1 font-bold">Minor Cases <span id="minor-case-count"
+                        class="text-sm font-normal text-gray-500">0 cases</span></h2> 
+                    </div>
+                
                 <div class="flex items-center space-x-2">
-                    <span class="text-sm text-gray-500">
-                        Total Points: <span id="total-minor-points" class="font-semibold">0</span>
-                    </span>
+                    <div class="text-sm text-gray-500 font-medium rounded-full text-violet-500 bg-violet-100 px-2 py-1">
+                        Total Points <span id="total-minor-points" class="font-medium ml-1">0</span>
+                    </div>
                     <button id="add-minor-case-btn"
-                        class="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm flex items-center">
+                        class="px-3 py-1 bg-emerald-500 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -711,10 +727,10 @@
                     </button>
                 </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white">
+            <div class="overflow-x-auto ">
+                <table class="min-w-full">
                     <thead>
-                        <tr class="bg-gray-100 text-gray-700">
+                        <tr class="text-gray-700">
                             <th class="py-3 px-4 text-left">Sprint</th>
                             <th class="py-3 px-4 text-left">Card Detail</th>
                             <th class="py-3 px-4 text-left">Description</th>
@@ -730,7 +746,7 @@
                                 Case" to add one.</td>
                         </tr>
                     </tbody>
-                    <tfoot class="bg-gray-50 font-semibold">
+                    <tfoot class="font-semibold">
                         <tr>
                             <td colspan="4" class="py-3 px-4 text-right">Total Points:</td>
                             <td id="minor-case-total-points" class="py-3 px-4 text-center">0</td>
@@ -799,22 +815,27 @@
                     </div>
                 </div>
             </div>
+            </div>
+            </div>
             <!-- Backlog Section -->
             @if ((isset($backlogData) && isset($backlogData['allBugs']) && count($backlogData['allBugs']) > 0))
                 <div class="mt-8">
-                    <div class="bg-gray-50 shadow rounded-lg p-6 mb-8 border-l-4 border-amber-500">
+                    <div class="bg-white shadow rounded-3xl p-6 mb-8 ">
                         <h2 class="text-xl font-semibold mb-2 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-500 mr-2" fill="none"
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9 text-amber-500 mr-2" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            Backlog (<span id="backlog-title-count">{{ $backlogData['bugCount'] }}</span>)
+                            <span class="rounded-full text-xl text-amber-500 bg-amber-100 px-2 py-1 font-bold">
+                                Backlog (<span id="backlog-title-count">{{ $backlogData['bugCount'] }}</span>)
+                            </span>
+                            
                         </h2>
-                        <p class="text-sm text-gray-600 mb-4">These bugs were carried over from previous sprints.</p>
+                        <p class="ml-1 text-sm text-gray-600 mb-4">These bugs were carried over from previous sprints.</p>
 
-                        <div class="mt-4">
-                            <div class="overflow-x-auto">
+                        <div class="mt-5">
+                            <div class="rounded-3xl overflow-x-auto">
                                 <div id="backlog-cards-container"
                                     class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
                                     @foreach ($backlogData['allBugs'] as $bug)
@@ -905,7 +926,7 @@
 
                             <div class="mt-4 text-right">
                                 <a href="{{ route('backlog.index') }}"
-                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-full shadow-sm text-white bg-amber-500 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -2108,7 +2129,17 @@
                     <td class="py-3 px-4 border-b text-center text-green-600">${passPoint.toFixed(1)}</td>
                     <td class="py-3 px-4 border-b text-center text-red-600">${bugPoint.toFixed(1)}</td>
                     <td class="py-3 px-4 border-b text-center text-orange-600">${cancelPoint.toFixed(1)}</td>
-                    <td class="py-3 px-4 border-b text-center text-blue-600 cursor-pointer hover:bg-blue-50">${extraPoint.toFixed(1)}</td>
+                    <td class="py-3 px-4 border-b text-center text-blue-600 cursor-pointer hover:bg-blue-50">
+                        ${extraPoint.toFixed(1)}
+                        <button id="edit_extra"
+                                class="text-blue-400 hover:text-blue-600 pointer-events-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                        </button>
+                    </td>
                     <td class="py-3 px-4 border-b text-center font-bold">${finalPoint.toFixed(1)}</td>
                     <td class="py-3 px-4 border-b text-center">
                         <div class="inline-block w-12 text-center font-medium ${passPercentageClass}">
@@ -2126,7 +2157,7 @@
                 document.getElementById('total-pass').textContent = totals.pass.toFixed(1);
                 document.getElementById('total-bug').textContent = totals.bug.toFixed(1);
                 document.getElementById('total-cancel').textContent = totals.cancel.toFixed(1);
-                document.getElementById('total-extra').textContent = totals.extra.toFixed(1);
+                document.getElementById('total-extra').textContent = totals.extra.toFixed(1); 
                 document.getElementById('total-final').textContent = totals.final.toFixed(1);
 
                 // 5. Point Current Sprint (sum of member personal points)

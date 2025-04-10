@@ -85,7 +85,7 @@
                 </div>
                 <button
                     @click="sidebarOpen = !sidebarOpen"
-                    class="p-2 rounded-lg hover:bg-[#13A7FD focus:outline-none">
+                    class="p-2 rounded-lg hover:bg-[#13A7FD] focus:outline-none">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="h-4 w-4 transition-transform duration-300"
