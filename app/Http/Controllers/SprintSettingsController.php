@@ -10,7 +10,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class SprintSettingsController extends Controller
 {
@@ -49,7 +48,7 @@ class SprintSettingsController extends Controller
             // Calculate days elapsed including the current day if we're within the sprint
             $startDate = $currentSprint->start_date->startOfDay();
             $endDate = $currentSprint->end_date->endOfDay();
-            $nowDate = $now->copy(); // Don't use startOfDay() here to get accurate hours
+            $nowDate = $now->startOfDay();
 
             if ($nowDate->between($startDate, $endDate)) {
                 $daysElapsed = $startDate->diffInDays($nowDate) + 1;
@@ -65,27 +64,18 @@ class SprintSettingsController extends Controller
             // Calculate sprint progress percentage
             $sprintProgressPercent = min(100, round(($daysElapsed / $totalDays) * 100, 1));
 
-            // Calculate days and hours remaining
+            // Calculate days remaining with proper precision
             if ($nowDate->lte($endDate)) {
-                $diffInHours = $nowDate->diffInHours($endDate, false);
-                $daysRemaining = floor($diffInHours / 24);
-                $hoursRemaining = $diffInHours % 24;
-
-                // Format the remaining time string
-                if ($daysRemaining > 0) {
-                    $daysRemaining = "{$daysRemaining} " . Str::plural('day', $daysRemaining);
-                    if ($hoursRemaining > 0) {
-                        $daysRemaining .= " {$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
-                    }
-                } else {
-                    if ($hoursRemaining > 0) {
-                        $daysRemaining = "{$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
-                    } else {
-                        $daysRemaining = "Less than 1 hour";
-                    }
+                // Calculate exact days remaining including partial days
+                $daysRemaining = $nowDate->floatDiffInDays($endDate);
+                // Round to 1 decimal place
+                $daysRemaining = round($daysRemaining, 1);
+                // If we're on the last day and have less than 0.1 days remaining, show 0
+                if ($daysRemaining < 0.1) {
+                    $daysRemaining = 0;
                 }
             } else {
-                $daysRemaining = "0 days";
+                $daysRemaining = 0;
             }
 
             // Update the sprint with new calculations
@@ -109,7 +99,7 @@ class SprintSettingsController extends Controller
             // Calculate days elapsed including the current day if we're within the sprint
             $startDate = $sprintStartDate->startOfDay();
             $endDate = $sprintEndDate->endOfDay();
-            $nowDate = $now->copy(); // Don't use startOfDay() here to get accurate hours
+            $nowDate = $now->startOfDay();
 
             if ($nowDate->between($startDate, $endDate)) {
                 $daysElapsed = $startDate->diffInDays($nowDate) + 1;
@@ -125,27 +115,18 @@ class SprintSettingsController extends Controller
             // Calculate sprint progress percentage
             $sprintProgressPercent = min(100, round(($daysElapsed / $totalDays) * 100, 1));
 
-            // Calculate days and hours remaining
+            // Calculate days remaining with proper precision
             if ($nowDate->lte($endDate)) {
-                $diffInHours = $nowDate->diffInHours($endDate, false);
-                $daysRemaining = floor($diffInHours / 24);
-                $hoursRemaining = $diffInHours % 24;
-
-                // Format the remaining time string
-                if ($daysRemaining > 0) {
-                    $daysRemaining = "{$daysRemaining} " . Str::plural('day', $daysRemaining);
-                    if ($hoursRemaining > 0) {
-                        $daysRemaining .= " {$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
-                    }
-                } else {
-                    if ($hoursRemaining > 0) {
-                        $daysRemaining = "{$hoursRemaining} " . Str::plural('hour', $hoursRemaining);
-                    } else {
-                        $daysRemaining = "Less than 1 hour";
-                    }
+                // Calculate exact days remaining including partial days
+                $daysRemaining = $nowDate->floatDiffInDays($endDate);
+                // Round to 1 decimal place
+                $daysRemaining = round($daysRemaining, 1);
+                // If we're on the last day and have less than 0.1 days remaining, show 0
+                if ($daysRemaining < 0.1) {
+                    $daysRemaining = 0;
                 }
             } else {
-                $daysRemaining = "0 days";
+                $daysRemaining = 0;
             }
 
             // Save the current sprint in the database
