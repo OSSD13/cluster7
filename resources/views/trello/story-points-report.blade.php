@@ -3459,10 +3459,17 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bug.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-                                ${bug.status ? bug.status.charAt(0).toUpperCase() + bug.status.slice(1) : 'In Progress'}
+                                ${bug.status ? bug.status.charAt(0).toUpperCase() + bug.status.slice(1) : 'Active'}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <button class="toggle-backlog-status px-2 py-1 mr-1 text-xs font-medium rounded-full ${bug.status === 'completed' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 'bg-green-100 text-green-800 hover:bg-green-200'}"
+                                data-bug-id="${bug.id ?? ''}"
+                                data-bug-points="${bug.points ?? 0}"
+                                data-bug-status="${bug.status ?? 'active'}">
+                                <i class="fas ${bug.status === 'completed' ? 'fa-undo' : 'fa-check'}"></i>
+                                ${bug.status === 'completed' ? 'Mark Active' : 'Complete'}
+                            </button>
                             <button class="edit-backlog-task px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200"
                                 data-bug-id="${bug.id ?? ''}"
                                 data-bug-name="${bug.name ?? ''}"
@@ -4105,6 +4112,118 @@
                     } else {
                         console.error('Some modal elements are missing');
                     }
+                }
+
+                // Handle toggle status buttons for backlog items
+                const toggleButton = e.target.closest('.toggle-backlog-status');
+                if (toggleButton) {
+                    const bugId = toggleButton.getAttribute('data-bug-id');
+                    const currentStatus = toggleButton.getAttribute('data-bug-status');
+                    const points = toggleButton.getAttribute('data-bug-points');
+
+                    // Toggle the status
+                    const newStatus = currentStatus === 'completed' ? 'active' : 'completed';
+
+                    // Show confirmation dialog for completing tasks with points
+                    if (newStatus === 'completed' && points > 0) {
+                        if (!confirm(`Are you sure you want to mark this task as complete? This will add ${points} points to the actual points total.`)) {
+                            return;
+                        }
+                    }
+
+                    // Call API to update status
+                    fetch(`${window.location.origin}/backlog/${bugId}/status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            status: newStatus,
+                            points: points
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update button appearance
+                            toggleButton.setAttribute('data-bug-status', newStatus);
+
+                            // Update the class and icon
+                            if (newStatus === 'completed') {
+                                toggleButton.classList.remove('bg-green-100', 'text-green-800', 'hover:bg-green-200');
+                                toggleButton.classList.add('bg-yellow-100', 'text-yellow-800', 'hover:bg-yellow-200');
+                                const icon = toggleButton.querySelector('i');
+                                if (icon) {
+                                    icon.classList.remove('fa-check');
+                                    icon.classList.add('fa-undo');
+                                }
+                                toggleButton.innerHTML = toggleButton.innerHTML.replace('Complete', 'Mark Active');
+                            } else {
+                                toggleButton.classList.remove('bg-yellow-100', 'text-yellow-800', 'hover:bg-yellow-200');
+                                toggleButton.classList.add('bg-green-100', 'text-green-800', 'hover:bg-green-200');
+                                const icon = toggleButton.querySelector('i');
+                                if (icon) {
+                                    icon.classList.remove('fa-undo');
+                                    icon.classList.add('fa-check');
+                                }
+                                toggleButton.innerHTML = toggleButton.innerHTML.replace('Mark Active', 'Complete');
+                            }
+
+                            // Update the status badge
+                            const statusBadge = toggleButton.closest('tr').querySelector('td:nth-child(5) span');
+                            if (statusBadge) {
+                                if (newStatus === 'completed') {
+                                    statusBadge.classList.remove('bg-yellow-100', 'text-yellow-800');
+                                    statusBadge.classList.add('bg-green-100', 'text-green-800');
+                                    statusBadge.textContent = 'Completed';
+                                } else {
+                                    statusBadge.classList.remove('bg-green-100', 'text-green-800');
+                                    statusBadge.classList.add('bg-yellow-100', 'text-yellow-800');
+                                    statusBadge.textContent = 'Active';
+                                }
+                            }
+
+                            // If completed, update the actual points display
+                            if (newStatus === 'completed' && points > 0) {
+                                const actualPointsElement = document.getElementById('actual-points');
+                                if (actualPointsElement) {
+                                    const currentActualPoints = parseInt(actualPointsElement.textContent) || 0;
+                                    const newActualPoints = currentActualPoints + parseInt(points);
+                                    actualPointsElement.textContent = newActualPoints;
+
+                                    // Update completion percentage
+                                    const planPointsElement = document.getElementById('plan-points');
+                                    if (planPointsElement) {
+                                        const planPoints = parseInt(planPointsElement.value) || 0;
+                                        if (planPoints > 0) {
+                                            const percentComplete = Math.round((newActualPoints / planPoints) * 100);
+                                            const remainPercent = 100 - percentComplete;
+
+                                            const percentCompleteElement = document.getElementById('percent-complete');
+                                            const remainPercentElement = document.getElementById('remain-percent');
+
+                                            if (percentCompleteElement) {
+                                                percentCompleteElement.textContent = `${percentComplete}%`;
+                                            }
+
+                                            if (remainPercentElement) {
+                                                remainPercentElement.textContent = `${remainPercent}%`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            alert('Task status updated successfully');
+                        } else {
+                            alert('Error: ' + (data.error || 'Failed to update task status'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating task status:', error);
+                        alert('Error updating task status');
+                    });
                 }
             });
 

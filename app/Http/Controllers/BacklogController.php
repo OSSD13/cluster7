@@ -444,4 +444,140 @@ class BacklogController extends Controller
             return response()->json(['error' => 'Error updating bug: ' . $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Update the status of a backlog bug.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $status = $request->input('status');
+        $points = $request->input('points', 0);
+
+        // Validate input
+        if (!in_array($status, ['active', 'completed'])) {
+            return response()->json(['error' => 'Invalid status. Must be "active" or "completed".'], 422);
+        }
+
+        // Get all saved reports
+        $reports = SavedReport::with('sprint')->get();
+        $updated = false;
+        $updatedReport = null;
+
+        DB::beginTransaction();
+
+        try {
+            // Update the status in each report containing this bug
+            foreach ($reports as $report) {
+                // Handle cases where report_data is already decoded or is a string
+                $reportData = $report->report_data;
+                if (is_string($reportData)) {
+                    $reportData = json_decode($reportData, true);
+                }
+
+                // Check backlog data
+                $reportUpdated = false;
+
+                if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
+                    foreach ($reportData['backlog'] as $teamName => &$bugs) {
+                        foreach ($bugs as &$bug) {
+                            if (isset($bug['id']) && $bug['id'] == $id) {
+                                // Update status
+                                $oldStatus = $bug['status'] ?? 'active';
+                                $bug['status'] = $status;
+
+                                // If status is changing from active to completed
+                                // Update the actual points in the story_points_data
+                                if ($oldStatus !== 'completed' && $status === 'completed' && $points > 0) {
+                                    // Get story_points_data
+                                    if (isset($reportData['summary']) && is_array($reportData['summary'])) {
+                                        // Add the points to actual points
+                                        $actualPoints = floatval($reportData['summary']['actualPoints'] ?? 0);
+                                        $reportData['summary']['actualPoints'] = $actualPoints + $points;
+
+                                        // Recalculate percentages
+                                        $planPoints = floatval($reportData['summary']['planPoints'] ?? 0);
+                                        if ($planPoints > 0) {
+                                            $newActualPoints = $actualPoints + $points;
+                                            $percentComplete = round(($newActualPoints / $planPoints) * 100, 2);
+                                            $remainPercent = 100 - $percentComplete;
+
+                                            $reportData['summary']['percentComplete'] = $percentComplete . '%';
+                                            $reportData['summary']['remainPercent'] = $remainPercent . '%';
+                                        }
+                                    }
+                                }
+
+                                $reportUpdated = true;
+                                $updated = true;
+                            }
+                        }
+                    }
+                }
+
+                // Check bug cards data
+                if (!$reportUpdated && isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
+                    foreach ($reportData['bug_cards'] as $teamName => &$bugs) {
+                        foreach ($bugs as &$bug) {
+                            if (isset($bug['id']) && $bug['id'] == $id) {
+                                // Update status
+                                $oldStatus = $bug['status'] ?? 'active';
+                                $bug['status'] = $status;
+
+                                // If status is changing from active to completed
+                                // Update the actual points in the story_points_data
+                                if ($oldStatus !== 'completed' && $status === 'completed' && $points > 0) {
+                                    // Get story_points_data
+                                    if (isset($reportData['summary']) && is_array($reportData['summary'])) {
+                                        // Add the points to actual points
+                                        $actualPoints = floatval($reportData['summary']['actualPoints'] ?? 0);
+                                        $reportData['summary']['actualPoints'] = $actualPoints + $points;
+
+                                        // Recalculate percentages
+                                        $planPoints = floatval($reportData['summary']['planPoints'] ?? 0);
+                                        if ($planPoints > 0) {
+                                            $newActualPoints = $actualPoints + $points;
+                                            $percentComplete = round(($newActualPoints / $planPoints) * 100, 2);
+                                            $remainPercent = 100 - $percentComplete;
+
+                                            $reportData['summary']['percentComplete'] = $percentComplete . '%';
+                                            $reportData['summary']['remainPercent'] = $remainPercent . '%';
+                                        }
+                                    }
+                                }
+
+                                $updated = true;
+                                $updatedReport = $report;
+                            }
+                        }
+                    }
+                }
+
+                // Save the updated report data
+                if ($reportUpdated) {
+                    $report->report_data = $reportData;
+                    $report->save();
+                }
+            }
+
+            DB::commit();
+
+            if ($updated) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Bug status updated successfully',
+                    'status' => $status
+                ]);
+            } else {
+                return response()->json(['error' => 'Bug not found'], 404);
+            }
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Error updating backlog bug status: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update bug. ' . $e->getMessage()], 500);
+        }
+    }
 }
