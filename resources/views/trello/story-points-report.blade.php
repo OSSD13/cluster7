@@ -128,8 +128,10 @@
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3">
                 <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Edit Backlog Task</h3>
-                <form id="edit-backlog-form" class="space-y-4">
-                    <input type="hidden" id="edit-bug-id">
+                <form id="edit-backlog-form" method="POST" class="space-y-4">
+                    @csrf
+                    @method('POST')
+                    <input type="hidden" id="edit-bug-id" name="id">
                     <div>
                         <label for="edit-bug-name" class="block text-sm font-medium text-gray-700">Bug Name</label>
                         <input type="text" id="edit-bug-name" name="name" required
@@ -142,18 +144,24 @@
                     </div>
                     <div>
                         <label for="edit-bug-points" class="block text-sm font-medium text-gray-700">Story Points</label>
-                        <input type="number" id="edit-bug-points" name="points" min="0"
+                        <input type="number" id="edit-bug-points" name="points" min="0" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500">
                     </div>
-                    <div class="mt-4 flex justify-end space-x-2">
+                    <input type="hidden" name="team" id="edit-bug-team">
+                    <div class="mt-5 flex justify-end space-x-2">
                         <button type="button" id="cancel-edit-backlog" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
                             Cancel
                         </button>
-                        <button type="button" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600" id="deleteBugBtn">
-                            Delete
-                        </button>
                         <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                             Update
+                        </button>
+                    </div>
+                </form>
+                <form action="" id="delete-backlog-form" method="POST" class="mt-4" onsubmit="return confirm('Are you sure you want to delete this bug?');">
+                    @csrf
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                            Delete
                         </button>
                     </div>
                 </form>
@@ -4075,209 +4083,45 @@
             const editBugName = document.getElementById('edit-bug-name');
             const editBugDescription = document.getElementById('edit-bug-description');
             const editBugPoints = document.getElementById('edit-bug-points');
-
-            // Debug check if elements exist
-            console.log('Modal elements:', {
-                editModal: !!editModal,
-                editForm: !!editForm,
-                cancelEditBtn: !!cancelEditBtn,
-                editBugId: !!editBugId,
-                editBugName: !!editBugName,
-                editBugDescription: !!editBugDescription,
-                editBugPoints: !!editBugPoints
-            });
+            const editBugTeam = document.getElementById('edit-bug-team');
+            const deleteForm = document.getElementById('delete-backlog-form');
 
             // Use event delegation for edit buttons
             document.addEventListener('click', function(e) {
                 const editButton = e.target.closest('.edit-backlog-task');
                 if (editButton) {
-                    console.log('Edit button clicked');
                     const bugId = editButton.getAttribute('data-bug-id');
                     const bugName = editButton.getAttribute('data-bug-name');
                     const bugDescription = editButton.getAttribute('data-bug-description');
                     const bugPoints = editButton.getAttribute('data-bug-points');
-
-                    console.log('Bug data:', { bugId, bugName, bugDescription, bugPoints });
+                    const bugTeam = editButton.getAttribute('data-bug-team');
 
                     if (editModal && editBugId && editBugName && editBugDescription && editBugPoints) {
                         editBugId.value = bugId;
                         editBugName.value = bugName;
                         editBugDescription.value = bugDescription;
                         editBugPoints.value = bugPoints;
+                        editBugTeam.value = bugTeam || document.querySelector('#board-selector option:checked')?.text || '';
+
+                        // Update form actions
+                        const numericId = bugId.includes('-') ? bugId.split('-').pop() : bugId;
+                        editForm.action = `${window.location.origin}/backlog/update/${numericId}`;
+                        deleteForm.action = `${window.location.origin}/backlog/remove/${numericId}`;
 
                         // Remove both hidden class and display:none style
                         editModal.classList.remove('hidden');
                         editModal.style.display = 'block';
-                        console.log('Modal should be visible now');
-                    } else {
-                        console.error('Some modal elements are missing');
                     }
-                }
-
-                // Handle toggle status buttons for backlog items
-                const toggleButton = e.target.closest('.toggle-backlog-status');
-                if (toggleButton) {
-                    const bugId = toggleButton.getAttribute('data-bug-id');
-                    const currentStatus = toggleButton.getAttribute('data-bug-status');
-                    const points = toggleButton.getAttribute('data-bug-points');
-
-                    // Log details for debugging
-                    console.log('Toggle status for bug:', bugId, 'Current status:', currentStatus, 'Points:', points);
-
-                    // Extract just the ID number if it contains a prefix like BUG-
-                    const numericId = bugId.includes('-') ? bugId.split('-').pop() : bugId;
-
-                    // Toggle the status
-                    const newStatus = currentStatus === 'completed' ? 'active' : 'completed';
-
-                    // Show confirmation dialog for completing tasks with points
-                    if (newStatus === 'completed' && points > 0) {
-                        if (!confirm(`Are you sure you want to mark this task as complete? This will add ${points} points to the actual points total.`)) {
-                            return;
-                        }
-                    }
-
-                    // Call API to update status - using the correct endpoint
-                    const apiUrl = `${window.location.origin}/backlog/${numericId}/status`;
-                    console.log('Sending status update to:', apiUrl);
-
-                    fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({
-                            status: newStatus,
-                            points: points
-                        })
-                    })
-                    .then(response => {
-                        // First check the response status
-                        if (response.status === 401 || response.status === 419) {
-                            // Unauthorized or CSRF token mismatch - redirect to login
-                            window.location.href = '/login';
-                            throw new Error('Authentication required');
-                        }
-
-                        if (response.status === 405) {
-                            throw new Error('Method Not Allowed. Check API endpoint and permissions.');
-                        }
-
-                        // Check if response has a JSON content type
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && contentType.includes('application/json')) {
-                            return response.json();
-                        } else {
-                            // Handle non-JSON responses (like HTML)
-                            return response.text().then(text => {
-                                console.error('Received non-JSON response:', text.substring(0, 100) + '...');
-
-                                // If response is a redirect to login page, redirect the user
-                                if (text.includes('<title>Login</title>') || text.includes('<title>Redirect</title>')) {
-                                    window.location.href = '/login';
-                                    return { success: false, error: 'Session expired' };
-                                }
-
-                                // For successful responses without JSON, create a success object
-                                if (response.ok) {
-                                    return { success: true };
-                                }
-
-                                throw new Error('Server returned an invalid response format');
-                            });
-                        }
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            // Update button appearance
-                            toggleButton.setAttribute('data-bug-status', newStatus);
-
-                            // Update the class and icon
-                            if (newStatus === 'completed') {
-                                toggleButton.classList.remove('bg-green-100', 'text-green-800', 'hover:bg-green-200');
-                                toggleButton.classList.add('bg-yellow-100', 'text-yellow-800', 'hover:bg-yellow-200');
-                                const icon = toggleButton.querySelector('i');
-                                if (icon) {
-                                    icon.classList.remove('fa-check');
-                                    icon.classList.add('fa-undo');
-                                }
-                                toggleButton.innerHTML = toggleButton.innerHTML.replace('Complete', 'Mark Active');
-                            } else {
-                                toggleButton.classList.remove('bg-yellow-100', 'text-yellow-800', 'hover:bg-yellow-200');
-                                toggleButton.classList.add('bg-green-100', 'text-green-800', 'hover:bg-green-200');
-                                const icon = toggleButton.querySelector('i');
-                                if (icon) {
-                                    icon.classList.remove('fa-undo');
-                                    icon.classList.add('fa-check');
-                                }
-                                toggleButton.innerHTML = toggleButton.innerHTML.replace('Mark Active', 'Complete');
-                            }
-
-                            // Update the status badge
-                            const statusBadge = toggleButton.closest('tr').querySelector('td:nth-child(5) span');
-                            if (statusBadge) {
-                                if (newStatus === 'completed') {
-                                    statusBadge.classList.remove('bg-yellow-100', 'text-yellow-800');
-                                    statusBadge.classList.add('bg-green-100', 'text-green-800');
-                                    statusBadge.textContent = 'Completed';
-                                } else {
-                                    statusBadge.classList.remove('bg-green-100', 'text-green-800');
-                                    statusBadge.classList.add('bg-yellow-100', 'text-yellow-800');
-                                    statusBadge.textContent = 'Active';
-                                }
-                            }
-
-                            // If completed, update the actual points display
-                            if (newStatus === 'completed' && points > 0) {
-                                const actualPointsElement = document.getElementById('actual-points');
-                                if (actualPointsElement) {
-                                    const currentActualPoints = parseInt(actualPointsElement.textContent) || 0;
-                                    const newActualPoints = currentActualPoints + parseInt(points);
-                                    actualPointsElement.textContent = newActualPoints;
-
-                                    // Update completion percentage
-                                    const planPointsElement = document.getElementById('plan-points');
-                                    if (planPointsElement) {
-                                        const planPoints = parseInt(planPointsElement.value) || 0;
-                                        if (planPoints > 0) {
-                                            const percentComplete = Math.round((newActualPoints / planPoints) * 100);
-                                            const remainPercent = 100 - percentComplete;
-
-                                            const percentCompleteElement = document.getElementById('percent-complete');
-                                            const remainPercentElement = document.getElementById('remain-percent');
-
-                                            if (percentCompleteElement) {
-                                                percentCompleteElement.textContent = `${percentComplete}%`;
-                                            }
-
-                                            if (remainPercentElement) {
-                                                remainPercentElement.textContent = `${remainPercent}%`;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            alert('Task status updated successfully');
-                        } else {
-                            alert('Error: ' + (data.error || 'Failed to update task status'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error updating task status:', error);
-                        alert('Error updating task status: ' + error.message);
-                    });
                 }
             });
 
-            // Cancel Button
+            // Handle cancel button
             if (cancelEditBtn) {
-                cancelEditBtn.addEventListener('click', () => {
-                    console.log('Cancel button clicked');
-                    editModal.classList.add('hidden');
-                    editModal.style.display = 'none';
-                    editForm.reset();
+                cancelEditBtn.addEventListener('click', function() {
+                    if (editModal) {
+                        editModal.classList.add('hidden');
+                        editModal.style.display = 'none';
+                    }
                 });
             }
 
@@ -4285,192 +4129,8 @@
             if (editModal) {
                 editModal.addEventListener('click', function(e) {
                     if (e.target === editModal) {
-                        console.log('Clicked outside modal');
                         editModal.classList.add('hidden');
                         editModal.style.display = 'none';
-                        editForm.reset();
-                    }
-                });
-            }
-
-            // Form Submit Handler
-            if (editForm) {
-                editForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    console.log('Form submitted');
-                    const bugId = editBugId.value;
-
-                    // Extract numeric ID if it contains a prefix like BUG-
-                    const numericId = bugId.includes('-') ? bugId.split('-').pop() : bugId;
-                    console.log('Using bug ID:', numericId, 'for editing');
-
-                    try {
-                        const formData = {
-                            name: editBugName.value,
-                            description: editBugDescription.value,
-                            points: parseInt(editBugPoints.value) || 0,
-                            team: document.querySelector('input[name="team"]')?.value || 'Unknown Team', // Add team field
-                            assigned: document.querySelector('input[name="assigned"]')?.value || null // Add assigned field
-                        };
-
-                        // Use the POST version of the update endpoint to avoid Method Not Allowed errors
-                        const apiUrl = `${apiBaseUrl}/backlog/update/${numericId}`;
-                        console.log('Sending data:', formData);
-                        console.log('To URL:', apiUrl);
-
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify(formData)
-                        });
-
-                        console.log('Response status:', response.status);
-
-                        // First check for common error status codes
-                        if (response.status === 401 || response.status === 419) {
-                            // Unauthorized or CSRF token mismatch - redirect to login
-                            window.location.href = '/login';
-                            return;
-                        }
-
-                        if (response.status === 405) {
-                            throw new Error('Method Not Allowed. Check API endpoint and permissions.');
-                        }
-
-                        // Clone the response before reading it
-                        const responseClone = response.clone();
-
-                        let data;
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && contentType.includes('application/json')) {
-                            data = await response.json();
-                        } else {
-                            const text = await responseClone.text();
-                            console.error('Received non-JSON response:', text.substring(0, 100) + '...');
-
-                            // If the response is a redirect to login page, redirect the user
-                            if (text.includes('<title>Login</title>') || text.includes('<title>Redirect</title>') ||
-                                text.includes('<!DOCTYPE') || text.includes('<html')) {
-                                console.log('Detected HTML response, likely a redirect or error page');
-                                if (text.includes('login') || text.includes('Login')) {
-                                    window.location.href = '/login';
-                                    return;
-                                }
-                                throw new Error('Server returned HTML instead of JSON - session may have expired or server error occurred');
-                            }
-
-                            // For successful non-JSON responses
-                            if (response.ok) {
-                                data = { success: true };
-                            } else {
-                                throw new Error('Server returned an invalid response format');
-                            }
-                        }
-
-                        if (!response.ok) {
-                            throw new Error(data?.message || data?.error || 'Failed to update task');
-                        }
-
-                        // Show success message
-                        alert('Task updated successfully');
-
-                        // Close modal and refresh page
-                        editModal.classList.add('hidden');
-                        editModal.style.display = 'none';
-                        editForm.reset();
-                        window.location.reload();
-                    } catch (error) {
-                        console.error('Error updating backlog task:', error);
-                        alert('Failed to update the task. Please check the console for details.');
-                    }
-                });
-            }
-
-            // Add delete button handler
-            const deleteBugBtn = document.getElementById('deleteBugBtn');
-            if (deleteBugBtn) {
-                deleteBugBtn.addEventListener('click', async function() {
-                    if (!confirm('Are you sure you want to delete this bug?')) {
-                        return;
-                    }
-
-                    const bugId = editBugId.value;
-                    try {
-                        // Extract the numeric ID from the bug ID (e.g., "BUG-720" -> "720")
-                        const numericId = bugId.split('-').pop();
-
-                        // Use a specific delete endpoint that uses POST instead of DELETE
-                        // This is more compatible with server configurations that restrict HTTP methods
-                        const apiUrl = `${window.location.origin}/cluster7/remove/${numericId}`;
-
-                        console.log('Deleting bug with ID:', numericId, 'at URL:', apiUrl);
-
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            }
-                        });
-
-                        // First check the response status
-                        if (response.status === 401 || response.status === 419) {
-                            // Unauthorized or CSRF token mismatch - redirect to login
-                            window.location.href = '/login';
-                            return;
-                        }
-
-                        // Clone the response before reading it, so we can read it again if needed
-                        const responseClone = response.clone();
-
-                        // Handle the response differently based on content type
-                        const contentType = response.headers.get('content-type');
-
-                        if (contentType && contentType.includes('application/json')) {
-                            // Only try to parse as JSON if content type is JSON
-                            const data = await response.json();
-
-                            if (!response.ok) {
-                                throw new Error(data.error || 'Failed to delete bug');
-                            }
-
-                            // Success
-                            alert('Bug deleted successfully');
-                        } else {
-                            // Not JSON, read as text
-                            const text = await responseClone.text();
-                            console.log('Received non-JSON response:', text.substring(0, 100));
-
-                            if (text.includes('<title>Login</title>') || text.includes('<title>Redirect</title>')) {
-                                window.location.href = '/login';
-                                return;
-                            }
-
-                            if (!response.ok) {
-                                throw new Error('Server returned an error');
-                            }
-
-                            // If we got here with a successful status, consider it successful
-                            if (response.ok) {
-                                alert('Bug deleted successfully');
-                            }
-                        }
-
-                        // Close modal and reset form
-                        editModal.classList.add('hidden');
-                        editModal.style.display = 'none';
-                        editForm.reset();
-
-                        // Reload the page to refresh the data
-                        window.location.reload();
-                    } catch (error) {
-                        console.error('Error deleting bug:', error);
-                        alert('Failed to delete bug: ' + error.message);
                     }
                 });
             }

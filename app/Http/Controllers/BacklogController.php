@@ -304,6 +304,9 @@ class BacklogController extends Controller
     public function destroy($id)
     {
         try {
+            // Log the incoming request for debugging
+            Log::info('Attempting to delete bug', ['id' => $id]);
+
             // Get all reports
             $reports = SavedReport::with('sprint')->get();
             $bugFound = false;
@@ -315,6 +318,7 @@ class BacklogController extends Controller
                     $reportData = json_decode($reportData, true);
                 }
                 $modified = false;
+
                 // Check in bug_cards section
                 if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
                     foreach ($reportData['bug_cards'] as $teamName => &$bugs) {
@@ -322,6 +326,11 @@ class BacklogController extends Controller
                             // Compare with either numeric ID or full Trello-style ID
                             if ((isset($bug['id']) && $bug['id'] === $id) ||
                                 (isset($bug['id']) && is_numeric($id) && strpos($bug['id'], $id) !== false)) {
+                                Log::info('Found bug to delete in bug_cards', [
+                                    'team' => $teamName,
+                                    'bug_id' => $bug['id'],
+                                    'bug_name' => $bug['name'] ?? 'N/A'
+                                ]);
                                 unset($bugs[$key]);
                                 $modified = true;
                                 $bugFound = true;
@@ -331,6 +340,7 @@ class BacklogController extends Controller
                         $bugs = array_values($bugs);
                     }
                 }
+
                 // Check in backlog section
                 if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
                     foreach ($reportData['backlog'] as $teamName => &$bugs) {
@@ -338,6 +348,11 @@ class BacklogController extends Controller
                             // Compare with either numeric ID or full Trello-style ID
                             if ((isset($bug['id']) && $bug['id'] === $id) ||
                                 (isset($bug['id']) && is_numeric($id) && strpos($bug['id'], $id) !== false)) {
+                                Log::info('Found bug to delete in backlog', [
+                                    'team' => $teamName,
+                                    'bug_id' => $bug['id'],
+                                    'bug_name' => $bug['name'] ?? 'N/A'
+                                ]);
                                 unset($bugs[$key]);
                                 $modified = true;
                                 $bugFound = true;
@@ -350,18 +365,37 @@ class BacklogController extends Controller
 
                 // If the report was modified, save it
                 if ($modified) {
+                    Log::info('Saving modified report', ['report_id' => $report->id]);
                     $report->report_data = $reportData;
                     $report->save();
                 }
             }
 
             if ($bugFound) {
-                return response()->json(['message' => 'Bug deleted successfully']);
+                Log::info('Bug deleted successfully');
+                // Check if request wants JSON response
+                if (request()->wantsJson()) {
+                    return response()->json(['message' => 'Bug deleted successfully']);
+                }
+                // Otherwise redirect back with success message
+                return redirect()->back()->with('success', 'Bug deleted successfully');
             } else {
-                return response()->json(['error' => 'Bug not found'], 404);
+                Log::warning('Bug not found for deletion', ['id' => $id]);
+                if (request()->wantsJson()) {
+                    return response()->json(['error' => 'Bug not found'], 404);
+                }
+                return redirect()->back()->with('error', 'Bug not found');
             }
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error deleting bug: ' . $e->getMessage()], 500);
+            Log::error('Error deleting bug', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            if (request()->wantsJson()) {
+                return response()->json(['error' => 'Error deleting bug: ' . $e->getMessage()], 500);
+            }
+            return redirect()->back()->with('error', 'Error deleting bug: ' . $e->getMessage());
         }
     }
 
@@ -375,13 +409,15 @@ class BacklogController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            // Log the incoming request for debugging
+            Log::info('Attempting to update bug', ['id' => $id, 'data' => $request->all()]);
+
             // Validate request data
             $validated = $request->validate([
                 'name' => 'required|string',
-                'team' => 'required|string',
-                'points' => 'required|integer|min:1',
-                'assigned' => 'nullable|string',
-                'description' => 'nullable|string'
+                'points' => 'required|integer|min:0',
+                'description' => 'nullable|string',
+                'team' => 'required|string'
             ]);
 
             // Get all reports
@@ -400,11 +436,16 @@ class BacklogController extends Controller
                 if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
                     foreach ($reportData['bug_cards'] as $teamName => &$bugs) {
                         foreach ($bugs as $key => &$bug) {
-                            if (isset($bug['id']) && $bug['id'] === $id) {
+                            if ((isset($bug['id']) && $bug['id'] === $id) ||
+                                (isset($bug['id']) && is_numeric($id) && strpos($bug['id'], $id) !== false)) {
+                                Log::info('Found bug to update in bug_cards', [
+                                    'team' => $teamName,
+                                    'bug_id' => $bug['id'],
+                                    'bug_name' => $bug['name'] ?? 'N/A'
+                                ]);
                                 $bug['name'] = $validated['name'];
                                 $bug['team'] = $validated['team'];
                                 $bug['points'] = $validated['points'];
-                                $bug['assigned'] = $validated['assigned'];
                                 $bug['description'] = $validated['description'];
                                 $modified = true;
                                 $bugFound = true;
@@ -417,11 +458,16 @@ class BacklogController extends Controller
                 if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
                     foreach ($reportData['backlog'] as $teamName => &$bugs) {
                         foreach ($bugs as $key => &$bug) {
-                            if (isset($bug['id']) && $bug['id'] === $id) {
+                            if ((isset($bug['id']) && $bug['id'] === $id) ||
+                                (isset($bug['id']) && is_numeric($id) && strpos($bug['id'], $id) !== false)) {
+                                Log::info('Found bug to update in backlog', [
+                                    'team' => $teamName,
+                                    'bug_id' => $bug['id'],
+                                    'bug_name' => $bug['name'] ?? 'N/A'
+                                ]);
                                 $bug['name'] = $validated['name'];
                                 $bug['team'] = $validated['team'];
                                 $bug['points'] = $validated['points'];
-                                $bug['assigned'] = $validated['assigned'];
                                 $bug['description'] = $validated['description'];
                                 $modified = true;
                                 $bugFound = true;
@@ -432,18 +478,37 @@ class BacklogController extends Controller
 
                 // If the report was modified, save it
                 if ($modified) {
+                    Log::info('Saving modified report', ['report_id' => $report->id]);
                     $report->report_data = $reportData;
                     $report->save();
                 }
             }
 
             if ($bugFound) {
-                return response()->json(['message' => 'Bug updated successfully']);
+                Log::info('Bug updated successfully');
+                // Check if request wants JSON response
+                if (request()->wantsJson()) {
+                    return response()->json(['message' => 'Bug updated successfully']);
+                }
+                // Otherwise redirect back with success message
+                return redirect()->back()->with('success', 'Bug updated successfully');
             } else {
-                return response()->json(['error' => 'Bug not found'], 404);
+                Log::warning('Bug not found for update', ['id' => $id]);
+                if (request()->wantsJson()) {
+                    return response()->json(['error' => 'Bug not found'], 404);
+                }
+                return redirect()->back()->with('error', 'Bug not found');
             }
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error updating bug: ' . $e->getMessage()], 500);
+            Log::error('Error updating bug', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            if (request()->wantsJson()) {
+                return response()->json(['error' => 'Error updating bug: ' . $e->getMessage()], 500);
+            }
+            return redirect()->back()->with('error', 'Error updating bug: ' . $e->getMessage());
         }
     }
 
