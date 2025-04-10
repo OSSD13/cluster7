@@ -259,12 +259,12 @@
         // Extract backlog data using BacklogController's method
         $backlogData = [];
         $groupedBacklogData = [];
-        
+
         try {
             // Get backlog data from the BacklogController
             $backlogController = new \App\Http\Controllers\BacklogController(app(\App\Services\TrelloService::class));
             $backlogDataResult = $backlogController->getBacklogData();
-            
+
             // Process all bugs from the controller result
             if (isset($backlogDataResult['allBugs']) && !empty($backlogDataResult['allBugs'])) {
                 foreach ($backlogDataResult['allBugs'] as $bug) {
@@ -281,19 +281,19 @@
             }
         } catch (\Exception $e) {
             // Fallback to previous method if controller throws an exception
-            
+
             // Get the current sprint number
             $currentSprintNumber = $sprintNumber;
-            
+
             // Query the database for backlog records
             $sprintReports = \App\Models\SprintReport::where('sprint_id', $report->sprint_id ?? null)
                 ->whereNotNull('backlog_data')
                 ->first();
-                
+
             // If we have sprint reports with backlog data
             if ($sprintReports && isset($sprintReports->backlog_data) && !empty($sprintReports->backlog_data)) {
                 $backlogItems = json_decode($sprintReports->backlog_data, true);
-                
+
                 foreach ($backlogItems as $key => $item) {
                     // Format backlog item into required structure
                     $backlogData[] = (object)[
@@ -306,16 +306,16 @@
                         'team' => $item['team'] ?? null
                     ];
                 }
-            } 
+            }
             // If no sprint reports, try to get from TrelloBoardData
             else {
                 $trelloBoardData = \App\Models\TrelloBoardData::whereNotNull('backlog_data')
                     ->orderBy('updated_at', 'desc')
                     ->first();
-                    
+
                 if ($trelloBoardData && isset($trelloBoardData->backlog_data) && !empty($trelloBoardData->backlog_data)) {
                     $backlogItems = $trelloBoardData->backlog_data;
-                    
+
                     foreach ($backlogItems as $key => $item) {
                         // Format backlog item into required structure
                         $backlogData[] = (object)[
@@ -330,7 +330,7 @@
                     }
                 }
             }
-            
+
             // If still no backlog data, try to get from report data as fallback
             if (empty($backlogData)) {
                 if (isset($report->report_data['backlog'])) {
@@ -341,7 +341,7 @@
                             if (isset($bug['status']) && $bug['status'] === 'completed') {
                                 continue;
                             }
-                            
+
                             $backlogData[] = (object)[
                                 'sprint' => $bug['sprint_number'] ?? $currentSprintNumber,
                                 'personal' => $bug['assigned_to'] ?? $bug['assigned'] ?? 'Unassigned',
@@ -379,12 +379,12 @@
                 }
             }
         }
-        
+
         // Group backlog data by sprint and personal name
         foreach ($backlogData as $item) {
             // Create a key that combines sprint and personal name to group by
             $key = $item->sprint . '-' . $item->personal;
-            
+
             if (!isset($groupedBacklogData[$key])) {
                 // Create a new entry for this sprint-personal combination
                 $groupedBacklogData[$key] = (object)[
@@ -407,13 +407,13 @@
                 }
             }
         }
-        
+
         // Convert the associative array to indexed array for use in the blade template
         $backlogData = array_values($groupedBacklogData);
-        
+
         // Get current team name from the report
         $currentTeamName = $report->team_name ?? null;
-        
+
         // Filter backlog data to show only entries from the current team
         // and only people who have names in Trello (not 'Unassigned')
         $filteredBacklogData = [];
@@ -432,19 +432,19 @@
                 // If item has no team property, include it (default behavior)
                 $teamMatches = true;
             }
-            
+
             // Check if personal is not empty and not 'Unassigned'
             $hasValidName = !empty($item->personal) && $item->personal !== 'Unassigned';
-            
+
             // Only include items that match both conditions
             if ($teamMatches && $hasValidName) {
                 $filteredBacklogData[] = $item;
             }
         }
-        
+
         // Replace the original array with the filtered one
         $backlogData = $filteredBacklogData;
-        
+
         // Sort the backlog data by sprint and then by personal name
         usort($backlogData, function($a, $b) {
             // First sort by sprint number
@@ -507,11 +507,11 @@
                         @php
                             // ใช้ค่า plan_point จากรายงานโดยตรงถ้ามี
                             $planPoint = 0;
-                            
+
                             // ตรวจสอบว่ามีค่า plan_point ใน report หรือไม่
                             if (isset($report->plan_point) && is_numeric($report->plan_point)) {
                                 $planPoint = $report->plan_point;
-                            } 
+                            }
                             // ถ้าไม่มี ให้คำนวณจาก personal points
                             else {
                                 foreach ($report->developers ?? [] as $dev) {
@@ -529,7 +529,7 @@
                             foreach ($report->developers ?? [] as $dev) {
                                 $actualPoint += $dev->test_pass;
                             }
-                            
+
                             // รวม extra points เข้ากับ actual points เพื่อให้สอดคล้องกับหน้ารายงานหลัก
                             foreach ($report->extra_points ?? [] as $extraPoint) {
                                 $actualPoint += $extraPoint->points ?? $extraPoint->extra_point ?? 0;
@@ -621,7 +621,7 @@
                     <td class="text-right" style="font-size: 10pt;">{{ $developer->cancel }}</td>
                     <td class="text-right" style="font-size: 10pt;">{{ $developer->sum_final }}</td>
                     <td class="text-left" style="font-size: 10pt;">{{ $developer->remark }}</td>
-                    <td class="text-center" style="font-size: 10pt; background-color: {{ $developer->day_off == 'Not Test' ? '#e74c3c' : 'white' }}; color: {{ $developer->day_off == 'Not Test' ? 'white' : 'black' }};">{{ $developer->day_off }}</td>
+                    <td class="text-center" style="font-size: 10pt; background-color:;"></td>
                 </tr>
                 @endforeach
                 <tr>
@@ -692,37 +692,81 @@
         <!-- Minor Case Section -->
         <table class="w-full border-collapse mt-2">
             <tr>
-                <td class="points-header" style="background-color: #9e9e9e; font-size: 10pt; border: 1px solid black;" colspan="10">Minor Case</td>
+                <td class="points-header" style="background-color: #9e9e9e; font-size: 10pt; border: 1px solid black;" colspan="5">Minor Case</td>
             </tr>
             <tr>
-                <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Sprint</td>
-                <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Card Detail</td>
-                <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Defect Detail</td>
-                <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Personal</td>
-                <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Point</td>
+                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Sprint</td>
+                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Card Detail</td>
+                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Defect Detail</td>
+                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Personal</td>
+                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Point</td>
             </tr>
             @php
-                // Get minor cases from the database
+                // ดึงข้อมูล Minor Cases จากฐานข้อมูลโดยตรง
                 $minorCases = [];
-                
+                $teamName = $report->team_name ?? null;
+
+                // สร้างรายการชื่อสมาชิกในทีม
+                $teamMembers = [];
+                if (!empty($report->developers)) {
+                    foreach ($report->developers as $dev) {
+                        if (!empty($dev->name)) {
+                            $teamMembers[] = $dev->name;
+                        }
+                    }
+                }
+
                 try {
-                    // Get current sprint number to filter minor cases
-                    if (!empty($sprintNumber)) {
-                        // Try to find minor cases for the current sprint
-                        $minorCases = \App\Models\MinorCase::where('sprint', $sprintNumber)
+                    // ตรวจสอบว่ามีข้อมูลทั้งหมดกี่รายการ
+                    $allMinorCases = \Illuminate\Support\Facades\DB::table('minor_cases')->get();
+                    $totalMinorCases = count($allMinorCases);
+
+                    // ดึงข้อมูลโดยไม่กรองเพื่อตรวจสอบ
+                    $minorCases = \Illuminate\Support\Facades\DB::table('minor_cases')
+                        ->orderBy('created_at', 'desc')
+                        ->limit(15)
+                        ->get();
+
+                    // ถ้าพบข้อมูล และมี sprint number ที่ถูกระบุ
+                    if (!empty($sprintNumber) && $sprintNumber != 'N/A' && count($minorCases) > 0) {
+                        // กรองตาม sprint ที่ระบุ
+                        $filteredBySprint = \Illuminate\Support\Facades\DB::table('minor_cases')
+                            ->where('sprint', $sprintNumber)
                             ->orderBy('created_at', 'desc')
+                            ->limit(15)
                             ->get();
-                    } else {
-                        // If no sprint information is available, get all minor cases
-                        $minorCases = \App\Models\MinorCase::orderBy('created_at', 'desc')
-                            ->limit(15) // Limit to a reasonable number
-                            ->get();
+
+                        // ถ้ากรองด้วย sprint แล้วได้ข้อมูล
+                        if (count($filteredBySprint) > 0) {
+                            $minorCases = $filteredBySprint;
+                        }
+                    }
+
+                    // ถ้าต้องการกรองตามทีม และมีสมาชิกในทีม
+                    if (!empty($teamMembers) && count($minorCases) > 0) {
+                        // เก็บข้อมูลไว้ก่อนกรอง
+                        $beforeFilter = $minorCases;
+
+                        // กรองตามรายชื่อสมาชิกในทีม
+                        $minorCases = $minorCases->filter(function($case) use ($teamMembers) {
+                            return in_array($case->member, $teamMembers);
+                        })->values();
+
+                        // หากกรองแล้วไม่มีข้อมูลใดๆ ให้ใช้ข้อมูลก่อนกรอง
+                        if (count($minorCases) == 0) {
+                            $minorCases = $beforeFilter;
+                        }
                     }
                 } catch (\Exception $e) {
-                    // If MinorCase model doesn't exist or any other error occurs, keep empty array
+                    // บันทึกข้อผิดพลาด
+                    \Illuminate\Support\Facades\Log::error('ไม่สามารถดึงข้อมูล Minor Case ได้: ' . $e->getMessage());
+
+                    // ถ้าไม่สามารถดึงข้อมูลได้ให้ใช้ array ว่าง
+                    $minorCases = [];
+                    $totalMinorCases = 0;
                 }
             @endphp
-            
+
             @forelse($minorCases as $minorCase)
             <tr>
                 <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $minorCase->sprint }}</td>
@@ -733,9 +777,21 @@
             </tr>
             @empty
             <tr>
-                <td class="text-center" colspan="5" style="font-size: 10pt; border: 1px solid black;">ไม่พบ Minor Cases สำหรับทีมนี้</td>
+                <td class="text-center" colspan="5" style="font-size: 10pt; border: 1px solid black;">not found Minor Case </td>
             </tr>
             @endforelse
+
+            @php
+                // คำนวณผลรวมคะแนน Minor Case
+                $totalMinorPoints = collect($minorCases)->sum('points');
+            @endphp
+
+            @if(count($minorCases) > 0)
+            <tr>
+                <td class="text-right font-bold" colspan="4" style="font-size: 10pt; border: 1px solid black; background-color: #f8f9fa;">Total Minor Case:</td>
+                <td class="text-right font-bold" style="font-size: 10pt; border: 1px solid black; background-color: #f8f9fa;">{{ $totalMinorPoints }}</td>
+            </tr>
+            @endif
         </table>
 
         <!-- Signature Section -->
