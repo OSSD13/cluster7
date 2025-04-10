@@ -3029,6 +3029,74 @@
                 }
             });
 
+            // Add event listener for edit plan points button to make input editable
+            const editPlanPointsBtn = document.getElementById('edit-plan-points');
+            if (editPlanPointsBtn) {
+                editPlanPointsBtn.addEventListener('click', function() {
+                    // สลับสถานะ readonly
+                    planPointsInput.readOnly = !planPointsInput.readOnly;
+                    
+                    if (!planPointsInput.readOnly) {
+                        // เปิดให้แก้ไข
+                        planPointsInput.classList.add('bg-yellow-50');
+                        planPointsInput.focus();
+                    } else {
+                        // บันทึกค่าใหม่
+                        planPointsInput.classList.remove('bg-yellow-50');
+                        
+                        // อัปเดตค่าใน localStorage และตั้งค่า flag ว่ามีการแก้ไขด้วยตนเอง
+                        if (currentBoardId) {
+                            localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
+                            localStorage.setItem(`planPointEdited_${currentBoardId}`, 'true');
+                            
+                            // บันทึกค่าลงฐานข้อมูลผ่าน API
+                            const boardSelector = document.getElementById('board-selector');
+                            const boardName = boardSelector ? boardSelector.options[boardSelector.selectedIndex].text : '';
+                            
+                            fetch('{{ route("trello.save.plan.point") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({
+                                    board_id: currentBoardId,
+                                    board_name: boardName,
+                                    plan_point: parseFloat(planPointsInput.value) || 0
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    showToast('Plan point saved successfully', 'success');
+                                    
+                                    // อัปเดต cachedData
+                                    if (window.cachedData && window.cachedData.storyPoints) {
+                                        window.cachedData.storyPoints.planPoints = parseFloat(planPointsInput.value) || 0;
+                                    }
+                                    
+                                    // อัปเดตการคำนวณที่เกี่ยวข้อง
+                                    updateTotals();
+                                } else {
+                                    showToast('Error saving plan point', 'error');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error saving plan point:', error);
+                                showToast('Error saving plan point', 'error');
+                            });
+                        }
+                    }
+                });
+                
+                // ตรวจจับการกด Enter เพื่อบันทึก
+                planPointsInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !planPointsInput.readOnly) {
+                        editPlanPointsBtn.click(); // จำลองการคลิกปุ่ม edit เพื่อบันทึก
+                    }
+                });
+            }
+
             // Add export to CSV functionality
             if (document.getElementById('export-csv-btn')) {
                 document.getElementById('export-csv-btn').addEventListener('click', function() {
