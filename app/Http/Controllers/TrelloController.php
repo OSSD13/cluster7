@@ -106,7 +106,7 @@ class TrelloController extends Controller
 
             // Step 0: Fetch board details first to get the name
             try {
-                $boardResponse = Http::get($this->getTrelloApiBaseUrl() . "boards/{$boardId}", [
+                $boardResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}", [
                     'key'    => $apiKey,
                     'token'  => $apiToken,
                     'fields' => 'name,url,dateLastActivity',
@@ -124,6 +124,7 @@ class TrelloController extends Controller
             // Step 1: Fetch cards
             try {
                 $response = Http::withOptions([
+                    'verify'  => false,
                     'timeout' => 30,
                 ])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/cards", [
                     'key'        => $apiKey,
@@ -145,7 +146,7 @@ class TrelloController extends Controller
 
             // Step 2: Fetch members
             try {
-                $membersResponse = Http::get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/members", [
+                $membersResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/members", [
                     'key'    => $apiKey,
                     'token'  => $apiToken,
                     'fields' => 'id,fullName,username,avatarUrl',
@@ -161,7 +162,7 @@ class TrelloController extends Controller
 
             // Step 3: Fetch lists
             try {
-                $listsResponse = Http::get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/lists", [
+                $listsResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/lists", [
                     'key'    => $apiKey,
                     'token'  => $apiToken,
                     'fields' => 'name,id',
@@ -408,7 +409,7 @@ class TrelloController extends Controller
 
         // Create a map of list IDs to list names for checking card position
         try {
-            $listsResponse = Http::get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/lists", [
+            $listsResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/lists", [
                 'key'    => $apiKey,
                 'token'  => $apiToken,
                 'fields' => 'name,id',
@@ -896,11 +897,12 @@ class TrelloController extends Controller
     private function fetchBoardMembers($boardId, $apiKey, $apiToken)
     {
         try {
-            $response = Http::get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/members", [
-                'key'    => $apiKey,
-                'token'  => $apiToken,
-                'fields' => 'id,fullName,username',
-            ]);
+            $response = Http::withOptions(['verify' => false])
+                ->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/members", [
+                    'key'    => $apiKey,
+                    'token'  => $apiToken,
+                    'fields' => 'id,fullName,username',
+                ]);
 
             if ($response->successful()) {
                 return $response->json();
@@ -919,7 +921,7 @@ class TrelloController extends Controller
     private function fetchBoards($apiKey, $apiToken)
     {
         try {
-            $response = Http::get($this->getTrelloApiBaseUrl() . 'members/me/boards', [
+            $response = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . 'members/me/boards', [
                 'key'    => $apiKey,
                 'token'  => $apiToken,
                 'fields' => 'name,url,idOrganization',
@@ -959,7 +961,7 @@ class TrelloController extends Controller
             // Fetch board details for verification
             $boardDetails = [];
             try {
-                $boardResponse = Http::get($this->getTrelloApiBaseUrl() . "boards/{$boardId}", [
+                $boardResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}", [
                     'key'   => $apiKey,
                     'token' => $apiToken,
                 ]);
@@ -976,7 +978,7 @@ class TrelloController extends Controller
             $lists = [];
 
             try {
-                $cardsResponse = Http::get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/cards", [
+                $cardsResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/cards", [
                     'key'           => $apiKey,
                     'token'         => $apiToken,
                     'fields'        => 'id,name,desc,idList,idMembers,labels,pluginData',
@@ -997,7 +999,7 @@ class TrelloController extends Controller
 
             // Step 2: Fetch all lists from the board
             try {
-                $listsResponse = Http::get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/lists", [
+                $listsResponse = Http::withOptions(['verify' => false])->get($this->getTrelloApiBaseUrl() . "boards/{$boardId}/lists", [
                     'key'    => $apiKey,
                     'token'  => $apiToken,
                     'fields' => 'name,id',
@@ -1268,9 +1270,9 @@ class TrelloController extends Controller
     {
         $message = $request->input('message', 'No message provided');
         $data = $request->input('data', []);
-
+        
         \Log::info('Client log: ' . $message, $data);
-
+        
         return response()->json(['success' => true]);
     }
 }

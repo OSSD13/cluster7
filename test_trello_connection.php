@@ -25,15 +25,10 @@ try {
     echo "Using API Key: " . substr($apiKey, 0, 4) . "..." . substr($apiKey, -4) . "\n";
     echo "Using API Token: " . substr($apiToken, 0, 4) . "..." . substr($apiToken, -4) . "\n\n";
 
-    // Test Trello API connection
-    echo "Testing Trello API connection... ";
-
-    $response = Http::withOptions([
-        'timeout' => 15,
-    ])->get('https://api.trello.com/1/members/me', [
+    // Test connection to Trello API
+    $response = Http::withOptions(['verify' => false])->get('https://api.trello.com/1/members/me', [
         'key' => $apiKey,
-        'token' => $apiToken,
-        'fields' => 'username,fullName'
+        'token' => $apiToken
     ]);
 
     if ($response->successful()) {
@@ -51,4 +46,4 @@ try {
     exit(1);
 }
 
-echo "\nScript completed.\n";
+echo "\nScript completed.\n"; 
