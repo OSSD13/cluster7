@@ -1043,12 +1043,11 @@
                 const boardId = getCurrentBoardId();
 
                 if (!boardId) {
-                    alert('Error: No board selected');
+                    showToast('Error: No board selected', 'error');
                     return;
                 }
 
                 try {
-                    let response;
                     const data = {
                         board_id: boardId,
                         sprint,
@@ -1058,55 +1057,48 @@
                         points: parseFloat(points)
                     };
 
+                    let response;
                     if (id) {
-                        // Edit existing case
+                        // Update existing case
                         response = await fetch(`/api/minor-cases/${id}`, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector(
-                                    'meta[name="csrf-token"]').content,
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                                 'Accept': 'application/json'
                             },
                             body: JSON.stringify(data)
                         });
                     } else {
-                        // Add new case
+                        // Create new case
                         response = await fetch('/api/minor-cases', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector(
-                                    'meta[name="csrf-token"]').content,
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                                 'Accept': 'application/json'
                             },
                             body: JSON.stringify(data)
                         });
                     }
 
-                    const responseData = await response.json();
-
                     if (!response.ok) {
-                        // Handle validation errors
-                        if (response.status === 422 && responseData.errors) {
-                            const errors = Object.values(responseData.errors || {}).flat();
-                            throw new Error(errors.join('\n'));
-                        }
                         throw new Error('Failed to save minor case');
                     }
 
-                    // Refresh the minor cases list
-                    await loadMinorCasesFromServer();
-
-                    // Close the modal and reset form
+                    const result = await response.json();
+                    
+                    // Close the modal
                     minorCaseModal.classList.add('hidden');
-                    minorCaseForm.reset();
-
+                    
+                    // Reload the minor cases
+                    loadMinorCases();
+                    
                     // Show success message
-                    alert(id ? 'Minor case updated successfully' : 'Minor case created successfully');
+                    showToast(`Minor case ${id ? 'updated' : 'created'} successfully`, 'success');
                 } catch (error) {
                     console.error('Error saving minor case:', error);
-                    alert('Error saving minor case: ' + error.message);
+                    showToast('Failed to save minor case: ' + error.message, 'error');
                 }
             });
 
@@ -1171,18 +1163,16 @@
                             <td class="py-3 px-4 border-b">${caseItem.member || ''}</td>
                             <td class="py-3 px-4 border-b text-center">${parseFloat(caseItem.points || 0).toFixed(1)}</td>
                             <td class="py-3 px-4 border-b text-center">
-                                <div class="flex justify-center space-x-2">
-                                    <button class="edit-minor-case text-blue-500 hover:text-blue-700" data-id="${caseItem.id}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button class="delete-minor-case text-red-500 hover:text-red-700" data-id="${caseItem.id}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                <button class="edit-minor-case text-primary-600 hover:text-primary-800 mr-2" data-id="${caseItem.id}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button class="delete-minor-case text-red-600 hover:text-red-800" data-id="${caseItem.id}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
                             </td>
                         `;
 
@@ -1287,51 +1277,59 @@
                 const deleteBtn = e.target.closest('.delete-minor-case');
 
                 if (editBtn) {
-                    const index = parseInt(editBtn.dataset.index);
-                    const minorCases = loadMinorCases();
-                    const caseToEdit = minorCases[index];
-
-                    if (caseToEdit) {
-                        document.getElementById('minor-case-modal-title').textContent = 'Edit Minor Case';
-                        document.getElementById('minor-case-id').value = caseToEdit.id;
-                        document.getElementById('minor-case-sprint').value = caseToEdit.sprint;
-                        document.getElementById('minor-case-card').value = caseToEdit.card;
-                        document.getElementById('minor-case-description').value = caseToEdit.description ||
-                            '';
-
-                        // Populate member dropdown before setting the value
-                        populateMemberDropdown();
-
-                        const memberSelect = document.getElementById('minor-case-member');
-
-                        // If the member doesn't exist in the dropdown, add it
-                        let memberExists = false;
-                        for (let i = 0; i < memberSelect.options.length; i++) {
-                            if (memberSelect.options[i].value === caseToEdit.member) {
-                                memberExists = true;
-                                break;
+                    const caseId = editBtn.dataset.id;
+                    
+                    // Fetch the minor case data
+                    fetch(`/api/minor-cases/${caseId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to fetch minor case data');
                             }
-                        }
+                            return response.json();
+                        })
+                        .then(caseData => {
+                            // Populate the modal with the case data
+                            document.getElementById('minor-case-modal-title').textContent = 'Edit Minor Case';
+                            document.getElementById('minor-case-id').value = caseData.id;
+                            document.getElementById('minor-case-sprint').value = caseData.sprint;
+                            document.getElementById('minor-case-card').value = caseData.card;
+                            document.getElementById('minor-case-description').value = caseData.description || '';
+                            document.getElementById('minor-case-member').value = caseData.member;
+                            document.getElementById('minor-case-points').value = caseData.points;
 
-                        if (!memberExists && caseToEdit.member) {
-                            const option = document.createElement('option');
-                            option.value = caseToEdit.member;
-                            option.textContent = caseToEdit.member;
-                            memberSelect.appendChild(option);
-                        }
-
-                        memberSelect.value = caseToEdit.member;
-                        document.getElementById('minor-case-points').value = caseToEdit.points;
-
-                        minorCaseModal.classList.remove('hidden');
-                    }
+                            // Show the modal
+                            minorCaseModal.classList.remove('hidden');
+                        })
+                        .catch(error => {
+                            console.error('Error fetching minor case:', error);
+                            showToast('Failed to load minor case data', 'error');
+                        });
                 } else if (deleteBtn) {
-                    const index = parseInt(deleteBtn.dataset.index);
+                    const caseId = deleteBtn.dataset.id;
+                    
                     if (confirm('Are you sure you want to delete this minor case?')) {
-                        const minorCases = loadMinorCases();
-                        minorCases.splice(index, 1);
-                        saveMinorCases(minorCases);
-                        renderMinorCasesTable();
+                        fetch(`/api/minor-cases/${caseId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to delete minor case');
+                            }
+                            return response.json();
+                        })
+                        .then(() => {
+                            // Reload the minor cases
+                            loadMinorCases();
+                            showToast('Minor case deleted successfully', 'success');
+                        })
+                        .catch(error => {
+                            console.error('Error deleting minor case:', error);
+                            showToast('Failed to delete minor case', 'error');
+                        });
                     }
                 }
             });
