@@ -798,24 +798,343 @@ class SavedReportController extends Controller
     private function formatBacklogData($reportData)
     {
         $backlog = [];
-
-        // If we have backlog data in the report, use it
-        if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
-            return $reportData['backlog'];
+        $teamName = $reportData['board_name'] ?? 'Development Team';
+        
+        // ดึงข้อมูล backlog จาก BacklogController
+        try {
+            $backlogController = new \App\Http\Controllers\BacklogController(app(\App\Services\TrelloService::class));
+            $backlogData = $backlogController->getBacklogData();
+            
+            if (!empty($backlogData['allBugs'])) {
+                // กรองเฉพาะข้อมูลของทีมที่ต้องการ
+                $filteredBugs = $backlogData['allBugs']->filter(function($bug) use ($teamName) {
+                    return (!isset($bug['team']) || $bug['team'] == $teamName);
+                });
+                
+                // จัดกลุ่มตาม member และ sprint
+                $memberBacklogCards = [];
+                
+                foreach ($filteredBugs as $bug) {
+                    // ถ้ามีข้อมูล member
+                    if (isset($bug['members']) && !empty($bug['members'])) {
+                        foreach ($bug['members'] as $member) {
+                            $memberName = $member['fullName'] ?? $member['username'] ?? 'Unknown';
+                            $sprintOrigin = $bug['sprint_origin'] ?? $bug['sprint_number'] ?? 'Current';
+                            
+                            // สร้าง key สำหรับการจัดกลุ่ม
+                            $key = $memberName . '_' . $sprintOrigin;
+                            
+                            if (!isset($memberBacklogCards[$key])) {
+                                $memberBacklogCards[$key] = [
+                                    'sprint' => $sprintOrigin,
+                                    'personal' => $memberName,
+                                    'point_all' => 0,
+                                    'test_pass' => 0,
+                                    'bug' => 0,
+                                    'cancel' => 0
+                                ];
+                            }
+                            
+                            // เพิ่ม point
+                            $memberBacklogCards[$key]['point_all'] += floatval($bug['points'] ?? 0);
+                        }
+                    }
+                    // ถ้าไม่มีข้อมูล member แต่มี assignee
+                    else if (isset($bug['assignee']) && !empty($bug['assignee'])) {
+                        $memberName = $bug['assignee'];
+                        $sprintOrigin = $bug['sprint_origin'] ?? $bug['sprint_number'] ?? 'Current';
+                        
+                        // สร้าง key สำหรับการจัดกลุ่ม
+                        $key = $memberName . '_' . $sprintOrigin;
+                        
+                        if (!isset($memberBacklogCards[$key])) {
+                            $memberBacklogCards[$key] = [
+                                'sprint' => $sprintOrigin,
+                                'personal' => $memberName,
+                                'point_all' => 0,
+                                'test_pass' => 0,
+                                'bug' => 0,
+                                'cancel' => 0
+                            ];
+                        }
+                        
+                        // เพิ่ม point
+                        $memberBacklogCards[$key]['point_all'] += floatval($bug['points'] ?? 0);
+                    }
+                    // ถ้าไม่มีทั้ง member และ assignee ให้ใส่เป็น 'Unassigned'
+                    else {
+                        $memberName = 'Unassigned';
+                        $sprintOrigin = $bug['sprint_origin'] ?? $bug['sprint_number'] ?? 'Current';
+                        
+                        // สร้าง key สำหรับการจัดกลุ่ม
+                        $key = $memberName . '_' . $sprintOrigin;
+                        
+                        if (!isset($memberBacklogCards[$key])) {
+                            $memberBacklogCards[$key] = [
+                                'sprint' => $sprintOrigin,
+                                'personal' => $memberName,
+                                'point_all' => 0,
+                                'test_pass' => 0,
+                                'bug' => 0,
+                                'cancel' => 0
+                            ];
+                        }
+                        
+                        // เพิ่ม point
+                        $memberBacklogCards[$key]['point_all'] += floatval($bug['points'] ?? 0);
+                    }
+                }
+                
+                // แปลงข้อมูลจาก associative array เป็น indexed array
+                foreach ($memberBacklogCards as $backlogData) {
+                    $backlog[] = (object) $backlogData;
+                }
+            }
+        } catch (\Exception $e) {
+            // บันทึก log ในกรณีเกิดข้อผิดพลาด
+            \Log::error('Error getting backlog data: ' . $e->getMessage());
+            
+            // ถ้าเกิดข้อผิดพลาดในการดึงข้อมูลจาก BacklogController ให้ใช้วิธีการเดิม
+            // ตรวจสอบว่ามีข้อมูล bug_cards_data หรือไม่
+            if (isset($reportData['bug_cards_data']) && !empty($reportData['bug_cards_data'])) {
+                $bugCardsData = $reportData['bug_cards_data'];
+                
+                // แปลงจาก JSON string เป็น array ถ้าจำเป็น
+                if (is_string($bugCardsData)) {
+                    $bugCardsData = json_decode($bugCardsData, true);
+                }
+                
+                // วิธีที่ 1: ถ้ามีข้อมูล listsData ใน bug_cards_data
+                if (isset($bugCardsData['listsData']) && !empty($bugCardsData['listsData'])) {
+                    $listsData = $bugCardsData['listsData'];
+                    $memberBacklogCards = [];
+                    
+                    // วนลูปผ่านทุก list
+                    foreach ($listsData as $listName => $listData) {
+                        if (isset($listData['cards']) && !empty($listData['cards'])) {
+                            foreach ($listData['cards'] as $card) {
+                                // ตรวจสอบว่าเป็น card ของทีมที่ต้องการหรือไม่
+                                if ((!isset($card['team']) || $card['team'] == $teamName) && 
+                                    isset($card['members']) && !empty($card['members']) && 
+                                    isset($card['points']) && $card['points'] > 0) {
+                                    
+                                    // จัดกลุ่ม card ตาม member
+                                    foreach ($card['members'] as $member) {
+                                        $memberName = $member['fullName'] ?? $member['username'] ?? 'Unknown';
+                                        $sprintOrigin = $card['sprint_origin'] ?? $card['sprint_number'] ?? 'Current';
+                                        
+                                        // สร้าง key สำหรับการจัดกลุ่ม (member + sprint)
+                                        $key = $memberName . '_' . $sprintOrigin;
+                                        
+                                        if (!isset($memberBacklogCards[$key])) {
+                                            $memberBacklogCards[$key] = [
+                                                'sprint' => $sprintOrigin,
+                                                'personal' => $memberName,
+                                                'point_all' => 0,
+                                                'test_pass' => 0,
+                                                'bug' => 0,
+                                                'cancel' => 0
+                                            ];
+                                        }
+                                        
+                                        // เพิ่ม point
+                                        $memberBacklogCards[$key]['point_all'] += floatval($card['points']);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // แปลงข้อมูลจาก associative array เป็น indexed array
+                    foreach ($memberBacklogCards as $backlogData) {
+                        $backlog[] = (object) $backlogData;
+                    }
+                }
+                // วิธีที่ 2: ถ้ามีข้อมูล allBugs ใน bug_cards_data (รูปแบบของ backlogData)
+                else if (isset($bugCardsData['allBugs']) && !empty($bugCardsData['allBugs'])) {
+                    $allBugs = $bugCardsData['allBugs'];
+                    $memberBacklogCards = [];
+                    
+                    foreach ($allBugs as $bug) {
+                        // ตรวจสอบว่าเป็น bug ของทีมที่ต้องการหรือไม่
+                        if ((!isset($bug['team']) || $bug['team'] == $teamName) && 
+                            isset($bug['points']) && $bug['points'] > 0) {
+                            
+                            // ถ้ามีข้อมูล member ใน bug
+                            if (isset($bug['members']) && !empty($bug['members'])) {
+                                foreach ($bug['members'] as $member) {
+                                    $memberName = $member['fullName'] ?? $member['username'] ?? 'Unknown';
+                                    $sprintOrigin = $bug['sprint_origin'] ?? $bug['sprint_number'] ?? 'Current';
+                                    
+                                    // สร้าง key สำหรับการจัดกลุ่ม
+                                    $key = $memberName . '_' . $sprintOrigin;
+                                    
+                                    if (!isset($memberBacklogCards[$key])) {
+                                        $memberBacklogCards[$key] = [
+                                            'sprint' => $sprintOrigin,
+                                            'personal' => $memberName,
+                                            'point_all' => 0,
+                                            'test_pass' => 0,
+                                            'bug' => 0,
+                                            'cancel' => 0
+                                        ];
+                                    }
+                                    
+                                    // เพิ่ม point
+                                    $memberBacklogCards[$key]['point_all'] += floatval($bug['points']);
+                                }
+                            } 
+                            // ถ้าไม่มีข้อมูล member แต่มี assignee
+                            else if (isset($bug['assignee']) && !empty($bug['assignee'])) {
+                                $memberName = $bug['assignee'];
+                                $sprintOrigin = $bug['sprint_origin'] ?? $bug['sprint_number'] ?? 'Current';
+                                
+                                // สร้าง key สำหรับการจัดกลุ่ม
+                                $key = $memberName . '_' . $sprintOrigin;
+                                
+                                if (!isset($memberBacklogCards[$key])) {
+                                    $memberBacklogCards[$key] = [
+                                        'sprint' => $sprintOrigin,
+                                        'personal' => $memberName,
+                                        'point_all' => 0,
+                                        'test_pass' => 0,
+                                        'bug' => 0,
+                                        'cancel' => 0
+                                    ];
+                                }
+                                
+                                // เพิ่ม point
+                                $memberBacklogCards[$key]['point_all'] += floatval($bug['points']);
+                            }
+                            // ถ้าไม่มีทั้ง member และ assignee ให้ใส่เป็น 'Unassigned'
+                            else {
+                                $memberName = 'Unassigned';
+                                $sprintOrigin = $bug['sprint_origin'] ?? $bug['sprint_number'] ?? 'Current';
+                                
+                                // สร้าง key สำหรับการจัดกลุ่ม
+                                $key = $memberName . '_' . $sprintOrigin;
+                                
+                                if (!isset($memberBacklogCards[$key])) {
+                                    $memberBacklogCards[$key] = [
+                                        'sprint' => $sprintOrigin,
+                                        'personal' => $memberName,
+                                        'point_all' => 0,
+                                        'test_pass' => 0,
+                                        'bug' => 0,
+                                        'cancel' => 0
+                                    ];
+                                }
+                                
+                                // เพิ่ม point
+                                $memberBacklogCards[$key]['point_all'] += floatval($bug['points']);
+                            }
+                        }
+                    }
+                    
+                    // แปลงข้อมูลจาก associative array เป็น indexed array
+                    foreach ($memberBacklogCards as $backlogData) {
+                        $backlog[] = (object) $backlogData;
+                    }
+                }
+                // วิธีที่ 3: ถ้ามีข้อมูล bugCards ใน bug_cards_data
+                else if (isset($bugCardsData['bugCards']) && !empty($bugCardsData['bugCards'])) {
+                    $bugCards = $bugCardsData['bugCards'];
+                    $memberBacklogCards = [];
+                    
+                    foreach ($bugCards as $card) {
+                        if (isset($card['points']) && $card['points'] > 0) {
+                            // สมมติว่า members เป็น string และอาจมีหลาย member คั่นด้วย ,
+                            $membersList = isset($card['members']) ? explode(',', str_replace('Members:', '', $card['members'])) : ['Unassigned'];
+                            
+                            foreach ($membersList as $memberName) {
+                                $memberName = trim($memberName);
+                                if (empty($memberName)) continue;
+                                
+                                // สมมติว่า card ไม่มีข้อมูล sprint origin ชัดเจน ใช้ 'Current' เป็นค่าเริ่มต้น
+                                $sprintOrigin = 'Current';
+                                
+                                // สร้าง key สำหรับการจัดกลุ่ม
+                                $key = $memberName . '_' . $sprintOrigin;
+                                
+                                if (!isset($memberBacklogCards[$key])) {
+                                    $memberBacklogCards[$key] = [
+                                        'sprint' => $sprintOrigin,
+                                        'personal' => $memberName,
+                                        'point_all' => 0,
+                                        'test_pass' => 0,
+                                        'bug' => 0,
+                                        'cancel' => 0
+                                    ];
+                                }
+                                
+                                // เพิ่ม point
+                                $memberBacklogCards[$key]['point_all'] += floatval($card['points']);
+                            }
+                        }
+                    }
+                    
+                    // แปลงข้อมูลจาก associative array เป็น indexed array
+                    foreach ($memberBacklogCards as $backlogData) {
+                        $backlog[] = (object) $backlogData;
+                    }
+                }
+            }
+        }
+        
+        // ถ้าไม่มีข้อมูล backlog ให้สร้างข้อมูลตัวอย่าง 1 รายการ
+        if (empty($backlog)) {
+            $backlog[] = (object)[
+                'sprint' => 'Current',
+                'personal' => 'Unassigned',
+                'point_all' => 0,
+                'test_pass' => 0, 
+                'bug' => 0,
+                'cancel' => 0
+            ];
         }
 
-        // Otherwise, create a sample backlog entry
-        $backlog[] = (object)[
-            'sprint' => 'Current',
-            'personal' => auth()->user()->name,
-            'point_all' => 0,
-            'test_pass' => 0,
-            'bug' => 0,
-            'cancel' => 0,
-            'extra_personal' => '',
-            'extra_point' => 0
-        ];
-
         return $backlog;
+    }
+
+    /**
+     * Print a report using the template layout
+     * 
+     * @param int $reportId
+     * @return \Illuminate\View\View
+     */
+    public function printReport($reportId)
+    {
+        try {
+            // First try to find in SprintReport model
+            $report = \App\Models\SprintReport::find($reportId);
+            $isSprintReport = true;
+            
+            // If not found in SprintReport, try in SavedReport
+            if (!$report) {
+                $report = SavedReport::find($reportId);
+                $isSprintReport = false;
+            }
+            
+            // If report still not found, return 404
+            if (!$report) {
+                abort(404, 'Report not found');
+            }
+
+            // Instead of formatting the data here, we'll pass the raw report data to the template view
+            // so that it can directly use and calculate values in the same way as the source view
+            
+            // Pass autoprint=true to automatically trigger print dialog
+            return view('saved-reports.template', [
+                'report' => $report,
+                'autoprint' => true
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error printing report: ' . $e->getMessage(), [
+                'exception' => $e,
+                'reportId' => $reportId
+            ]);
+            
+            abort(500, 'Error loading report for printing');
+        }
     }
 }
