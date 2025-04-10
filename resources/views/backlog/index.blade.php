@@ -9,7 +9,7 @@
     <div class="mb-6">
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold flex items-center">
-                Bug Backlog 
+                Bug Backlog
                 <span class="ml-3 text-sm bg-amber-100 text-amber-800 py-1 px-2 rounded-full">
                     {{ $allBugs->count() }} {{ Str::plural('bug', $allBugs->count()) }}
                     ({{ $allBugs->sum('points') }} {{ Str::plural('point', $allBugs->sum('points')) }})
@@ -29,42 +29,37 @@
                     <h3 class="text-2xl font-semibold text-gray-900">Edit Bug</h3>
                 </div>
 
-                <form id="editBugForm" class="mt-5 space-y-6">
+                <form id="editBugForm" method="POST" class="mt-5 space-y-6">
                     @csrf
-                    @method('PUT')
+                    @method('POST')
                     <input type="hidden" id="bugId" name="id">
-                    
+
                     <div class="mb-4">
-                    <label for="bugName" class="block text-sm font-medium text-gray-700 mb-2">Bug Name</label>
-                    <input type="text" id="bugName" name="name" class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200">
+                        <label for="bugName" class="block text-sm font-medium text-gray-700 mb-2">Bug Name</label>
+                        <input type="text" id="bugName" name="name" required class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200">
                     </div>
 
                     <div class="mb-4">
-                        <label for="bugTeam" class="block text-sm font-medium text-gray-700 ">team</label>
-                        <input type="text" id="bugTeam" name="team" class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200 " readonly>
+                        <label for="bugTeam" class="block text-sm font-medium text-gray-700">Team</label>
+                        <input type="text" id="bugTeam" name="team" required class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200" readonly>
                     </div>
-                    
+
                     <div class="mb-4">
                         <label for="bugPoints" class="block text-sm font-medium text-gray-700">Points</label>
-                        <input type="number" id="bugPoints" name="points" min="1" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none'' ">
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="bugAssigned" class="block text-sm font-medium text-gray-700">Assigned To</label>
-                        <input type="text" id="bugAssigned" name="assigned" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none">
+                        <input type="number" id="bugPoints" name="points" min="0" required class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200">
                     </div>
 
                     <div class="mb-4">
                         <label for="bugDescription" class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea id="bugDescription" name="description" rows="3" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none"></textarea>
+                        <textarea id="bugDescription" name="description" rows="3" class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200"></textarea>
                     </div>
 
-                    <div class="mt-5 flex space-x-3 ml-20">
-                        <button type="button" id="cancelEditBug" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    <div class="mt-5 flex space-x-3 justify-end">
+                        <button type="button" id="cancelEditBug" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
                             Cancel
                         </button>
                         <button type="submit" class="px-6 py-2.5 bg-[#13A7FD] text-white rounded-full hover:bg-[#0090e0] focus:outline-none transition-all duration-200">
-                            Save 
+                            Save
                         </button>
                     </div>
                 </form>
@@ -92,13 +87,13 @@
                         d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623M4 7v4a4 4 0 0 0 3.5 3.97V7zm4.5 0v7.97A4 4 0 0 0 12 11V7zM12 6a4 4 0 0 0-1.334-2.982A3.98 3.98 0 0 0 8 2a3.98 3.98 0 0 0-2.667 1.018A4 4 0 0 0 4 6z" />
                 </svg>
             </div>
-            
+
             <p
                 class="mt-2 ms-3 pb-3 font-style: italic font-weight: text-[#009eff] text-6xl font-bold inline-block align-middle ">
                 Backlog</p>
                 <!-- Total Bug Count -->
                 <span id="totalBugCount" class="ml-4 mt-6 flex items-center justify-center font-bold text-sm bg-amber-100 text-amber-800 pt-2 py-1 px-2 min-w-40 max-w-full h-10 rounded-full">
-                    
+
                     {{ $allBugs->count() }} {{ Str::plural('bug', $allBugs->count()) }}
                     ({{ $allBugs->sum('points') }} {{ Str::plural('point', $allBugs->sum('points')) }})
                 </span>
@@ -112,7 +107,7 @@
                 @endforeach
                 </div>
 
-                
+
             <!-- Dropdown-->
             <div class="ms-[150px] grid grid-rows-2 gap-1">
                 <div>
@@ -246,9 +241,9 @@
                     </div>
                     <!-- Edit Button -->
                     <div class="flex space-x-3 flex items-end ">
- 
-                    <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center h-8 w-8 ">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-pencil-square" viewBox="0 0 16 16 ">
+
+                    <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center h-8 w-8 edit-backlog-task">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-pencil-square" viewBox="0 0 16 16">
                             <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                             <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
                         </svg>
@@ -319,22 +314,22 @@
                 width: 100%;
                 text-align: center;
             }
-            
+
             /* Fix for dropdown positioning */
             .dropdown-menu {
                 z-index: 20;
                 position: absolute;
             }
-            
+
             /* Ensure dropdowns don't overlap */
             #teamDropdownMenu {
                 z-index: 20;
             }
-            
+
             #yearDropdownMenu {
                 z-index: 19;
             }
-            
+
             #sprintDropdownMenu {
                 z-index: 18;
             }
@@ -356,7 +351,7 @@
         </style>
 
 <script>
-    
+
 
     function setupDropdown(buttonId, menuId, selectedId) {
         document.getElementById(buttonId).addEventListener("click", function() {
@@ -388,7 +383,7 @@
             }
         });
     }
-    
+
     // Setup both dropdowns
     setupDropdown("yearDropdownButton", "yearDropdownMenu", "selectedYear");
     setupDropdown("sprintDropdownButton", "sprintDropdownMenu", "selectedSprint");
@@ -420,11 +415,11 @@
         const bugCards = document.querySelectorAll('.bug-card');
         const selectedTeamText = document.getElementById('selectedTeam').textContent;
         const selectedSprintRange = document.getElementById('selectedSprint').textContent;
-        
+
         // Extract sprint range from the selected sprint text
         let startSprint = 1;
         let endSprint = 52;
-        
+
         if (selectedSprintRange !== 'All') {
             const sprintMatch = selectedSprintRange.match(/(\d+)\s*~\s*(\d+)/);
             if (sprintMatch) {
@@ -432,11 +427,11 @@
                 endSprint = parseInt(sprintMatch[2]);
             }
         }
-        
+
         // Show/hide total bug count and team count badges based on selected team
         const totalBugCount = document.getElementById('totalBugCount');
         const teamCountBadges = document.getElementById('teamCountBadges');
-        
+
         if (selectedTeam === 'all') {
             // Show total bug count and hide team count badges
             totalBugCount.style.display = 'inline-block';
@@ -445,36 +440,36 @@
             // Hide total bug count and show team count badges
             totalBugCount.style.display = 'none';
             teamCountBadges.style.display = 'inline-block';
-            
+
             // Hide all team count badges first
             document.querySelectorAll('.team-count-badge').forEach(badge => {
                 badge.style.display = 'none';
             });
-            
+
             // Show only the selected team's count badge
             const selectedTeamBadge = document.querySelector(`.team-count-badge[data-team="${selectedTeam}"]`);
             if (selectedTeamBadge) {
                 selectedTeamBadge.style.display = 'inline-block';
             }
         }
-        
+
         bugCards.forEach(card => {
             const cardTeam = card.getAttribute('data-team');
             const cardSprint = parseInt(card.getAttribute('data-sprint')) || 999;
-            
+
             const teamMatch = selectedTeam === 'all' || cardTeam === selectedTeam;
             const sprintMatch = cardSprint >= startSprint && cardSprint <= endSprint;
-            
+
             if (teamMatch && sprintMatch) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
             }
         });
-        
+
         // Update the count of visible bugs
         updateBugCount();
-        
+
         // Automatically sort bugs by sprint after filtering
         sortBugsBySprint();
     }
@@ -483,11 +478,11 @@
         const bugCards = document.querySelectorAll('.bug-card');
         const [startSprint, endSprint] = sprintRange.split('-').map(Number);
         const selectedTeam = document.getElementById('selectedTeam').textContent;
-        
+
         // Show/hide total bug count and team count badges based on selected team
         const totalBugCount = document.getElementById('totalBugCount');
         const teamCountBadges = document.getElementById('teamCountBadges');
-        
+
         if (selectedTeam === 'All') {
             // Show total bug count and hide team count badges
             totalBugCount.style.display = 'inline-block';
@@ -496,40 +491,40 @@
             // Hide total bug count and show team count badges
             totalBugCount.style.display = 'none';
             teamCountBadges.style.display = 'inline-block';
-            
+
             // Hide all team count badges first
             document.querySelectorAll('.team-count-badge').forEach(badge => {
                 badge.style.display = 'none';
             });
-            
+
             // Show only the selected team's count badge
             const selectedTeamBadge = document.querySelector(`.team-count-badge[data-team="${selectedTeam}"]`);
             if (selectedTeamBadge) {
                 selectedTeamBadge.style.display = 'inline-block';
             }
         }
-        
+
         bugCards.forEach(card => {
             const cardSprint = parseInt(card.getAttribute('data-sprint'));
             const cardTeam = card.getAttribute('data-team');
-            
+
             const sprintMatch = !isNaN(cardSprint) && cardSprint >= startSprint && cardSprint <= endSprint;
             const teamMatch = selectedTeam === 'All' || cardTeam === selectedTeam;
-            
+
             if (sprintMatch && teamMatch) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
             }
         });
-        
+
         // Update the count of visible bugs
         updateBugCount();
-        
+
         // Automatically sort bugs by sprint after filtering
         sortBugsBySprint();
     }
-    
+
     function updateBugCount() {
         const visibleBugs = document.querySelectorAll('.bug-card[style="display: block"]').length;
         const totalPoints = Array.from(document.querySelectorAll('.bug-card[style="display: block"]'))
@@ -538,21 +533,21 @@
                 const points = pointsElement ? parseInt(pointsElement.textContent.trim()) || 0 : 0;
                 return sum + points;
             }, 0);
-            
+
         // Update the bug count display
         const bugCountElement = document.getElementById('bugCountDisplay');
         if (bugCountElement) {
             bugCountElement.textContent = `${visibleBugs} ${visibleBugs === 1 ? 'bug' : 'bugs'} (${totalPoints} ${totalPoints === 1 ? 'point' : 'points'})`;
         }
     }
-    
+
     // Initialize the bug count display and sort bugs automatically
     document.addEventListener('DOMContentLoaded', function() {
         updateBugCount();
-        
+
         // Automatically sort bugs by sprint when page loads
         sortBugsBySprint();
-        
+
         // Initialize team filtering
         const selectedTeam = document.getElementById('selectedTeam').textContent;
         if (selectedTeam !== 'All') {
@@ -563,28 +558,28 @@
             document.getElementById('teamCountBadges').style.display = 'none';
         }
     });
-    
+
     function sortBugsBySprint() {
         const bugContainer = document.querySelector('.grid.grid-cols-1.gap-4.md\\:grid-cols-2.lg\\:grid-cols-2');
         const bugCards = Array.from(document.querySelectorAll('.bug-card'));
-        
+
         // Sort bug cards by sprint number
         bugCards.sort((a, b) => {
             const sprintA = parseInt(a.getAttribute('data-sprint')) || 999;
             const sprintB = parseInt(b.getAttribute('data-sprint')) || 999;
             return sprintA - sprintB;
         });
-        
+
         // Clear the container
         bugCards.forEach(card => {
             card.remove();
         });
-        
+
         // Add sorted cards back to the container
         bugCards.forEach(card => {
             bugContainer.appendChild(card);
         });
-        
+
         // Update the count of visible bugs
         updateBugCount();
     }
@@ -612,64 +607,106 @@
     }
 
     // Edit form submission
-    document.getElementById('editBugForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const bugId = this.querySelector('#bugId').value;
-        const formData = new FormData(this);
-        
-        try {
-            const response = await fetch(`/backlog/${bugId}`, {
-                method: 'PUT',
+    document.addEventListener('DOMContentLoaded', function() {
+        const editModal = document.getElementById('editBugModal');
+        const editForm = document.getElementById('editBugForm');
+        const cancelEditBtn = document.getElementById('cancelEditBug');
+
+        // Function to close modal
+        function closeModal() {
+            editModal.classList.add('hidden');
+            editForm.reset();
+        }
+
+        // Handle edit button clicks
+        document.addEventListener('click', function(e) {
+            const editButton = e.target.closest('.edit-backlog-task');
+            if (editButton) {
+                const bugCard = editButton.closest('.bug-card');
+                if (!bugCard) return;
+
+                const bugId = bugCard.dataset.id;
+                const bugName = bugCard.querySelector('a').textContent.trim();
+                const bugTeam = bugCard.dataset.team;
+                const bugPoints = bugCard.querySelector('.rounded-full').textContent.trim();
+                const bugDescription = bugCard.querySelector('.col-span-8')?.textContent.trim() || '';
+
+                // Set form action
+                editForm.action = `/backlog/update/${bugId}`;
+
+                // Fill form fields
+                document.getElementById('bugId').value = bugId;
+                document.getElementById('bugName').value = bugName;
+                document.getElementById('bugTeam').value = bugTeam;
+                document.getElementById('bugPoints').value = bugPoints;
+                document.getElementById('bugDescription').value = bugDescription;
+
+                // Show modal
+                editModal.classList.remove('hidden');
+            }
+        });
+
+        // Close modal when clicking cancel button
+        if (cancelEditBtn) {
+            cancelEditBtn.addEventListener('click', closeModal);
+        }
+
+        // Close modal when clicking outside
+        editModal.addEventListener('click', function(e) {
+            if (e.target === editModal) {
+                closeModal();
+            }
+        });
+
+        // Handle form submission
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!confirm('Are you sure you want to update this bug?')) {
+                return;
+            }
+
+            const bugId = this.querySelector('#bugId').value;
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
-                body: JSON.stringify(Object.fromEntries(formData))
-            });
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return null;
+                }
 
-            const data = await response.json();
+                if (!response.ok) {
+                    throw new Error('Update failed');
+                }
 
-            if (response.ok) {
-                // Close modal
-                closeEditModal();
-                
-                // Update the bug card in the UI
-                const bugCard = document.querySelector(`.bug-card[data-id="${bugId}"]`);
-                bugCard.querySelector('a').textContent = formData.get('name');
-                bugCard.setAttribute('data-team', formData.get('team'));
-                bugCard.querySelector('.rounded-full').textContent = formData.get('points');
-                bugCard.querySelector('.ml-2.px-2.py-1.text-xs.font-medium.rounded-full:last-child').textContent = formData.get('assigned') || 'Unassigned';
-                bugCard.querySelector('.col-span-8').textContent = formData.get('description');
-                
-                // Show success message
-                alert('Bug updated successfully');
-                
-                // Refresh the page to update all data
+                // Try to parse as JSON, if it fails, handle as regular response
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        // If it's not JSON, just reload the page
+                        window.location.reload();
+                        return null;
+                    }
+                });
+            })
+            .then(data => {
+                if (data) {
+                    closeModal();
+                }
                 window.location.reload();
-            } else {
-                throw new Error(data.error || 'Failed to update bug');
-            }
-        } catch (error) {
-            alert(error.message);
-        }
-    });
-
-    // Cancel button click handler
-    document.getElementById('cancelEditBug').addEventListener('click', closeEditModal);
-
-    // Close modal when clicking outside
-    document.getElementById('editBugModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeEditModal();
-        }
-    });
-
-    // Connect edit buttons to modal
-    document.querySelectorAll('.bi-pencil-square').forEach(button => {
-        button.closest('button').addEventListener('click', function() {
-            const bugId = this.closest('.bug-card').getAttribute('data-id');
-            openEditModal(bugId);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update bug. Please try again.');
+            });
         });
     });
 </script>
