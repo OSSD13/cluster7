@@ -4406,17 +4406,13 @@
 
                         console.log('Deleting bug with ID:', numericId, 'at URL:', apiUrl);
 
-                        // Use POST with _method=DELETE instead of direct DELETE to bypass server restrictions
                         const response = await fetch(apiUrl, {
-                            method: 'POST',
+                            method: 'DELETE',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({
-                                _method: 'DELETE' // This tells Laravel to treat it as a DELETE request
-                            })
+                            }
                         });
 
                         // First check the response status
