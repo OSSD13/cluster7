@@ -53,54 +53,51 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white">
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sprint
+        <div class="sprint-content mt-2 bg-white p-4 rounded-3xl ">
+            <table class="w-full border border-collapse bg gray-200 text-center">
+                <thead class="bg-gray-50 rounded-full">
+                    <tr>
+                        <th class="px-4 py-2 border border-white"><span
+                                class="px-10 py-1 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Sprint</span>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Card</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Description</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member
+                        <th class="px-4 py-2 border border-white"><span
+                                class="px-10 py-1  bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Card_Detail</span>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points
+                        <th class="px-4 py-2 border border-white"><span
+                                class="px-10 py-1  bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Description</span>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
+                        <th class="px-4 py-2 border border-white"><span
+                                class="px-10 py-1  bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Member</span>
+                        </th>
+                        <th class="px-4 py-2 border border-white"><span
+                                class="px-8 py-1 bg-white rounded-full text-[#13A7FD] font-bold shadow-md">Personal_Point</span>
+                        </th>
+                        <th class="px-4 py-2 border border-white w-54 text-[#13A7FD]"><span
+                                class="px-10 py-1 bg-white rounded-full text-[#13A7FD] font-bold pt-1 pb-1 shadow-md">Actions</span>
                         </th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($minorCases as $case)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50 text-center">
                             <td class="px-6 py-4 whitespace-nowrap">{{ $case->sprint }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $case->card }}</td>
                             <td class="px-6 py-4">{{ $case->description ?? '' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $case->member }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $case->points }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap mr-5">
                                 <button
-                                    class="px-2 py-2 mr-1 text-white bg-[#FFC7B2] rounded-full edit-btn hover:bg-yellow-600"
+                                    class="px-2 py-2 text-[#FF0004] bg-[#FFACAE] rounded-full delete-btn hover:bg-red-600 mr-2"
                                     data-id="{{ $case->id }}">
-                                    <svg class="w-5 h-5 text-[#985E00] hover:text-white" width="24" height="24"
-                                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                    </svg>
-                                </button>
-                                <button
-                                    class="px-2 py-2 text-[#FF0004] bg-[#FFACAE] rounded-full delete-btn hover:bg-red-600"
-                                    data-id="{{ $case->id }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hover:text-white" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hover:text-white"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
                                 </button>
                             </td>
                         </tr>
+
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-4 text-center text-gray-500">
@@ -133,6 +130,7 @@
 
                 <form id="editForm" class="mt-4">
                     <input type="hidden" id="editId">
+                  
                     <div class="grid grid-cols-2 gap-4">
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="editSprint">Sprint</label>
@@ -294,7 +292,9 @@
                 editForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     const id = document.getElementById('editId').value;
-                    updateMinorCase(id);
+                    
+                    console.log('Edit Form Submitted:', boardId);
+                    updateMinorCase( id);
                 });
 
                 // Close modals when clicking outside
@@ -339,23 +339,30 @@
                         }
                     });
                 }
+                let boardId;
 
                 function openEditModal(id) {
+                    
+                    console.log('Edit button clicked for ID:', id);
                     // Fetch record data via AJAX
-                    fetch(`/api/minor-cases/${id}`, {
+                    fetch(`minor-cases/api/?board_id=${id}`, {
                         headers: {
                             'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     })
                     .then(response => {
+                        console.log('Response:', response);
                         if (!response.ok) {
                             throw new Error('Network response was not ok');
                         }
                         return response.json();
                     })
                     .then(data => {
+                    
                         document.getElementById('editId').value = id;
+                        boardId = data.board_id;
+                        console.log('Data:', data);
                         document.getElementById('editSprint').value = data.sprint;
                         document.getElementById('editCard').value = data.card;
                         document.getElementById('editDescription').value = data.description || '';
@@ -365,10 +372,11 @@
                         populateMemberDropdown().then(() => {
                             const memberSelect = document.getElementById('editMember');
                             memberSelect.value = data.member;
-                        });
+                        }); 
 
                         editModal.classList.remove('hidden');
                     })
+                    
                     .catch(error => {
                         console.error('Error fetching data:', error);
                         showToast('Error loading minor case data', 'error');
@@ -392,14 +400,16 @@
 
                 function updateMinorCase(id) {
                     const formData = {
+                        board_id: boardId,
                         sprint: document.getElementById('editSprint').value,
                         card: document.getElementById('editCard').value,
                         description: document.getElementById('editDescription').value,
                         member: document.getElementById('editMember').value,
                         points: document.getElementById('editPoints').value
                     };
+                    console.log('Form Data:', formData);
 
-                    fetch(`/api/minor-cases/${id}`, {
+                    fetch(`/minor-cases/api/${id}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',

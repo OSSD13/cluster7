@@ -1165,6 +1165,8 @@
                     };
 
                     if (id) {
+                        console.log('Editing existing minor case with ID:', id);
+                        console.log('Data to send:', data);
                         // Edit existing case
                         response = await fetch(`${apiBaseUrl}/minor-cases/api/${id}`, {
                             method: 'PUT',
