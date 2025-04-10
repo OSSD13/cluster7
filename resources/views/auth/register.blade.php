@@ -151,7 +151,7 @@
                             <option value="dev" {{ old('role') == 'dev' ? 'selected' : '' }}>Developer</option>
                             <option value="tester" {{ old('role') == 'tester' ? 'selected' : '' }}>Tester</option>
                             <option value="project_manager" {{ old('role') == 'project_manager' ? 'selected' : '' }}>Project Manager</option>
-                            <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrator</option>
+                            {{-- <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrator</option> --}}
                         </select>
                         @error('role')
                             <p class="mt-1 text-sm text-red-500 pl-3">{{ $message }}</p>
