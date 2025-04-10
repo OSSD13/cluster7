@@ -162,7 +162,6 @@
                                         <!-- Actions -->
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('sprint-reports.show', $report->id) }}" class="text-primary-600 hover:text-primary-900 mr-3">View</a>
-                                            <a href="{{ route('reports.print', $report->id) }}" target="_blank" class="text-green-600 hover:text-green-900 mr-3">Print</a>
                                             <!--if user is admin show edit and delete-->
                                             @if((auth()->user()->isAdmin() ) || (auth()->user()->role === 'tester'))
                                             <form action="{{ route('sprint-reports.delete', $report->id) }}" method="POST" class="inline">
