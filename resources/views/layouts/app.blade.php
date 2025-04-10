@@ -214,14 +214,14 @@
                             Sprint Settings
                         </span>
                     </a>
-                    <a href="{{ route('saved-reports.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('saved-reports.*') ?'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
+                    <!-- <a href="{{ route('saved-reports.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('saved-reports.*') ?'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                         </svg>
                         <span class="ml-3 transition-opacity duration-200" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 hidden'">
                             Saved Reports
                         </span>
-                    </a>
+                    </a> -->
                     <a href="{{ route('sprints.index') }}" class="flex items-center px-4 py-2 rounded-r-full transition-colors duration-200 {{ request()->routeIs('sprints.*') || request()->routeIs('sprint-reports.*') ? 'bg-[#13A7FD] text-white' : 'hover:text-white hover:bg-[#13A7FD]' }}">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
