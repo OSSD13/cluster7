@@ -254,208 +254,6 @@
         }
     @endphp
 
-    <!-- PHP for Backlog Data Processing -->
-    @php
-        // Extract backlog data using BacklogController's method
-        $backlogData = [];
-        $groupedBacklogData = [];
-        
-        try {
-            // Get backlog data from the BacklogController
-            $backlogController = new \App\Http\Controllers\BacklogController(app(\App\Services\TrelloService::class));
-            $backlogDataResult = $backlogController->getBacklogData();
-            
-            // Process all bugs from the controller result
-            if (isset($backlogDataResult['allBugs']) && !empty($backlogDataResult['allBugs'])) {
-                foreach ($backlogDataResult['allBugs'] as $bug) {
-                    $backlogData[] = (object)[
-                        'sprint' => $bug['sprint_number'] ?? $sprintNumber,
-                        'personal' => $bug['assigned_to'] ?? $bug['assigned'] ?? 'Unassigned',
-                        'point_all' => $bug['points'] ?? 0,
-                        'test_pass' => $bug['test_pass'] ?? 0,
-                        'bug' => $bug['bug_count'] ?? 0,
-                        'cancel' => isset($bug['cancelled']) && $bug['cancelled'] ? 'Yes' : 'No',
-                        'team' => $bug['team'] ?? null
-                    ];
-                }
-            }
-        } catch (\Exception $e) {
-            // Fallback to previous method if controller throws an exception
-            
-            // Get the current sprint number
-            $currentSprintNumber = $sprintNumber;
-            
-            // Query the database for backlog records
-            $sprintReports = \App\Models\SprintReport::where('sprint_id', $report->sprint_id ?? null)
-                ->whereNotNull('backlog_data')
-                ->first();
-                
-            // If we have sprint reports with backlog data
-            if ($sprintReports && isset($sprintReports->backlog_data) && !empty($sprintReports->backlog_data)) {
-                $backlogItems = json_decode($sprintReports->backlog_data, true);
-                
-                foreach ($backlogItems as $key => $item) {
-                    // Format backlog item into required structure
-                    $backlogData[] = (object)[
-                        'sprint' => $item['sprint_number'] ?? $currentSprintNumber,
-                        'personal' => $item['assigned_to'] ?? $item['assigned'] ?? 'Unassigned',
-                        'point_all' => $item['points'] ?? 0,
-                        'test_pass' => $item['test_pass'] ?? 0,
-                        'bug' => $item['bug_count'] ?? 0,
-                        'cancel' => isset($item['cancelled']) && $item['cancelled'] ? 'Yes' : 'No',
-                        'team' => $item['team'] ?? null
-                    ];
-                }
-            } 
-            // If no sprint reports, try to get from TrelloBoardData
-            else {
-                $trelloBoardData = \App\Models\TrelloBoardData::whereNotNull('backlog_data')
-                    ->orderBy('updated_at', 'desc')
-                    ->first();
-                    
-                if ($trelloBoardData && isset($trelloBoardData->backlog_data) && !empty($trelloBoardData->backlog_data)) {
-                    $backlogItems = $trelloBoardData->backlog_data;
-                    
-                    foreach ($backlogItems as $key => $item) {
-                        // Format backlog item into required structure
-                        $backlogData[] = (object)[
-                            'sprint' => $item['sprint_number'] ?? $currentSprintNumber,
-                            'personal' => $item['assigned_to'] ?? $item['assigned'] ?? 'Unassigned',
-                            'point_all' => $item['points'] ?? 0,
-                            'test_pass' => $item['test_pass'] ?? 0,
-                            'bug' => $item['bug_count'] ?? 0,
-                            'cancel' => isset($item['cancelled']) && $item['cancelled'] ? 'Yes' : 'No',
-                            'team' => $item['team'] ?? null
-                        ];
-                    }
-                }
-            }
-            
-            // If still no backlog data, try to get from report data as fallback
-            if (empty($backlogData)) {
-                if (isset($report->report_data['backlog'])) {
-                    // New format where backlog data is stored directly in report_data
-                    foreach ($report->report_data['backlog'] as $teamName => $bugs) {
-                        foreach ($bugs as $bug) {
-                            // Skip completed bugs
-                            if (isset($bug['status']) && $bug['status'] === 'completed') {
-                                continue;
-                            }
-                            
-                            $backlogData[] = (object)[
-                                'sprint' => $bug['sprint_number'] ?? $currentSprintNumber,
-                                'personal' => $bug['assigned_to'] ?? $bug['assigned'] ?? 'Unassigned',
-                                'point_all' => $bug['points'] ?? 0,
-                                'test_pass' => $bug['test_pass'] ?? 0,
-                                'bug' => $bug['bug_count'] ?? 0,
-                                'cancel' => isset($bug['cancelled']) && $bug['cancelled'] ? 'Yes' : 'No',
-                                'team' => $bug['team'] ?? $teamName ?? null
-                            ];
-                        }
-                    }
-                } elseif (isset($report->backlog) && is_array($report->backlog)) {
-                    // Direct access to backlog property (if available)
-                    $backlogData = $report->backlog;
-                } else {
-                    // Try to extract from bug_cards data for compatibility
-                    if (isset($report->report_data['bug_cards'])) {
-                        foreach ($report->report_data['bug_cards'] as $teamName => $bugs) {
-                            foreach ($bugs as $bug) {
-                                // Only include backlog items
-                                if (isset($bug['label']) && $bug['label'] === 'Backlog') {
-                                    $backlogData[] = (object)[
-                                        'sprint' => $bug['sprint_number'] ?? $currentSprintNumber,
-                                        'personal' => $bug['assigned_to'] ?? $bug['assigned'] ?? 'Unassigned',
-                                        'point_all' => $bug['points'] ?? 0,
-                                        'test_pass' => $bug['test_pass'] ?? 0,
-                                        'bug' => $bug['bug_count'] ?? 0,
-                                        'cancel' => isset($bug['cancelled']) && $bug['cancelled'] ? 'Yes' : 'No',
-                                        'team' => $bug['team'] ?? $teamName ?? null
-                                    ];
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Group backlog data by sprint and personal name
-        foreach ($backlogData as $item) {
-            // Create a key that combines sprint and personal name to group by
-            $key = $item->sprint . '-' . $item->personal;
-            
-            if (!isset($groupedBacklogData[$key])) {
-                // Create a new entry for this sprint-personal combination
-                $groupedBacklogData[$key] = (object)[
-                    'sprint' => $item->sprint,
-                    'personal' => $item->personal,
-                    'point_all' => $item->point_all,
-                    'test_pass' => $item->test_pass,
-                    'bug' => $item->bug,
-                    'cancel' => $item->cancel,
-                    'team' => $item->team ?? null
-                ];
-            } else {
-                // Add to existing entry (sum the values)
-                $groupedBacklogData[$key]->point_all += $item->point_all;
-                $groupedBacklogData[$key]->test_pass += $item->test_pass;
-                $groupedBacklogData[$key]->bug += $item->bug;
-                // For cancel, keep 'Yes' if any item has 'Yes'
-                if ($item->cancel === 'Yes') {
-                    $groupedBacklogData[$key]->cancel = 'Yes';
-                }
-            }
-        }
-        
-        // Convert the associative array to indexed array for use in the blade template
-        $backlogData = array_values($groupedBacklogData);
-        
-        // Get current team name from the report
-        $currentTeamName = $report->team_name ?? null;
-        
-        // Filter backlog data to show only entries from the current team
-        // and only people who have names in Trello (not 'Unassigned')
-        $filteredBacklogData = [];
-        foreach ($backlogData as $item) {
-            // Check if team matches or item has no team property
-            // If currentTeamName is set, we want to match it specifically
-            // If currentTeamName is null, we'll include all items
-            $teamMatches = false;
-            if (empty($currentTeamName)) {
-                // If no team name is set, include all
-                $teamMatches = true;
-            } else if (isset($item->team)) {
-                // If item has team property, check for match
-                $teamMatches = ($item->team == $currentTeamName);
-            } else {
-                // If item has no team property, include it (default behavior)
-                $teamMatches = true;
-            }
-            
-            // Check if personal is not empty and not 'Unassigned'
-            $hasValidName = !empty($item->personal) && $item->personal !== 'Unassigned';
-            
-            // Only include items that match both conditions
-            if ($teamMatches && $hasValidName) {
-                $filteredBacklogData[] = $item;
-            }
-        }
-        
-        // Replace the original array with the filtered one
-        $backlogData = $filteredBacklogData;
-        
-        // Sort the backlog data by sprint and then by personal name
-        usort($backlogData, function($a, $b) {
-            // First sort by sprint number
-            if ($a->sprint != $b->sprint) {
-                return $a->sprint <=> $b->sprint;
-            }
-            // Then sort by personal name
-            return $a->personal <=> $b->personal;
-        });
-    @endphp
-
     @if(isset($report->logo))
     <div class="report-logo">
         <img src="{{ asset('tttLogo.png') }}" alt="Logo" class="w-full h-full">
@@ -638,34 +436,28 @@
                 <!-- Two Column Layout for Backlog and Extra Points -->
                 <tr>
                     <td colspan="7" style="padding: 0;">
-                        <table class="w-full" style="border-collapse: collapse;">
+                        <table class="w-full border-collapse">
                             <tr>
                                 <td class="backlog-header" style="background-color: #ff9800; color: white; font-size: 10pt; border: 1px solid black;">Backlog</td>
                             </tr>
-                        </table>
-                        <table class="w-full" style="border-collapse: collapse;">
                             <tr>
-                                <td class="header-cell" style="width: 15%; background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">#sprint</td>
-                                <td class="header-cell" style="width: 25%; background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">personal</td>
-                                <td class="header-cell" style="width: 15%; background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">point all</td>
-                                <td class="header-cell" style="width: 15%; background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">test pass</td>
-                                <td class="header-cell" style="width: 15%; background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">bug</td>
-                                <td class="header-cell" style="width: 15%; background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">cancel</td>
+                                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">#Sprint</td>
+                                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Personal</td>
+                                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Point All</td>
+                                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Test Pass</td>
+                                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Bug</td>
+                                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Cancel</td>
                             </tr>
-                            @forelse($backlogData as $backlog)
+                            @foreach($report->backlog ?? [] as $backlog)
                             <tr>
-                                <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->sprint }}</td>
-                                <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->personal }}</td>
-                                <td class="text-right" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->point_all }}</td>
-                                <td class="text-right" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->test_pass }}</td>
-                                <td class="text-right" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->bug }}</td>
-                                <td class="text-right" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->cancel }}</td>
+                                {{-- <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->sprint ?? null }}</td>
+                                <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->personal ?? null }}</td>
+                                <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->point_all ?? null }}</td>
+                                <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->test_pass ?? null }}</td>
+                                <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->bug ?? null }}</td>
+                                <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $backlog->cancel ?? null }}</td> --}}
                             </tr>
-                            @empty
-                            <tr>
-                                <td class="text-center" colspan="6" style="font-size: 10pt; border: 1px solid black;">ไม่พบ Backlog Cards สำหรับทีมนี้</td>
-                            </tr>
-                            @endforelse
+                            @endforeach
                         </table>
                     </td>
                     <td colspan="3" style="padding: 0;">
@@ -701,41 +493,7 @@
                 <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Personal</td>
                 <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Point</td>
             </tr>
-            @php
-                // Get minor cases from the database
-                $minorCases = [];
-                
-                try {
-                    // Get current sprint number to filter minor cases
-                    if (!empty($sprintNumber)) {
-                        // Try to find minor cases for the current sprint
-                        $minorCases = \App\Models\MinorCase::where('sprint', $sprintNumber)
-                            ->orderBy('created_at', 'desc')
-                            ->get();
-                    } else {
-                        // If no sprint information is available, get all minor cases
-                        $minorCases = \App\Models\MinorCase::orderBy('created_at', 'desc')
-                            ->limit(15) // Limit to a reasonable number
-                            ->get();
-                    }
-                } catch (\Exception $e) {
-                    // If MinorCase model doesn't exist or any other error occurs, keep empty array
-                }
-            @endphp
-            
-            @forelse($minorCases as $minorCase)
-            <tr>
-                <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $minorCase->sprint }}</td>
-                <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $minorCase->card }}</td>
-                <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $minorCase->description }}</td>
-                <td class="text-left" style="font-size: 10pt; border: 1px solid black;">{{ $minorCase->member }}</td>
-                <td class="text-right" style="font-size: 10pt; border: 1px solid black;">{{ $minorCase->points }}</td>
-            </tr>
-            @empty
-            <tr>
-                <td class="text-center" colspan="5" style="font-size: 10pt; border: 1px solid black;">ไม่พบ Minor Cases สำหรับทีมนี้</td>
-            </tr>
-            @endforelse
+            <!-- Add your minor case data rows here -->
         </table>
 
         <!-- Signature Section -->
