@@ -619,7 +619,11 @@
                 body: JSON.stringify(Object.fromEntries(formData))
             });
 
-            const data = await response.json();
+        // Function to close modal
+        function closeModal() {
+            editModal.classList.add('hidden');
+            editForm.reset();
+        }
 
             if (response.ok) {
                 // Close modal
@@ -641,26 +645,30 @@
             } else {
                 throw new Error(data.error || 'Failed to update bug');
             }
-        } catch (error) {
-            alert(error.message);
+        });
+
+        // Close modal when clicking cancel button
+        if (cancelEditBtn) {
+            cancelEditBtn.addEventListener('click', closeModal);
         }
-    });
 
-    // Cancel button click handler
-    document.getElementById('cancelEditBug').addEventListener('click', closeEditModal);
+        // Close modal when clicking outside
+        editModal.addEventListener('click', function(e) {
+            if (e.target === editModal) {
+                closeModal();
+            }
+        });
 
-    // Close modal when clicking outside
-    document.getElementById('editBugModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeEditModal();
-        }
-    });
+        // Handle form submission
+        editForm.addEventListener('submit', function(e) {
+            // Don't prevent the default form submission - let it go naturally
+            if (!confirm('Are you sure you want to update this bug?')) {
+                e.preventDefault();
+                return false;
+            }
 
-    // Connect edit buttons to modal
-    document.querySelectorAll('.bi-pencil-square').forEach(button => {
-        button.closest('button').addEventListener('click', function() {
-            const bugId = this.closest('.bug-card').getAttribute('data-id');
-            openEditModal(bugId);
+            // Let the form submit normally through Laravel's routing system
+            return true;
         });
     });
 </script>

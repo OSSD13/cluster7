@@ -12,6 +12,8 @@ use App\Models\SprintReport;
 use App\Models\Sprint;
 use App\Helpers\DateHelper;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Models\SavedReport;
 use App\Services\TrelloService;
 
@@ -88,7 +90,7 @@ class BacklogController extends Controller
         }
 
         // If user is not admin, filter to show only their team's bugs
-        if (!auth()->user()->isAdmin()) {
+        if (!Auth::user()->isAdmin()) {
             $userTeams = $this->getUserTeams();
             $allBacklogBugs = $allBacklogBugs->filter(function ($bug) use ($userTeams) {
                 return in_array($bug['team'], $userTeams);
@@ -181,7 +183,7 @@ class BacklogController extends Controller
         }
 
         // If user is not admin, filter to show only their team's bugs
-        if (!auth()->user()->isAdmin()) {
+        if (!Auth::user()->isAdmin()) {
             $userTeams = $this->getUserTeams();
             $allBacklogBugs = $allBacklogBugs->filter(function ($bug) use ($userTeams) {
                 return in_array($bug['team'], $userTeams);
@@ -236,7 +238,7 @@ class BacklogController extends Controller
         if ($this->trelloService->hasValidCredentials()) {
             try {
                 // Get current user's name
-                $userName = auth()->user()->name;
+                $userName = Auth::user()->name;
 
                 // Get all boards with members
                 $options = [
@@ -263,7 +265,7 @@ class BacklogController extends Controller
                 // Removed the limitation to only see the first team
             } catch (\Exception $e) {
                 // Log error but don't fail - empty team list will result
-                \Log::error('Error fetching user teams: ' . $e->getMessage());
+                Log::error('Error fetching user teams: ' . $e->getMessage());
             }
         }
 
@@ -309,6 +311,9 @@ class BacklogController extends Controller
     public function destroy($id)
     {
         try {
+            // Log the incoming request for debugging
+            Log::info('Attempting to delete bug', ['id' => $id]);
+
             // Get all reports
             $reports = SavedReport::with('sprint')->get();
             $bugFound = false;
@@ -320,6 +325,7 @@ class BacklogController extends Controller
                     $reportData = json_decode($reportData, true);
                 }
                 $modified = false;
+
                 // Check in bug_cards section
                 if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
                     foreach ($reportData['bug_cards'] as $teamName => &$bugs) {
@@ -334,6 +340,7 @@ class BacklogController extends Controller
                         $bugs = array_values($bugs);
                     }
                 }
+
                 // Check in backlog section
                 if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
                     foreach ($reportData['backlog'] as $teamName => &$bugs) {
@@ -351,6 +358,7 @@ class BacklogController extends Controller
 
                 // If the report was modified, save it
                 if ($modified) {
+                    Log::info('Saving modified report', ['report_id' => $report->id]);
                     $report->report_data = $reportData;
                     $report->save();
                 }
@@ -376,13 +384,15 @@ class BacklogController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            // Log the incoming request for debugging
+            Log::info('Attempting to update bug', ['id' => $id, 'data' => $request->all()]);
+
             // Validate request data
             $validated = $request->validate([
                 'name' => 'required|string',
-                'team' => 'required|string',
-                'points' => 'required|integer|min:1',
-                'assigned' => 'nullable|string',
-                'description' => 'nullable|string'
+                'points' => 'required|integer|min:0',
+                'description' => 'nullable|string',
+                'team' => 'required|string'
             ]);
 
             // Get all reports
@@ -401,11 +411,16 @@ class BacklogController extends Controller
                 if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
                     foreach ($reportData['bug_cards'] as $teamName => &$bugs) {
                         foreach ($bugs as $key => &$bug) {
-                            if (isset($bug['id']) && $bug['id'] === $id) {
+                            if ((isset($bug['id']) && $bug['id'] === $id) ||
+                                (isset($bug['id']) && is_numeric($id) && strpos($bug['id'], $id) !== false)) {
+                                Log::info('Found bug to update in bug_cards', [
+                                    'team' => $teamName,
+                                    'bug_id' => $bug['id'],
+                                    'bug_name' => $bug['name'] ?? 'N/A'
+                                ]);
                                 $bug['name'] = $validated['name'];
                                 $bug['team'] = $validated['team'];
                                 $bug['points'] = $validated['points'];
-                                $bug['assigned'] = $validated['assigned'];
                                 $bug['description'] = $validated['description'];
                                 $modified = true;
                                 $bugFound = true;
@@ -418,11 +433,16 @@ class BacklogController extends Controller
                 if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
                     foreach ($reportData['backlog'] as $teamName => &$bugs) {
                         foreach ($bugs as $key => &$bug) {
-                            if (isset($bug['id']) && $bug['id'] === $id) {
+                            if ((isset($bug['id']) && $bug['id'] === $id) ||
+                                (isset($bug['id']) && is_numeric($id) && strpos($bug['id'], $id) !== false)) {
+                                Log::info('Found bug to update in backlog', [
+                                    'team' => $teamName,
+                                    'bug_id' => $bug['id'],
+                                    'bug_name' => $bug['name'] ?? 'N/A'
+                                ]);
                                 $bug['name'] = $validated['name'];
                                 $bug['team'] = $validated['team'];
                                 $bug['points'] = $validated['points'];
-                                $bug['assigned'] = $validated['assigned'];
                                 $bug['description'] = $validated['description'];
                                 $modified = true;
                                 $bugFound = true;
@@ -433,18 +453,199 @@ class BacklogController extends Controller
 
                 // If the report was modified, save it
                 if ($modified) {
+                    Log::info('Saving modified report', ['report_id' => $report->id]);
                     $report->report_data = $reportData;
                     $report->save();
                 }
             }
 
             if ($bugFound) {
-                return response()->json(['message' => 'Bug updated successfully']);
+                Log::info('Bug updated successfully');
+                // Check if request wants JSON response
+                if (request()->wantsJson()) {
+                    return response()->json(['message' => 'Bug updated successfully']);
+                }
+                // Otherwise redirect back with success message
+                return redirect()->back()->with('success', 'Bug updated successfully');
+            } else {
+                Log::warning('Bug not found for update', ['id' => $id]);
+                if (request()->wantsJson()) {
+                    return response()->json(['error' => 'Bug not found'], 404);
+                }
+                return redirect()->back()->with('error', 'Bug not found');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error updating bug', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            if (request()->wantsJson()) {
+                return response()->json(['error' => 'Error updating bug: ' . $e->getMessage()], 500);
+            }
+            return redirect()->back()->with('error', 'Error updating bug: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update the status of a backlog bug.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $status = $request->input('status');
+        $points = $request->input('points', 0);
+
+        // Validate input
+        if (!in_array($status, ['active', 'completed'])) {
+            return response()->json(['error' => 'Invalid status. Must be "active" or "completed".'], 422);
+        }
+
+        // Get all saved reports
+        $reports = SavedReport::with('sprint')->get();
+        $updated = false;
+        $updatedReport = null;
+
+        DB::beginTransaction();
+
+        try {
+            // Update the status in each report containing this bug
+            foreach ($reports as $report) {
+                // Handle cases where report_data is already decoded or is a string
+                $reportData = $report->report_data;
+                if (is_string($reportData)) {
+                    $reportData = json_decode($reportData, true);
+                }
+
+                // Check backlog data
+                $reportUpdated = false;
+
+                if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
+                    foreach ($reportData['backlog'] as $teamName => &$bugs) {
+                        foreach ($bugs as &$bug) {
+                            if (isset($bug['id']) && $bug['id'] == $id) {
+                                // Update status
+                                $oldStatus = $bug['status'] ?? 'active';
+                                $bug['status'] = $status;
+
+                                // If status is changing from active to completed
+                                // Update the actual points in the story_points_data
+                                if ($oldStatus !== 'completed' && $status === 'completed' && $points > 0) {
+                                    // Get story_points_data
+                                    if (isset($reportData['story_points_data'])) {
+                                        $storyPointsData = $reportData['story_points_data'];
+
+                                        // If it's a JSON string, decode it
+                                        if (is_string($storyPointsData)) {
+                                            $storyPointsData = json_decode($storyPointsData, true);
+                                        }
+
+                                        // Update actual points if there's a summary section
+                                        if (is_array($storyPointsData) && isset($storyPointsData['summary'])) {
+                                            // Add the points to actual points
+                                            $actualPoints = floatval($storyPointsData['summary']['actualPoints'] ?? 0);
+                                            $storyPointsData['summary']['actualPoints'] = $actualPoints + floatval($points);
+
+                                            // Recalculate percentages
+                                            $planPoints = floatval($storyPointsData['summary']['planPoints'] ?? 0);
+                                            if ($planPoints > 0) {
+                                                $newActualPoints = $actualPoints + floatval($points);
+                                                $percentComplete = round(($newActualPoints / $planPoints) * 100, 2);
+                                                $remainPercent = 100 - $percentComplete;
+
+                                                $storyPointsData['summary']['percentComplete'] = $percentComplete . '%';
+                                                $storyPointsData['summary']['remainPercent'] = $remainPercent . '%';
+                                            }
+
+                                            // Update the story_points_data in the report
+                                            $reportData['story_points_data'] = $storyPointsData;
+                                        }
+                                    }
+                                }
+
+                                $reportUpdated = true;
+                                $updated = true;
+                            }
+                        }
+                    }
+                }
+
+                // Check bug cards data
+                if (!$reportUpdated && isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
+                    foreach ($reportData['bug_cards'] as $teamName => &$bugs) {
+                        foreach ($bugs as &$bug) {
+                            if (isset($bug['id']) && $bug['id'] == $id) {
+                                // Update status
+                                $oldStatus = $bug['status'] ?? 'active';
+                                $bug['status'] = $status;
+
+                                // If status is changing from active to completed
+                                // Update the actual points in the story_points_data
+                                if ($oldStatus !== 'completed' && $status === 'completed' && $points > 0) {
+                                    // Get story_points_data
+                                    if (isset($reportData['story_points_data'])) {
+                                        $storyPointsData = $reportData['story_points_data'];
+
+                                        // If it's a JSON string, decode it
+                                        if (is_string($storyPointsData)) {
+                                            $storyPointsData = json_decode($storyPointsData, true);
+                                        }
+
+                                        // Update actual points if there's a summary section
+                                        if (is_array($storyPointsData) && isset($storyPointsData['summary'])) {
+                                            // Add the points to actual points
+                                            $actualPoints = floatval($storyPointsData['summary']['actualPoints'] ?? 0);
+                                            $storyPointsData['summary']['actualPoints'] = $actualPoints + floatval($points);
+
+                                            // Recalculate percentages
+                                            $planPoints = floatval($storyPointsData['summary']['planPoints'] ?? 0);
+                                            if ($planPoints > 0) {
+                                                $newActualPoints = $actualPoints + floatval($points);
+                                                $percentComplete = round(($newActualPoints / $planPoints) * 100, 2);
+                                                $remainPercent = 100 - $percentComplete;
+
+                                                $storyPointsData['summary']['percentComplete'] = $percentComplete . '%';
+                                                $storyPointsData['summary']['remainPercent'] = $remainPercent . '%';
+                                            }
+
+                                            // Update the story_points_data in the report
+                                            $reportData['story_points_data'] = $storyPointsData;
+                                        }
+                                    }
+                                }
+
+                                $updated = true;
+                                $updatedReport = $report;
+                            }
+                        }
+                    }
+                }
+
+                // Save the updated report data
+                if ($reportUpdated) {
+                    $report->report_data = $reportData;
+                    $report->save();
+                }
+            }
+
+            DB::commit();
+
+            if ($updated) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Bug status updated successfully',
+                    'status' => $status
+                ]);
             } else {
                 return response()->json(['error' => 'Bug not found'], 404);
             }
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error updating bug: ' . $e->getMessage()], 500);
+            DB::rollback();
+            Log::error('Error updating backlog bug status: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update bug. ' . $e->getMessage()], 500);
         }
     }
 }
