@@ -292,7 +292,7 @@
                         </div>
                         @if(auth()->user()->isAdmin())
                         <div class="py-1">
-                            <a href="{{ route('saved-reports.index') }}"
+                            {{-- <a href="{{ route('saved-reports.index') }}"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
@@ -300,7 +300,7 @@
                                         d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                                 </svg>
                                 Saved Reports
-                            </a>
+                            </a> --}}
                             @endif
                             <a href="{{ route('trello.teams.index') }}"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
@@ -381,7 +381,7 @@
                     </h2>
                     <!-- Date Display -->
                     <div id="sprint-date-range" class=" text-sm text-gray-500 flex items-center">
-                        
+
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -690,14 +690,14 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="31" fill="currentColor" class="bi bi-bug mr-2 text-red-500" viewBox="0 0 16 16">
                                 <path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623M4 7v4a4 4 0 0 0 3.5 3.97V7zm4.5 0v7.97A4 4 0 0 0 12 11V7zM12 6a4 4 0 0 0-1.334-2.982A3.98 3.98 0 0 0 8 2a3.98 3.98 0 0 0-2.667 1.018A4 4 0 0 0 4 6z"/>
                             </svg>
-                            <h2 class="rounded-full text-xl text-red-500 bg-red-100 px-2 py-1 font-bold">Current Bug 
+                            <h2 class="rounded-full text-xl text-red-500 bg-red-100 px-2 py-1 font-bold">Current Bug
                                 <span id="bug-count"
                                     class="text-sm font-normal text-gray-500">0 bugs
                                 </span>
                             </h2>
                         </div>
                         <div class="text-sm text-gray-500 font-medium rounded-full text-red-500 bg-red-100 px-2 py-1">
-                            Total Points  
+                            Total Points
                             <span id="total-bug-points" class="font-semibold">0</span>
                         </div>
                     </div>
@@ -754,9 +754,9 @@
                     <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
                 </svg>
                     <h2 class="ml-2 rounded-full text-xl text-violet-400 bg-violet-100 px-2 py-1 font-bold">Minor Cases <span id="minor-case-count"
-                        class="text-sm font-normal text-gray-500">0 cases</span></h2> 
+                        class="text-sm font-normal text-gray-500">0 cases</span></h2>
                     </div>
-                
+
                 <div class="flex items-center space-x-2">
                     <div class="text-sm text-gray-500 font-medium rounded-full text-violet-500 bg-violet-100 px-2 py-1">
                         Total Points <span id="total-minor-points" class="font-medium ml-1">0</span>
@@ -875,7 +875,7 @@
                             <span class="rounded-full text-xl text-amber-500 bg-amber-100 px-2 py-1 font-bold">
                                 Backlog (<span id="backlog-title-count">{{ $backlogData['bugCount'] }}</span>)
                             </span>
-                            
+
                         </h2>
                         <p class="ml-1 text-sm text-gray-600 mb-4">These bugs were carried over from previous sprints.</p>
 
@@ -2628,7 +2628,7 @@
                 document.getElementById('total-pass').textContent = totals.pass.toFixed(1);
                 document.getElementById('total-bug').textContent = totals.bug.toFixed(1);
                 document.getElementById('total-cancel').textContent = totals.cancel.toFixed(1);
-                document.getElementById('total-extra').textContent = totals.extra.toFixed(1); 
+                document.getElementById('total-extra').textContent = totals.extra.toFixed(1);
                 document.getElementById('total-final').textContent = totals.final.toFixed(1);
 
                 // 5. Point Current Sprint (sum of member personal points)
@@ -3061,7 +3061,7 @@
                 editPlanPointsBtn.addEventListener('click', function() {
                     // สลับสถานะ readonly
                     planPointsInput.readOnly = !planPointsInput.readOnly;
-                    
+
                     if (!planPointsInput.readOnly) {
                         // เปิดให้แก้ไข
                         planPointsInput.classList.add('bg-yellow-50');
@@ -3069,16 +3069,16 @@
                     } else {
                         // บันทึกค่าใหม่
                         planPointsInput.classList.remove('bg-yellow-50');
-                        
+
                         // อัปเดตค่าใน localStorage และตั้งค่า flag ว่ามีการแก้ไขด้วยตนเอง
                         if (currentBoardId) {
                             localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
                             localStorage.setItem(`planPointEdited_${currentBoardId}`, 'true');
-                            
+
                             // บันทึกค่าลงฐานข้อมูลผ่าน API
                             const boardSelector = document.getElementById('board-selector');
                             const boardName = boardSelector ? boardSelector.options[boardSelector.selectedIndex].text : '';
-                            
+
                             fetch('{{ route("trello.save.plan.point") }}', {
                                 method: 'POST',
                                 headers: {
@@ -3095,12 +3095,12 @@
                             .then(data => {
                                 if (data.success) {
                                     showToast('Plan point saved successfully', 'success');
-                                    
+
                                     // อัปเดต cachedData
                                     if (window.cachedData && window.cachedData.storyPoints) {
                                         window.cachedData.storyPoints.planPoints = parseFloat(planPointsInput.value) || 0;
                                     }
-                                    
+
                                     // อัปเดตการคำนวณที่เกี่ยวข้อง
                                     updateTotals();
                                 } else {
@@ -3114,7 +3114,7 @@
                         }
                     }
                 });
-                
+
                 // ตรวจจับการกด Enter เพื่อบันทึก
                 planPointsInput.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter' && !planPointsInput.readOnly) {
