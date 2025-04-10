@@ -31,8 +31,8 @@
                     </div>
 
                     <div class="mb-4">
-                        <label for="bugTeam" class="block text-sm font-medium text-gray-700 ">Team</label>
-                        <texta type="text" id="bugTeam" name="team" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none"></textarea>
+                        <label for="bugTeam" class="block text-sm font-medium text-gray-700 ">team</label>
+                        <input type="text" id="bugTeam" name="team" class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200 " readonly>
                     </div>
                     
                     <div class="mb-4">
@@ -589,8 +589,8 @@
         // Set form values
         form.querySelector('#bugId').value = bugId;
         form.querySelector('#bugName').value = bugCard.querySelector('a').textContent;
-        form.querySelector('#bugTeam').value = bugCard.getAttribute('data-team');
-        form.querySelector('#bugPoints').value = bugCard.querySelector('.rounded-full').textContent.trim();
+        form.querySelector('#bugTeam').value = bugCard.getAttribute('data-team') || 'all';
+        form.querySelector('#bugPoints').value = bugCard.querySelector('.w-8.h-8.rounded-full').textContent.trim();
         form.querySelector('#bugAssigned').value = bugCard.querySelector('.ml-2.px-2.py-1.text-xs.font-medium.rounded-full:last-child').textContent.trim();
         form.querySelector('#bugDescription').value = bugCard.querySelector('.col-span-8').textContent.trim();
 
