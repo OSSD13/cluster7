@@ -6,6 +6,7 @@
  * @Create Date : 2025-04-11
  */
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use App\Models\SprintReport;
 use App\Models\Sprint;
@@ -284,6 +285,7 @@ class BacklogController extends Controller
         // Default to Low priority if no priority label found
         return 'Low';
     }
+
     private function getPriorityValue($priority)
     {
         // Return numeric values for sorting (lower value = higher priority)
@@ -322,9 +324,7 @@ class BacklogController extends Controller
                 if (isset($reportData['bug_cards']) && is_array($reportData['bug_cards'])) {
                     foreach ($reportData['bug_cards'] as $teamName => &$bugs) {
                         foreach ($bugs as $key => $bug) {
-                            // Compare with either numeric ID or full Trello-style ID
-                            if ((isset($bug['id']) && $bug['id'] === $id) ||
-                                (isset($bug['id']) && is_numeric($id) && strpos($bug['id'], $id) !== false)) {
+                            if (isset($bug['id']) && $bug['id'] === $id) {
                                 unset($bugs[$key]);
                                 $modified = true;
                                 $bugFound = true;
@@ -338,9 +338,7 @@ class BacklogController extends Controller
                 if (isset($reportData['backlog']) && is_array($reportData['backlog'])) {
                     foreach ($reportData['backlog'] as $teamName => &$bugs) {
                         foreach ($bugs as $key => $bug) {
-                            // Compare with either numeric ID or full Trello-style ID
-                            if ((isset($bug['id']) && $bug['id'] === $id) ||
-                                (isset($bug['id']) && is_numeric($id) && strpos($bug['id'], $id) !== false)) {
+                            if (isset($bug['id']) && $bug['id'] === $id) {
                                 unset($bugs[$key]);
                                 $modified = true;
                                 $bugFound = true;
@@ -359,12 +357,12 @@ class BacklogController extends Controller
             }
             // If the bug was found and removed, return success response
             if ($bugFound) {
-                return response()->json(['message' => 'Bug deleted successfully']);
+                return redirect()->route('backlog.index')->with('success', 'Bug deleted successfully');
             } else {
-                return response()->json(['error' => 'Bug not found'], 404);
+                return redirect()->route('backlog.index')->with('error', 'Bug not found');
             }
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error deleting bug: ' . $e->getMessage()], 500);
+            return redirect()->route('backlog.index')->with('error', 'Error deleting bug: ' . $e->getMessage());
         }
     }
 

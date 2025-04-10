@@ -175,37 +175,37 @@
                 <p>You don't have access to any Trello boards. Please contact your administrator if you believe this is an error.</p>
             </div>
         @else
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <div class="flex items-center space-x-4 mb-2">
-                        <div class="w-12 h-12 rounded-full bg-primary-100 flex justify-center items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <div class="flex items-center space-x-4 mb-2">
+                    <div class="w-12 h-12 rounded-full bg-primary-100 flex justify-center items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    @php
+                        // Get the current sprint number
+                        $sprintNumber = null;
+                        $currentSprint = \App\Models\Sprint::getCurrentSprint();
+                        if ($currentSprint) {
+                            $sprintNumber = $currentSprint->sprint_number;
+                        } else {
+                            // Fallback to next sprint number if no current sprint
+                            $sprintNumber = \App\Models\Sprint::getNextSprintNumber();
+                        }
+                    @endphp
+                    <div>
+                        <div class="flex items-center">
+                            <h1 class="text-2xl font-bold">Sprint: {{ $sprintNumber }}</h1>
+                            <span
+                                class="ml-3 px-3 py-1 text-xs font-medium bg-primary-100 text-primary-800 rounded-full">Report</span>
                         </div>
-                        @php
-                            // Get the current sprint number
-                            $sprintNumber = null;
-                            $currentSprint = \App\Models\Sprint::getCurrentSprint();
-                            if ($currentSprint) {
-                                $sprintNumber = $currentSprint->sprint_number;
-                            } else {
-                                // Fallback to next sprint number if no current sprint
-                                $sprintNumber = \App\Models\Sprint::getNextSprintNumber();
-                            }
-                        @endphp
-                        <div>
-                            <div class="flex items-center">
-                                <h1 class="text-4xl text-[#13A7FD] font-bold">Sprint {{ $sprintNumber }}</h1>
-                                <span
-                                    class="ml-3 px-3 py-1 text-xs font-medium bg-primary-100 text-primary-500 rounded-full">Report</span>
-                            </div>
-                            <h2 class="text-2xl text-grey-300">Current Sprint Report</h2>
-                        </div>
+                        <h2 class="text-xl text-gray-600">Current Sprint Report</h2>
                     </div>
                 </div>
+            </div>
 
             <!-- Action Menu -->
             <div class="flex space-x-2 items-center">
@@ -292,7 +292,7 @@
                         </div>
                         @if(auth()->user()->isAdmin())
                         <div class="py-1">
-                            <a href="{{ route('saved-reports.index') }}"
+                            {{-- <a href="{{ route('saved-reports.index') }}"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
@@ -300,7 +300,7 @@
                                         d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                                 </svg>
                                 Saved Reports
-                            </a>
+                            </a> --}}
                             @endif
                             <a href="{{ route('trello.teams.index') }}"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center">
@@ -377,11 +377,17 @@
             <div id="story-points-summary" class="hidden">
                 <div class="bg-white shadow rounded-3xl p-6 mb-6">
                     <h2 class="text-lg font-semibold mb-4 flex items-center">
-                        <span class=" rounded-full text-white bg-[#13A7FD] px-2 py-1"> Sprint Statistics </span>
-                    </h2>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-600" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                     </svg>
+                     Sprint Statistics
+                 </h2>
+
                     <!-- Date Display -->
                     <div id="sprint-date-range" class=" text-sm text-gray-500 flex items-center">
-                        
+
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -524,6 +530,9 @@
                             <div class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <button id="edit-plan-points"
                                     class="text-gray-400 hover:text-gray-600 pointer-events-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
@@ -687,14 +696,14 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="31" fill="currentColor" class="bi bi-bug mr-2 text-red-500" viewBox="0 0 16 16">
                                 <path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623M4 7v4a4 4 0 0 0 3.5 3.97V7zm4.5 0v7.97A4 4 0 0 0 12 11V7zM12 6a4 4 0 0 0-1.334-2.982A3.98 3.98 0 0 0 8 2a3.98 3.98 0 0 0-2.667 1.018A4 4 0 0 0 4 6z"/>
                             </svg>
-                            <h2 class="rounded-full text-xl text-red-500 bg-red-100 px-2 py-1 font-bold">Current Bug 
+                            <h2 class="rounded-full text-xl text-red-500 bg-red-100 px-2 py-1 font-bold">Current Bug
                                 <span id="bug-count"
                                     class="text-sm font-normal text-gray-500">0 bugs
                                 </span>
                             </h2>
                         </div>
                         <div class="text-sm text-gray-500 font-medium rounded-full text-red-500 bg-red-100 px-2 py-1">
-                            Total Points  
+                            Total Points
                             <span id="total-bug-points" class="font-semibold">0</span>
                         </div>
                     </div>
@@ -751,9 +760,9 @@
                     <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
                 </svg>
                     <h2 class="ml-2 rounded-full text-xl text-violet-400 bg-violet-100 px-2 py-1 font-bold">Minor Cases <span id="minor-case-count"
-                        class="text-sm font-normal text-gray-500">0 cases</span></h2> 
+                        class="text-sm font-normal text-gray-500">0 cases</span></h2>
                     </div>
-                
+
                 <div class="flex items-center space-x-2">
                     <div class="text-sm text-gray-500 font-medium rounded-full text-violet-500 bg-violet-100 px-2 py-1">
                         Total Points <span id="total-minor-points" class="font-medium ml-1">0</span>
@@ -872,7 +881,7 @@
                             <span class="rounded-full text-xl text-amber-500 bg-amber-100 px-2 py-1 font-bold">
                                 Backlog (<span id="backlog-title-count">{{ $backlogData['bugCount'] }}</span>)
                             </span>
-                            
+
                         </h2>
                         <p class="ml-1 text-sm text-gray-600 mb-4">These bugs were carried over from previous sprints.</p>
 
@@ -920,21 +929,21 @@
                                                     {!! nl2br(e($bug['description'] ?? 'No description available')) !!}
                                                 </div>
                                                 <div class="col-start-9 flex flex-col space-y-2">
-                                                    <button type="button"
+                                                <button type="button"
                                                         class="edit-backlog-task text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center h-8 w-8"
                                                         data-bug-id="{{ $bug['id'] ?? '' }}"
                                                         data-bug-name="{{ $bug['name'] ?? '' }}"
                                                         data-bug-description="{{ $bug['description'] ?? '' }}"
                                                         data-bug-points="{{ $bug['points'] ?? 0 }}">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                            fill="currentColor" class="bi bi-pencil-square"
-                                                            viewBox="0 0 16 16">
-                                                            <path
-                                                                d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                                            <path fill-rule="evenodd"
-                                                                d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                                        </svg>
-                                                    </button>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                        fill="currentColor" class="bi bi-pencil-square"
+                                                        viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                                        <path fill-rule="evenodd"
+                                                            d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                                                    </svg>
+                                                </button>
                                                 </div>
                                             </div>
 
@@ -1102,7 +1111,7 @@
                         </tr>
                     `;
 
-                    const boardId = getCurrentBoardId();
+                const boardId = getCurrentBoardId();
                     if (!boardId) {
                         console.warn('No board ID available');
                         renderMinorCasesTable([]);
@@ -1249,10 +1258,10 @@
                 });
 
                 if (totalMinorPointsSpan) {
-                    totalMinorPointsSpan.textContent = totalPoints.toFixed(1);
+                totalMinorPointsSpan.textContent = totalPoints.toFixed(1);
                 }
                 if (minorCaseTotalPoints) {
-                    minorCaseTotalPoints.textContent = totalPoints.toFixed(1);
+                minorCaseTotalPoints.textContent = totalPoints.toFixed(1);
                 }
 
                 // Clear table except for the "no cases" row
@@ -1262,8 +1271,8 @@
                 // Show/hide "no cases" row
                 if (minorCases.length === 0) {
                     if (noMinorCasesRow) {
-                        noMinorCasesRow.style.display = '';
-                    } else {
+                    noMinorCasesRow.style.display = '';
+                } else {
                         // Create the "no cases" row if it doesn't exist
                         const noDataRow = document.createElement('tr');
                         noDataRow.id = 'no-minor-cases-row';
@@ -1276,7 +1285,7 @@
                     }
                 } else {
                     if (noMinorCasesRow) {
-                        noMinorCasesRow.style.display = 'none';
+                    noMinorCasesRow.style.display = 'none';
                     }
 
                     // Add each case to the table
@@ -2124,154 +2133,154 @@
 
             // Add event listener to fetch data button
             if (fetchDataBtn) {
-                fetchDataBtn.addEventListener('click', function() {
-                    const boardId = boardSelector.value;
-                    if (!boardId) return;
+            fetchDataBtn.addEventListener('click', function() {
+                const boardId = boardSelector.value;
+                if (!boardId) return;
 
-                    // Update current board ID
-                    currentBoardId = boardId;
+                // Update current board ID
+                currentBoardId = boardId;
 
-                    console.clear(); // Clear console for better debugging
-                    console.log('Fetching data for board ID:', boardId);
+                console.clear(); // Clear console for better debugging
+                console.log('Fetching data for board ID:', boardId);
 
-                    // Show loading toast notification
-                    showToast('Loading data from Trello...', 'info');
+                // Show loading toast notification
+                showToast('Loading data from Trello...', 'info');
 
-                    // Clear any previous error messages
-                    document.querySelectorAll('.api-error-message').forEach(el => el.remove());
+                // Clear any previous error messages
+                document.querySelectorAll('.api-error-message').forEach(el => el.remove());
 
-                    // IMPORTANT: Completely destroy and recreate the table before fetching new data
-                    recreateTeamMembersTable();
+                // IMPORTANT: Completely destroy and recreate the table before fetching new data
+                recreateTeamMembersTable();
 
-                    // Reset all other data
-                    clearAllData();
+                // Reset all other data
+                clearAllData();
 
-                    // Show loading indicator
-                    loadingIndicator.classList.remove('hidden');
-                    storyPointsSummary.classList.add('hidden');
-                    cardsByListContainer.classList.add('hidden');
+                // Show loading indicator
+                loadingIndicator.classList.remove('hidden');
+                storyPointsSummary.classList.add('hidden');
+                cardsByListContainer.classList.add('hidden');
 
-                    // Force browser to make a fresh request with random parameter
-                    const timestamp = Date.now();
-                    const randomStr = Math.random().toString(36).substring(7);
+                // Force browser to make a fresh request with random parameter
+                const timestamp = Date.now();
+                const randomStr = Math.random().toString(36).substring(7);
 
-                    // Check if we're using a custom parameter or the default Refresh Now button
-                    const customParam = this.getAttribute('data-custom-param');
-                    const forceRefreshParam = customParam !== null ? customParam : '&force_refresh=true';
+                // Check if we're using a custom parameter or the default Refresh Now button
+                const customParam = this.getAttribute('data-custom-param');
+                const forceRefreshParam = customParam !== null ? customParam : '&force_refresh=true';
 
                     fetch(`${apiBaseUrl}/trello/data?board_id=${boardId}&_nocache=${timestamp}-${randomStr}${forceRefreshParam}`, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                                'Pragma': 'no-cache',
-                                'Expires': '0',
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            },
-                            cache: 'no-store'
-                        })
-                        .then(response => {
-                            console.log('Response status:', response.status);
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! Status: ${response.status}`);
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        cache: 'no-store'
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('New API response received:', data);
+
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+
+                        // Update board details before anything else
+                        updateBoardDetails(data.boardDetails);
+
+                        // Update the last updated time
+                        updateLastFetched(data.cached, data.lastFetched);
+
+                        // Update summary statistics
+                        updateSummaryData(data.storyPoints);
+
+                        // Update backlog data if available
+                        if (data.backlogData) {
+                            allBacklogBugs = data.backlogData.allBugs || [];
+
+                            // Update backlog table
+                            if (backlogTableBody) {
+                                filterBacklogByCurrentTeam();
+                                renderBacklogTable();
+                            } else {
+                                // If no backlog table exists but we have backlog data, update the count
+                                updateBacklogCount(allBacklogBugs.length);
                             }
-                            return response.json();
-                        })
-                        .then(data => {
-                            console.log('New API response received:', data);
+                        }
 
-                            if (data.error) {
-                                throw new Error(data.error);
-                            }
+                        // Update member data
+                        if (data.memberPoints && Array.isArray(data.memberPoints)) {
+                            console.log('Member points data received:', data.memberPoints.length,
+                                'members');
 
-                            // Update board details before anything else
-                            updateBoardDetails(data.boardDetails);
-
-                            // Update the last updated time
-                            updateLastFetched(data.cached, data.lastFetched);
-
-                            // Update summary statistics
-                            updateSummaryData(data.storyPoints);
-
-                            // Update backlog data if available
-                            if (data.backlogData) {
-                                allBacklogBugs = data.backlogData.allBugs || [];
-
-                                // Update backlog table
-                                if (backlogTableBody) {
-                                    filterBacklogByCurrentTeam();
-                                    renderBacklogTable();
-                                } else {
-                                    // If no backlog table exists but we have backlog data, update the count
-                                    updateBacklogCount(allBacklogBugs.length);
-                                }
-                            }
-
-                            // Update member data
-                            if (data.memberPoints && Array.isArray(data.memberPoints)) {
-                                console.log('Member points data received:', data.memberPoints.length,
-                                    'members');
-
-                                // Apply any saved extra points to the member data
-                                data.memberPoints.forEach(member => {
-                                    if (currentBoardId && member.id) {
-                                        const savedExtraPoint = parseFloat(localStorage.getItem(
+                            // Apply any saved extra points to the member data
+                            data.memberPoints.forEach(member => {
+                                if (currentBoardId && member.id) {
+                                    const savedExtraPoint = parseFloat(localStorage.getItem(
                                             `extraPoints_${currentBoardId}_${member.id}`
                                             )) || 0;
-                                        if (savedExtraPoint > 0) {
-                                            member.extraPoint = savedExtraPoint;
+                                    if (savedExtraPoint > 0) {
+                                        member.extraPoint = savedExtraPoint;
                                             member.finalPoint = parseFloat(member.passPoint ||
                                                     0) +
-                                                savedExtraPoint;
-                                        }
+                                            savedExtraPoint;
                                     }
-                                });
+                                }
+                            });
 
                                 // Store member data globally for the dropdown - log it first
                                 console.log('Setting window.teamMembersData with:', data.memberPoints);
                                 window.teamMembersData = data.memberPoints;
 
-                                // Also update the global cached data
-                                window.cachedData = data;
+                            // Also update the global cached data
+                            window.cachedData = data;
 
-                                buildMemberTable(data.memberPoints);
-                            } else {
-                                console.warn('No member points data available');
-                                showNoMembersMessage();
-                            }
+                            buildMemberTable(data.memberPoints);
+                        } else {
+                            console.warn('No member points data available');
+                            showNoMembersMessage();
+                        }
 
-                            // Update cards data
-                            if (data.cardsByList) {
-                                renderCardsByList(data.cardsByList);
-                            } else {
-                                showNoCardsMessage();
-                            }
+                        // Update cards data
+                        if (data.cardsByList) {
+                            renderCardsByList(data.cardsByList);
+                        } else {
+                            showNoCardsMessage();
+                        }
 
-                            // Show all containers now that we have data
-                            storyPointsSummary.classList.remove('hidden');
-                            cardsByListContainer.classList.remove('hidden');
+                        // Show all containers now that we have data
+                        storyPointsSummary.classList.remove('hidden');
+                        cardsByListContainer.classList.remove('hidden');
 
-                            // Hide loading indicator
-                            loadingIndicator.classList.add('hidden');
+                        // Hide loading indicator
+                        loadingIndicator.classList.add('hidden');
 
-                            // Show success toast
-                            if (data.cached) {
-                                showToast('Loaded cached data successfully', 'success');
-                            } else {
-                                showToast('Data refreshed successfully from Trello', 'success');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Fetch failed:', error);
-                            loadingIndicator.classList.add('hidden');
+                        // Show success toast
+                        if (data.cached) {
+                            showToast('Loaded cached data successfully', 'success');
+                        } else {
+                            showToast('Data refreshed successfully from Trello', 'success');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch failed:', error);
+                        loadingIndicator.classList.add('hidden');
 
-                            showErrorMessage(error.message || 'Unknown error fetching data');
+                        showErrorMessage(error.message || 'Unknown error fetching data');
 
-                            // Show error toast
-                            showToast('Failed to load data: ' + error.message, 'error');
-                        });
-                });
+                        // Show error toast
+                        showToast('Failed to load data: ' + error.message, 'error');
+                    });
+            });
             }
 
             // Function to update the last fetched time indication
@@ -2451,8 +2460,8 @@
 
                 // ฟังก์ชันสำหรับใช้ logic เดิมเมื่อไม่มีข้อมูลจากฐานข้อมูล
                 function fallbackToPreviousLogic() {
-                    // Check if we have a saved plan point value for this board
-                    const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
+                // Check if we have a saved plan point value for this board
+                const savedPlanPoints = localStorage.getItem(`planPoints_${currentBoardId}`);
 
                     // Check if this is the first data load or a refresh
                     const isFirstLoad = !localStorage.getItem(`dataLoaded_${currentBoardId}`);
@@ -2462,16 +2471,16 @@
                         localStorage.setItem(`dataLoaded_${currentBoardId}`, 'true');
                     }
 
-                    if (savedPlanPoints) {
-                        // Use the saved value if it exists
-                        planPointsInput.value = savedPlanPoints;
-                    } else {
-                        // Calculate total personal points from team members
-                        const totalPersonalPoints = document.getElementById('total-personal')?.textContent || "0";
+                if (savedPlanPoints) {
+                    // Use the saved value if it exists
+                    planPointsInput.value = savedPlanPoints;
+                } else {
+                    // Calculate total personal points from team members
+                    const totalPersonalPoints = document.getElementById('total-personal')?.textContent || "0";
 
                         // Always use team member points total as the default value for plan points (if available)
-                        if (parseFloat(totalPersonalPoints) > 0) {
-                            planPointsInput.value = totalPersonalPoints;
+                    if (parseFloat(totalPersonalPoints) > 0) {
+                        planPointsInput.value = totalPersonalPoints;
 
                             // Save this initial value if it's the first load
                             if (currentBoardId && isFirstLoad) {
@@ -2483,13 +2492,13 @@
                                     console.log('Set initial plan points to total personal points:', totalPersonalPoints);
                                 }
                             }
-                        } else {
+                    } else {
                             // Only fall back to total points from API if we don't have team member data
-                            planPointsInput.value = storyPoints.total || 0;
+                        planPointsInput.value = storyPoints.total || 0;
 
-                            // Save this initial value
+                    // Save this initial value
                             if (currentBoardId && isFirstLoad) {
-                                localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
+                        localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
                             }
                         }
                     }
@@ -2505,16 +2514,16 @@
 
                 // ฟังก์ชันอัปเดตการคำนวณต่างๆ
                 function updateMetricsBasedOnPlanPoints() {
-                    // Note: We'll update the Actual Point in buildMemberTable when we have the final point total
-                    // We're still initializing it here to ensure it's reset if needed
-                    document.getElementById('actual-points').textContent = '0';
+                // Note: We'll update the Actual Point in buildMemberTable when we have the final point total
+                // We're still initializing it here to ensure it's reset if needed
+                document.getElementById('actual-points').textContent = '0';
 
-                    // Calculate values for other metrics based on plan points
-                    const planPoints = parseFloat(planPointsInput.value) || 0;
+                // Calculate values for other metrics based on plan points
+                const planPoints = parseFloat(planPointsInput.value) || 0;
 
-                    // Other calculations will be updated once we have the actual point from team data
-                    document.getElementById('remain-percent').textContent = '0%';
-                    document.getElementById('percent-complete').textContent = '0%';
+                // Other calculations will be updated once we have the actual point from team data
+                document.getElementById('remain-percent').textContent = '0%';
+                document.getElementById('percent-complete').textContent = '0%';
                 }
             }
 
@@ -2625,7 +2634,7 @@
                 document.getElementById('total-pass').textContent = totals.pass.toFixed(1);
                 document.getElementById('total-bug').textContent = totals.bug.toFixed(1);
                 document.getElementById('total-cancel').textContent = totals.cancel.toFixed(1);
-                document.getElementById('total-extra').textContent = totals.extra.toFixed(1); 
+                document.getElementById('total-extra').textContent = totals.extra.toFixed(1);
                 document.getElementById('total-final').textContent = totals.final.toFixed(1);
 
                 // 5. Point Current Sprint (sum of member personal points)
@@ -3058,7 +3067,7 @@
                 editPlanPointsBtn.addEventListener('click', function() {
                     // สลับสถานะ readonly
                     planPointsInput.readOnly = !planPointsInput.readOnly;
-                    
+
                     if (!planPointsInput.readOnly) {
                         // เปิดให้แก้ไข
                         planPointsInput.classList.add('bg-yellow-50');
@@ -3066,16 +3075,16 @@
                     } else {
                         // บันทึกค่าใหม่
                         planPointsInput.classList.remove('bg-yellow-50');
-                        
+
                         // อัปเดตค่าใน localStorage และตั้งค่า flag ว่ามีการแก้ไขด้วยตนเอง
                         if (currentBoardId) {
                             localStorage.setItem(`planPoints_${currentBoardId}`, planPointsInput.value);
                             localStorage.setItem(`planPointEdited_${currentBoardId}`, 'true');
-                            
+
                             // บันทึกค่าลงฐานข้อมูลผ่าน API
                             const boardSelector = document.getElementById('board-selector');
                             const boardName = boardSelector ? boardSelector.options[boardSelector.selectedIndex].text : '';
-                            
+
                             fetch('{{ route("trello.save.plan.point") }}', {
                                 method: 'POST',
                                 headers: {
@@ -3092,12 +3101,12 @@
                             .then(data => {
                                 if (data.success) {
                                     showToast('Plan point saved successfully', 'success');
-                                    
+
                                     // อัปเดต cachedData
                                     if (window.cachedData && window.cachedData.storyPoints) {
                                         window.cachedData.storyPoints.planPoints = parseFloat(planPointsInput.value) || 0;
                                     }
-                                    
+
                                     // อัปเดตการคำนวณที่เกี่ยวข้อง
                                     updateTotals();
                                 } else {
@@ -3111,7 +3120,7 @@
                         }
                     }
                 });
-                
+
                 // ตรวจจับการกด Enter เพื่อบันทึก
                 planPointsInput.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter' && !planPointsInput.readOnly) {
