@@ -4313,13 +4313,13 @@
                             assigned: document.querySelector('input[name="assigned"]')?.value || null // Add assigned field
                         };
 
-                        // Use the correct API endpoint with numeric ID
-                        const apiUrl = `${apiBaseUrl}/backlog/${numericId}`;
+                        // Use the POST version of the update endpoint to avoid Method Not Allowed errors
+                        const apiUrl = `${apiBaseUrl}/backlog/update/${numericId}`;
                         console.log('Sending data:', formData);
                         console.log('To URL:', apiUrl);
 
                         const response = await fetch(apiUrl, {
-                            method: 'PUT', // Changed back to PUT to match the route definition
+                            method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
@@ -4402,12 +4402,15 @@
                     try {
                         // Extract the numeric ID from the bug ID (e.g., "BUG-720" -> "720")
                         const numericId = bugId.split('-').pop();
-                        const apiUrl = `${window.location.origin}/backlog/${numericId}`; // Use the numeric ID
+
+                        // Use a specific delete endpoint that uses POST instead of DELETE
+                        // This is more compatible with server configurations that restrict HTTP methods
+                        const apiUrl = `${window.location.origin}/backlog/remove/${numericId}`;
 
                         console.log('Deleting bug with ID:', numericId, 'at URL:', apiUrl);
 
                         const response = await fetch(apiUrl, {
-                            method: 'DELETE',
+                            method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
