@@ -1,5 +1,10 @@
 <?php
-
+/*
+ * BacklogController
+ * This controller manages the backlog tasks and their associated operations.
+ * @author : นายนพรัตน อุดมเลิศ 66160359/ นางสาวนิญาดา บุตรจันทร์ 66160361/นายปวริศ สินชุม 66160233
+ * @Create Date : 2025-04-11
+ */
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SprintReport;
@@ -352,7 +357,7 @@ class BacklogController extends Controller
                     $report->save();
                 }
             }
-
+            // If the bug was found and removed, return success response
             if ($bugFound) {
                 return response()->json(['message' => 'Bug deleted successfully']);
             } else {

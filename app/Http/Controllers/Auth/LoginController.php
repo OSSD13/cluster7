@@ -1,5 +1,10 @@
 <?php
-
+/*
+ * LoginController
+ * This controller handles the login functionality for users.
+ * @author : Patyot Sompan 66160109
+ * @Create Date : 2025-04-05
+ */
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;

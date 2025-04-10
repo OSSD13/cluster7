@@ -1,5 +1,11 @@
 <?php
-
+/*
+ * UserController
+ * This controller handles user management operations.
+ * @author : พัฒน์ยศ สมภาร 66160109
+ * @author :  ณัฐชยา โชคชัยชำนาญกิจ 66160353
+ * @Create Date : 2025-04-05
+ */
 namespace App\Http\Controllers;
 
 use App\Models\User;

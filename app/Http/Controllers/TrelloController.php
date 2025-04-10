@@ -1,4 +1,10 @@
 <?php
+/*
+ * TrelloController
+ * This controller handles the integration with Trello API for fetching story points and board data.
+ * @author : Patyot Sompan 66160109
+ * @Create Date : 2025-04-05
+ */
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\BacklogController;

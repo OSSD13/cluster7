@@ -1,5 +1,10 @@
 <?php
-
+/*TrelloTeamController
+ * This controller handles the operations related to Trello teams and boards.
+ * @author : พัฒน์ยศ สมภาร 66160109
+ * @author : ณัฐชยา โชคชัยชำนาญกิจ 66160353
+ * @Create Date : 2025-04-07
+ */
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;

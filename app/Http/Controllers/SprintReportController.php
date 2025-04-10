@@ -1,5 +1,12 @@
 <?php
-
+/*
+ * SprintReportController
+ * This controller manages sprint reports and their associated operations.
+ * @author : ณัฐชยา โชคชัยชำนาญกิจ 66160353
+ * @author : นราธิป แสนทวีสุข 66160085
+ * @author : พัฒน์ยศ สมภาร 66160109
+ * @Create Date : 2025-05-11
+ */
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;

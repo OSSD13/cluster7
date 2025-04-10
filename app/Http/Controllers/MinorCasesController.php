@@ -1,4 +1,11 @@
 <?php
+/*
+ * MinorCaseController
+ * This controller handles operations related to minor cases in the system.
+ * @author : นายธีรภาพ มั่งบุญ 66160103 
+ * นายธนากร ประเสริฐดีงาม 66160228 
+ * @Create Date : 2025-04-07
+ */
 
 declare(strict_types=1);
 
