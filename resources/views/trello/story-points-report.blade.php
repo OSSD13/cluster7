@@ -4143,7 +4143,26 @@
                             points: points
                         })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        // Check if response has a JSON content type
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json();
+                        } else {
+                            // Handle non-JSON responses (like HTML)
+                            return response.text().then(text => {
+                                console.error('Received non-JSON response:', text.substring(0, 100) + '...');
+
+                                // If response is a redirect to login page, redirect the user
+                                if (text.includes('<title>Login</title>') || text.includes('<title>Redirect</title>')) {
+                                    window.location.href = '/login';
+                                    return { success: false, error: 'Session expired' };
+                                }
+
+                                throw new Error('Server returned an invalid response format');
+                            });
+                        }
+                    })
                     .then(data => {
                         if (data.success) {
                             // Update button appearance
@@ -4222,7 +4241,7 @@
                     })
                     .catch(error => {
                         console.error('Error updating task status:', error);
-                        alert('Error updating task status');
+                        alert('Error updating task status: ' + error.message);
                     });
                 }
             });
@@ -4288,7 +4307,14 @@
                             data = await response.json();
                         } else {
                             const text = await response.text();
-                            console.error('Received non-JSON response:', text);
+                            console.error('Received non-JSON response:', text.substring(0, 100) + '...');
+
+                            // If the response is a redirect to login page, redirect the user
+                            if (text.includes('<title>Login</title>') || text.includes('<title>Redirect</title>')) {
+                                window.location.href = '/login';
+                                return;
+                            }
+
                             throw new Error('Server returned an invalid response format');
                         }
 
@@ -4321,7 +4347,6 @@
 
                     const bugId = editBugId.value;
                     try {
-                        const bugId = editBugId.value;
                         // Extract the numeric ID from the bug ID (e.g., "BUG-720" -> "720")
                         const numericId = bugId.split('-').pop();
                         const apiUrl = `${window.location.origin}/backlog/${numericId}`; // Use the numeric ID
@@ -4334,8 +4359,25 @@
                             }
                         });
 
+                        let data;
+                        try {
+                            // Try to parse JSON response
+                            data = await response.json();
+                        } catch (parseError) {
+                            // If response is not JSON, handle as text
+                            const text = await response.text();
+                            console.error('Received non-JSON response:', text.substring(0, 100) + '...');
+
+                            // If the response is a redirect to login page, redirect the user
+                            if (text.includes('<title>Login</title>') || text.includes('<title>Redirect</title>')) {
+                                window.location.href = '/login';
+                                return;
+                            }
+
+                            throw new Error('Failed to parse server response');
+                        }
+
                         if (!response.ok) {
-                            const data = await response.json();
                             throw new Error(data.error || 'Failed to delete bug');
                         }
 
