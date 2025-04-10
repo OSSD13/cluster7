@@ -82,22 +82,19 @@
                 <div class="flex items-center" :class="sidebarOpen ? 'flex' : 'hidden'">
                     <img src="{{ asset('Frame_25.png') }}" class="h-15 w-15">
                 </div>
-                <div class="flex items-center">
-                    <!-- Sidebar Toggle Button -->
-                    <button
-                        @click= "sidebarOpen = !sidebarOpen"
-                        class="p-2 rounded-lg hover:bg-[#13A7FD focus:outline-none">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-4 w-4 transition-transform duration-300"
-                            :class="sidebarOpen ? 'transform rotate-180' : ''"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                        </svg>
-                    </button>
-                </div>
+                <button
+                    @click="sidebarOpen = !sidebarOpen"
+                    class="p-2 rounded-lg hover:bg-[#13A7FD] focus:outline-none">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 transition-transform duration-300"
+                        :class="sidebarOpen ? 'transform rotate-180' : ''"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                    </svg>
+                </button>
             </div>
 
             <!-- Profile Section -->
