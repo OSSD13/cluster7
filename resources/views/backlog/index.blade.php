@@ -8,13 +8,13 @@
 <div class="max-w-7xl mx-auto">
     <div class="mb-6">
         <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold flex items-center">
-                Bug Backlog 
+            {{-- <h1 class="text-2xl font-bold flex items-center">
+                Bug Backlog
                 <span class="ml-3 text-sm bg-amber-100 text-amber-800 py-1 px-2 rounded-full">
                     {{ $allBugs->count() }} {{ Str::plural('bug', $allBugs->count()) }}
                     ({{ $allBugs->sum('points') }} {{ Str::plural('point', $allBugs->sum('points')) }})
                 </span>
-            </h1>
+            </h1> --}}
 
     <!-- Edit Bug Modal -->
     <div id="editBugModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
@@ -25,7 +25,7 @@
                     @csrf
                     @method('PUT')
                     <input type="hidden" id="bugId" name="id">
-                    
+
                     <div class="mb-4">
                         <label for="bugName" class="block text-sm font-medium text-gray-700">Bug Name</label>
                         <input type="text" id="bugName" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
@@ -88,13 +88,13 @@
                         d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623M4 7v4a4 4 0 0 0 3.5 3.97V7zm4.5 0v7.97A4 4 0 0 0 12 11V7zM12 6a4 4 0 0 0-1.334-2.982A3.98 3.98 0 0 0 8 2a3.98 3.98 0 0 0-2.667 1.018A4 4 0 0 0 4 6z" />
                 </svg>
             </div>
-            
+
             <p
                 class="mt-2 ms-3 pb-3 font-style: italic font-weight: text-[#009eff] text-6xl font-bold inline-block align-middle ">
                 Backlog</p>
                 <!-- Total Bug Count -->
                 <span id="totalBugCount" class="ml-4 mt-6 flex items-center justify-center font-bold text-sm bg-amber-100 text-amber-800 pt-2 py-1 px-2 min-w-40 max-w-full h-10 rounded-full">
-                    
+
                     {{ $allBugs->count() }} {{ Str::plural('bug', $allBugs->count()) }}
                     ({{ $allBugs->sum('points') }} {{ Str::plural('point', $allBugs->sum('points')) }})
                 </span>
@@ -108,7 +108,7 @@
                 @endforeach
                 </div>
 
-                
+
             <!-- Dropdown-->
             <div class="ms-[150px] grid grid-rows-2 gap-1">
                 <div>
@@ -316,29 +316,29 @@
                 width: 100%;
                 text-align: center;
             }
-            
+
             /* Fix for dropdown positioning */
             .dropdown-menu {
                 z-index: 50;
                 position: absolute;
             }
-            
+
             /* Ensure dropdowns don't overlap */
             #teamDropdownMenu {
                 z-index: 50;
             }
-            
+
             #yearDropdownMenu {
                 z-index: 49;
             }
-            
+
             #sprintDropdownMenu {
                 z-index: 48;
             }
         </style>
 
 <script>
-    
+
 
     function setupDropdown(buttonId, menuId, selectedId) {
         document.getElementById(buttonId).addEventListener("click", function() {
@@ -370,7 +370,7 @@
             }
         });
     }
-    
+
     // Setup both dropdowns
     setupDropdown("yearDropdownButton", "yearDropdownMenu", "selectedYear");
     setupDropdown("sprintDropdownButton", "sprintDropdownMenu", "selectedSprint");
@@ -402,11 +402,11 @@
         const bugCards = document.querySelectorAll('.bug-card');
         const selectedTeamText = document.getElementById('selectedTeam').textContent;
         const selectedSprintRange = document.getElementById('selectedSprint').textContent;
-        
+
         // Extract sprint range from the selected sprint text
         let startSprint = 1;
         let endSprint = 52;
-        
+
         if (selectedSprintRange !== 'All') {
             const sprintMatch = selectedSprintRange.match(/(\d+)\s*~\s*(\d+)/);
             if (sprintMatch) {
@@ -414,11 +414,11 @@
                 endSprint = parseInt(sprintMatch[2]);
             }
         }
-        
+
         // Show/hide total bug count and team count badges based on selected team
         const totalBugCount = document.getElementById('totalBugCount');
         const teamCountBadges = document.getElementById('teamCountBadges');
-        
+
         if (selectedTeam === 'all') {
             // Show total bug count and hide team count badges
             totalBugCount.style.display = 'inline-block';
@@ -427,36 +427,36 @@
             // Hide total bug count and show team count badges
             totalBugCount.style.display = 'none';
             teamCountBadges.style.display = 'inline-block';
-            
+
             // Hide all team count badges first
             document.querySelectorAll('.team-count-badge').forEach(badge => {
                 badge.style.display = 'none';
             });
-            
+
             // Show only the selected team's count badge
             const selectedTeamBadge = document.querySelector(`.team-count-badge[data-team="${selectedTeam}"]`);
             if (selectedTeamBadge) {
                 selectedTeamBadge.style.display = 'inline-block';
             }
         }
-        
+
         bugCards.forEach(card => {
             const cardTeam = card.getAttribute('data-team');
             const cardSprint = parseInt(card.getAttribute('data-sprint')) || 999;
-            
+
             const teamMatch = selectedTeam === 'all' || cardTeam === selectedTeam;
             const sprintMatch = cardSprint >= startSprint && cardSprint <= endSprint;
-            
+
             if (teamMatch && sprintMatch) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
             }
         });
-        
+
         // Update the count of visible bugs
         updateBugCount();
-        
+
         // Automatically sort bugs by sprint after filtering
         sortBugsBySprint();
     }
@@ -465,11 +465,11 @@
         const bugCards = document.querySelectorAll('.bug-card');
         const [startSprint, endSprint] = sprintRange.split('-').map(Number);
         const selectedTeam = document.getElementById('selectedTeam').textContent;
-        
+
         // Show/hide total bug count and team count badges based on selected team
         const totalBugCount = document.getElementById('totalBugCount');
         const teamCountBadges = document.getElementById('teamCountBadges');
-        
+
         if (selectedTeam === 'All') {
             // Show total bug count and hide team count badges
             totalBugCount.style.display = 'inline-block';
@@ -478,40 +478,40 @@
             // Hide total bug count and show team count badges
             totalBugCount.style.display = 'none';
             teamCountBadges.style.display = 'inline-block';
-            
+
             // Hide all team count badges first
             document.querySelectorAll('.team-count-badge').forEach(badge => {
                 badge.style.display = 'none';
             });
-            
+
             // Show only the selected team's count badge
             const selectedTeamBadge = document.querySelector(`.team-count-badge[data-team="${selectedTeam}"]`);
             if (selectedTeamBadge) {
                 selectedTeamBadge.style.display = 'inline-block';
             }
         }
-        
+
         bugCards.forEach(card => {
             const cardSprint = parseInt(card.getAttribute('data-sprint'));
             const cardTeam = card.getAttribute('data-team');
-            
+
             const sprintMatch = !isNaN(cardSprint) && cardSprint >= startSprint && cardSprint <= endSprint;
             const teamMatch = selectedTeam === 'All' || cardTeam === selectedTeam;
-            
+
             if (sprintMatch && teamMatch) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
             }
         });
-        
+
         // Update the count of visible bugs
         updateBugCount();
-        
+
         // Automatically sort bugs by sprint after filtering
         sortBugsBySprint();
     }
-    
+
     function updateBugCount() {
         const visibleBugs = document.querySelectorAll('.bug-card[style="display: block"]').length;
         const totalPoints = Array.from(document.querySelectorAll('.bug-card[style="display: block"]'))
@@ -520,21 +520,21 @@
                 const points = pointsElement ? parseInt(pointsElement.textContent.trim()) || 0 : 0;
                 return sum + points;
             }, 0);
-            
+
         // Update the bug count display
         const bugCountElement = document.getElementById('bugCountDisplay');
         if (bugCountElement) {
             bugCountElement.textContent = `${visibleBugs} ${visibleBugs === 1 ? 'bug' : 'bugs'} (${totalPoints} ${totalPoints === 1 ? 'point' : 'points'})`;
         }
     }
-    
+
     // Initialize the bug count display and sort bugs automatically
     document.addEventListener('DOMContentLoaded', function() {
         updateBugCount();
-        
+
         // Automatically sort bugs by sprint when page loads
         sortBugsBySprint();
-        
+
         // Initialize team filtering
         const selectedTeam = document.getElementById('selectedTeam').textContent;
         if (selectedTeam !== 'All') {
@@ -545,28 +545,28 @@
             document.getElementById('teamCountBadges').style.display = 'none';
         }
     });
-    
+
     function sortBugsBySprint() {
         const bugContainer = document.querySelector('.grid.grid-cols-1.gap-4.md\\:grid-cols-2.lg\\:grid-cols-2');
         const bugCards = Array.from(document.querySelectorAll('.bug-card'));
-        
+
         // Sort bug cards by sprint number
         bugCards.sort((a, b) => {
             const sprintA = parseInt(a.getAttribute('data-sprint')) || 999;
             const sprintB = parseInt(b.getAttribute('data-sprint')) || 999;
             return sprintA - sprintB;
         });
-        
+
         // Clear the container
         bugCards.forEach(card => {
             card.remove();
         });
-        
+
         // Add sorted cards back to the container
         bugCards.forEach(card => {
             bugContainer.appendChild(card);
         });
-        
+
         // Update the count of visible bugs
         updateBugCount();
     }
@@ -596,10 +596,10 @@
     // Edit form submission
     document.getElementById('editBugForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        
+
         const bugId = this.querySelector('#bugId').value;
         const formData = new FormData(this);
-        
+
         try {
             const response = await fetch(`/backlog/${bugId}`, {
                 method: 'PUT',
@@ -615,7 +615,7 @@
             if (response.ok) {
                 // Close modal
                 closeEditModal();
-                
+
                 // Update the bug card in the UI
                 const bugCard = document.querySelector(`.bug-card[data-id="${bugId}"]`);
                 bugCard.querySelector('a').textContent = formData.get('name');
@@ -623,10 +623,10 @@
                 bugCard.querySelector('.rounded-full').textContent = formData.get('points');
                 bugCard.querySelector('.ml-2.px-2.py-1.text-xs.font-medium.rounded-full:last-child').textContent = formData.get('assigned') || 'Unassigned';
                 bugCard.querySelector('.col-span-8').textContent = formData.get('description');
-                
+
                 // Show success message
                 alert('Bug updated successfully');
-                
+
                 // Refresh the page to update all data
                 window.location.reload();
             } else {
