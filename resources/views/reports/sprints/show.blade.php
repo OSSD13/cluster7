@@ -161,7 +161,7 @@
                                         </td>
                                         <!-- Actions -->
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('sprint-reports.show', $report->id) }}" class="text-primary-600 hover:text-primary-900 mr-3">View</a>
+                                            <a href="{{ route('reports.show', $report->id) }}" class="text-primary-600 hover:text-primary-900 mr-3">View</a>
                                             <!--if user is admin show edit and delete-->
                                             @if((auth()->user()->isAdmin() ) || (auth()->user()->role === 'tester'))
                                             <a href="{{ route('sprint-reports.edit', $report->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
@@ -237,3 +237,6 @@
     </div>
 </div>
 @endsection 
+
+<?pp
+// Example: Other routes;

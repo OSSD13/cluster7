@@ -135,7 +135,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     Route::put('/sprint-reports/{report}', [\App\Http\Controllers\SprintReportController::class, 'update'])
         ->name('sprint-reports.update');
     Route::get('reports', [\App\Http\Controllers\SprintReportController::class, 'getUserReports'])->name('reports');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
+    // Add the missing reports.show route
+    Route::get('/reports/{id}', [ReportController::class, 'show'])->name('reports.show');
     // Backlog Routes
     Route::get('/backlog', [\App\Http\Controllers\BacklogController::class, 'index'])->name('backlog.index');
     Route::delete('/backlog/{id}', [\App\Http\Controllers\BacklogController::class, 'destroy'])->name('backlog.destroy');
