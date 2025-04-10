@@ -6,8 +6,6 @@ use App\Models\SprintReport;
 use App\Models\Sprint;
 use App\Helpers\DateHelper;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use App\Models\SavedReport;
 use App\Services\TrelloService;
 
@@ -84,7 +82,7 @@ class BacklogController extends Controller
         }
 
         // If user is not admin, filter to show only their team's bugs
-        if (!Auth::user()->isAdmin()) {
+        if (!auth()->user()->isAdmin()) {
             $userTeams = $this->getUserTeams();
             $allBacklogBugs = $allBacklogBugs->filter(function ($bug) use ($userTeams) {
                 return in_array($bug['team'], $userTeams);
@@ -177,7 +175,7 @@ class BacklogController extends Controller
         }
 
         // If user is not admin, filter to show only their team's bugs
-        if (!Auth::user()->isAdmin()) {
+        if (!auth()->user()->isAdmin()) {
             $userTeams = $this->getUserTeams();
             $allBacklogBugs = $allBacklogBugs->filter(function ($bug) use ($userTeams) {
                 return in_array($bug['team'], $userTeams);
@@ -232,7 +230,7 @@ class BacklogController extends Controller
         if ($this->trelloService->hasValidCredentials()) {
             try {
                 // Get current user's name
-                $userName = Auth::user()->name;
+                $userName = auth()->user()->name;
 
                 // Get all boards with members
                 $options = [
@@ -259,7 +257,7 @@ class BacklogController extends Controller
                 // Removed the limitation to only see the first team
             } catch (\Exception $e) {
                 // Log error but don't fail - empty team list will result
-                Log::error('Error fetching user teams: ' . $e->getMessage());
+                \Log::error('Error fetching user teams: ' . $e->getMessage());
             }
         }
 
@@ -495,33 +493,20 @@ class BacklogController extends Controller
                                 // Update the actual points in the story_points_data
                                 if ($oldStatus !== 'completed' && $status === 'completed' && $points > 0) {
                                     // Get story_points_data
-                                    if (isset($reportData['story_points_data'])) {
-                                        $storyPointsData = $reportData['story_points_data'];
+                                    if (isset($reportData['summary']) && is_array($reportData['summary'])) {
+                                        // Add the points to actual points
+                                        $actualPoints = floatval($reportData['summary']['actualPoints'] ?? 0);
+                                        $reportData['summary']['actualPoints'] = $actualPoints + $points;
 
-                                        // If it's a JSON string, decode it
-                                        if (is_string($storyPointsData)) {
-                                            $storyPointsData = json_decode($storyPointsData, true);
-                                        }
+                                        // Recalculate percentages
+                                        $planPoints = floatval($reportData['summary']['planPoints'] ?? 0);
+                                        if ($planPoints > 0) {
+                                            $newActualPoints = $actualPoints + $points;
+                                            $percentComplete = round(($newActualPoints / $planPoints) * 100, 2);
+                                            $remainPercent = 100 - $percentComplete;
 
-                                        // Update actual points if there's a summary section
-                                        if (is_array($storyPointsData) && isset($storyPointsData['summary'])) {
-                                            // Add the points to actual points
-                                            $actualPoints = floatval($storyPointsData['summary']['actualPoints'] ?? 0);
-                                            $storyPointsData['summary']['actualPoints'] = $actualPoints + floatval($points);
-
-                                            // Recalculate percentages
-                                            $planPoints = floatval($storyPointsData['summary']['planPoints'] ?? 0);
-                                            if ($planPoints > 0) {
-                                                $newActualPoints = $actualPoints + floatval($points);
-                                                $percentComplete = round(($newActualPoints / $planPoints) * 100, 2);
-                                                $remainPercent = 100 - $percentComplete;
-
-                                                $storyPointsData['summary']['percentComplete'] = $percentComplete . '%';
-                                                $storyPointsData['summary']['remainPercent'] = $remainPercent . '%';
-                                            }
-
-                                            // Update the story_points_data in the report
-                                            $reportData['story_points_data'] = $storyPointsData;
+                                            $reportData['summary']['percentComplete'] = $percentComplete . '%';
+                                            $reportData['summary']['remainPercent'] = $remainPercent . '%';
                                         }
                                     }
                                 }
@@ -546,33 +531,20 @@ class BacklogController extends Controller
                                 // Update the actual points in the story_points_data
                                 if ($oldStatus !== 'completed' && $status === 'completed' && $points > 0) {
                                     // Get story_points_data
-                                    if (isset($reportData['story_points_data'])) {
-                                        $storyPointsData = $reportData['story_points_data'];
+                                    if (isset($reportData['summary']) && is_array($reportData['summary'])) {
+                                        // Add the points to actual points
+                                        $actualPoints = floatval($reportData['summary']['actualPoints'] ?? 0);
+                                        $reportData['summary']['actualPoints'] = $actualPoints + $points;
 
-                                        // If it's a JSON string, decode it
-                                        if (is_string($storyPointsData)) {
-                                            $storyPointsData = json_decode($storyPointsData, true);
-                                        }
+                                        // Recalculate percentages
+                                        $planPoints = floatval($reportData['summary']['planPoints'] ?? 0);
+                                        if ($planPoints > 0) {
+                                            $newActualPoints = $actualPoints + $points;
+                                            $percentComplete = round(($newActualPoints / $planPoints) * 100, 2);
+                                            $remainPercent = 100 - $percentComplete;
 
-                                        // Update actual points if there's a summary section
-                                        if (is_array($storyPointsData) && isset($storyPointsData['summary'])) {
-                                            // Add the points to actual points
-                                            $actualPoints = floatval($storyPointsData['summary']['actualPoints'] ?? 0);
-                                            $storyPointsData['summary']['actualPoints'] = $actualPoints + floatval($points);
-
-                                            // Recalculate percentages
-                                            $planPoints = floatval($storyPointsData['summary']['planPoints'] ?? 0);
-                                            if ($planPoints > 0) {
-                                                $newActualPoints = $actualPoints + floatval($points);
-                                                $percentComplete = round(($newActualPoints / $planPoints) * 100, 2);
-                                                $remainPercent = 100 - $percentComplete;
-
-                                                $storyPointsData['summary']['percentComplete'] = $percentComplete . '%';
-                                                $storyPointsData['summary']['remainPercent'] = $remainPercent . '%';
-                                            }
-
-                                            // Update the story_points_data in the report
-                                            $reportData['story_points_data'] = $storyPointsData;
+                                            $reportData['summary']['percentComplete'] = $percentComplete . '%';
+                                            $reportData['summary']['remainPercent'] = $remainPercent . '%';
                                         }
                                     }
                                 }
@@ -604,7 +576,7 @@ class BacklogController extends Controller
             }
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error updating backlog bug status: ' . $e->getMessage());
+            \Log::error('Error updating backlog bug status: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to update bug. ' . $e->getMessage()], 500);
         }
     }

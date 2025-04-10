@@ -4121,12 +4121,6 @@
                     const currentStatus = toggleButton.getAttribute('data-bug-status');
                     const points = toggleButton.getAttribute('data-bug-points');
 
-                    // Log details for debugging
-                    console.log('Toggle status for bug:', bugId, 'Current status:', currentStatus, 'Points:', points);
-
-                    // Extract just the ID number if it contains a prefix like BUG-
-                    const numericId = bugId.includes('-') ? bugId.split('-').pop() : bugId;
-
                     // Toggle the status
                     const newStatus = currentStatus === 'completed' ? 'active' : 'completed';
 
@@ -4137,11 +4131,8 @@
                         }
                     }
 
-                    // Call API to update status - using the correct endpoint
-                    const apiUrl = `${window.location.origin}/backlog/${numericId}/status`;
-                    console.log('Sending status update to:', apiUrl);
-
-                    fetch(apiUrl, {
+                    // Call API to update status
+                    fetch(`${window.location.origin}/backlog/${bugId}/status`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -4152,42 +4143,7 @@
                             points: points
                         })
                     })
-                    .then(response => {
-                        // First check the response status
-                        if (response.status === 401 || response.status === 419) {
-                            // Unauthorized or CSRF token mismatch - redirect to login
-                            window.location.href = '/login';
-                            throw new Error('Authentication required');
-                        }
-
-                        if (response.status === 405) {
-                            throw new Error('Method Not Allowed. Check API endpoint and permissions.');
-                        }
-
-                        // Check if response has a JSON content type
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && contentType.includes('application/json')) {
-                            return response.json();
-                        } else {
-                            // Handle non-JSON responses (like HTML)
-                            return response.text().then(text => {
-                                console.error('Received non-JSON response:', text.substring(0, 100) + '...');
-
-                                // If response is a redirect to login page, redirect the user
-                                if (text.includes('<title>Login</title>') || text.includes('<title>Redirect</title>')) {
-                                    window.location.href = '/login';
-                                    return { success: false, error: 'Session expired' };
-                                }
-
-                                // For successful responses without JSON, create a success object
-                                if (response.ok) {
-                                    return { success: true };
-                                }
-
-                                throw new Error('Server returned an invalid response format');
-                            });
-                        }
-                    })
+                    .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             // Update button appearance
@@ -4266,7 +4222,7 @@
                     })
                     .catch(error => {
                         console.error('Error updating task status:', error);
-                        alert('Error updating task status: ' + error.message);
+                        alert('Error updating task status');
                     });
                 }
             });
@@ -4300,10 +4256,6 @@
                     console.log('Form submitted');
                     const bugId = editBugId.value;
 
-                    // Extract numeric ID if it contains a prefix like BUG-
-                    const numericId = bugId.includes('-') ? bugId.split('-').pop() : bugId;
-                    console.log('Using bug ID:', numericId, 'for editing');
-
                     try {
                         const formData = {
                             name: editBugName.value,
@@ -4313,13 +4265,13 @@
                             assigned: document.querySelector('input[name="assigned"]')?.value || null // Add assigned field
                         };
 
-                        // Use the POST version of the update endpoint to avoid Method Not Allowed errors
-                        const apiUrl = `${apiBaseUrl}/backlog/update/${numericId}`;
+                        // Use the correct API endpoint
+                        const apiUrl = `${apiBaseUrl}/backlog/${bugId}`;
                         console.log('Sending data:', formData);
                         console.log('To URL:', apiUrl);
 
                         const response = await fetch(apiUrl, {
-                            method: 'POST',
+                            method: 'PUT', // Changed back to PUT to match the route definition
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
@@ -4330,49 +4282,18 @@
 
                         console.log('Response status:', response.status);
 
-                        // First check for common error status codes
-                        if (response.status === 401 || response.status === 419) {
-                            // Unauthorized or CSRF token mismatch - redirect to login
-                            window.location.href = '/login';
-                            return;
-                        }
-
-                        if (response.status === 405) {
-                            throw new Error('Method Not Allowed. Check API endpoint and permissions.');
-                        }
-
-                        // Clone the response before reading it
-                        const responseClone = response.clone();
-
                         let data;
                         const contentType = response.headers.get('content-type');
                         if (contentType && contentType.includes('application/json')) {
                             data = await response.json();
                         } else {
-                            const text = await responseClone.text();
-                            console.error('Received non-JSON response:', text.substring(0, 100) + '...');
-
-                            // If the response is a redirect to login page, redirect the user
-                            if (text.includes('<title>Login</title>') || text.includes('<title>Redirect</title>') ||
-                                text.includes('<!DOCTYPE') || text.includes('<html')) {
-                                console.log('Detected HTML response, likely a redirect or error page');
-                                if (text.includes('login') || text.includes('Login')) {
-                                    window.location.href = '/login';
-                                    return;
-                                }
-                                throw new Error('Server returned HTML instead of JSON - session may have expired or server error occurred');
-                            }
-
-                            // For successful non-JSON responses
-                            if (response.ok) {
-                                data = { success: true };
-                            } else {
-                                throw new Error('Server returned an invalid response format');
-                            }
+                            const text = await response.text();
+                            console.error('Received non-JSON response:', text);
+                            throw new Error('Server returned an invalid response format');
                         }
 
                         if (!response.ok) {
-                            throw new Error(data?.message || data?.error || 'Failed to update task');
+                            throw new Error(data.message || 'Failed to update task');
                         }
 
                         // Show success message
@@ -4400,15 +4321,10 @@
 
                     const bugId = editBugId.value;
                     try {
+                        const bugId = editBugId.value;
                         // Extract the numeric ID from the bug ID (e.g., "BUG-720" -> "720")
                         const numericId = bugId.split('-').pop();
-
-                        // Use a specific delete endpoint that uses POST instead of DELETE
-                        // This is more compatible with server configurations that restrict HTTP methods
-                        const apiUrl = `${window.location.origin}/backlog/remove/${numericId}`;
-
-                        console.log('Deleting bug with ID:', numericId, 'at URL:', apiUrl);
-
+                        const apiUrl = `${window.location.origin}/backlog/${numericId}`; // Use the numeric ID
                         const response = await fetch(apiUrl, {
                             method: 'DELETE',
                             headers: {
@@ -4418,59 +4334,30 @@
                             }
                         });
 
-                        // First check the response status
-                        if (response.status === 401 || response.status === 419) {
-                            // Unauthorized or CSRF token mismatch - redirect to login
-                            window.location.href = '/login';
-                            return;
-                        }
-
-                        // Clone the response before reading it, so we can read it again if needed
-                        const responseClone = response.clone();
-
-                        // Handle the response differently based on content type
-                        const contentType = response.headers.get('content-type');
-
-                        if (contentType && contentType.includes('application/json')) {
-                            // Only try to parse as JSON if content type is JSON
+                        if (!response.ok) {
                             const data = await response.json();
-
-                            if (!response.ok) {
-                                throw new Error(data.error || 'Failed to delete bug');
-                            }
-
-                            // Success
-                            alert('Bug deleted successfully');
-                        } else {
-                            // Not JSON, read as text
-                            const text = await responseClone.text();
-                            console.log('Received non-JSON response:', text.substring(0, 100));
-
-                            if (text.includes('<title>Login</title>') || text.includes('<title>Redirect</title>')) {
-                                window.location.href = '/login';
-                                return;
-                            }
-
-                            if (!response.ok) {
-                                throw new Error('Server returned an error');
-                            }
-
-                            // If we got here with a successful status, consider it successful
-                            if (response.ok) {
-                                alert('Bug deleted successfully');
-                            }
+                            throw new Error(data.error || 'Failed to delete bug');
                         }
 
-                        // Close modal and reset form
+                        // Show success message
+                        alert('Bug deleted successfully');
+
+                        // Close modal and refresh page
                         editModal.classList.add('hidden');
                         editModal.style.display = 'none';
                         editForm.reset();
 
-                        // Reload the page to refresh the data
+                        // Remove the bug from the UI
+                        const bugElement = document.querySelector(`[data-bug-id="${bugId}"]`);
+                        if (bugElement) {
+                            bugElement.remove();
+                        }
+
+                        // Optionally reload the page to refresh the data
                         window.location.reload();
                     } catch (error) {
                         console.error('Error deleting bug:', error);
-                        alert('Failed to delete bug: ' + error.message);
+                        alert('Failed to delete bug. Please try again.');
                     }
                 });
             }
