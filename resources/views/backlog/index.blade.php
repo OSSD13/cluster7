@@ -5,11 +5,7 @@
 @section('page-title', 'Bug Backlog')
 
 @section('content')
-<div class="max-w-7xl mx-auto">
-    <div class="mb-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold flex items-center">
-            </h1>
+<div class="max-w-7xl min-h-screen mx-auto">
 
     <!-- Edit Bug Modal -->
     <div id="editBugModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full backdrop-blur-sm">
@@ -24,33 +20,38 @@
                     <h3 class="text-2xl font-semibold text-gray-900">Edit Bug</h3>
                 </div>
 
-                <form id="editBugForm" method="POST" class="mt-5 space-y-6">
+                <form id="editBugForm" class="mt-5 space-y-6">
                     @csrf
                     @method('PUT')
                     <input type="hidden" id="bugId" name="id">
 
                     <div class="mb-4">
-                        <label for="bugName" class="block text-sm font-medium text-gray-700 mb-2">Bug Name</label>
-                        <input type="text" id="bugName" name="name" required class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200">
+                    <label for="bugName" class="block text-sm font-medium text-gray-700 mb-2">Bug Name</label>
+                    <input type="text" id="bugName" name="name" class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200">
                     </div>
 
                     <div class="mb-4">
-                        <label for="bugTeam" class="block text-sm font-medium text-gray-700">Team</label>
-                        <input type="text" id="bugTeam" name="team" required class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200" readonly>
+                        <label for="bugTeam" class="block text-sm font-medium text-gray-700 ">team</label>
+                        <input type="text" id="bugTeam" name="team" class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200 " readonly>
                     </div>
 
                     <div class="mb-4">
                         <label for="bugPoints" class="block text-sm font-medium text-gray-700">Points</label>
-                        <input type="number" id="bugPoints" name="points" min="0" required class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200">
+                        <input type="number" id="bugPoints" name="points" min="1" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none'' ">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="bugAssigned" class="block text-sm font-medium text-gray-700">Assigned To</label>
+                        <input type="text" id="bugAssigned" name="assigned" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none">
                     </div>
 
                     <div class="mb-4">
                         <label for="bugDescription" class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea id="bugDescription" name="description" rows="3" class="mt-1 block w-full px-4 py-3 rounded-2xl bg-gray-50 border-0 focus:border-0 outline-none focus:ring-2 focus:ring-[#13A7FD] transition-all duration-200"></textarea>
+                        <textarea id="bugDescription" name="description" rows="3" class="mt-1 block w-full rounded-3xl bg-gray-100 shadow-sm focus:ring-primary-500 border-0 focus:border-0 outline-none"></textarea>
                     </div>
 
-                    <div class="mt-5 flex space-x-3 justify-end">
-                        <button type="button" id="cancelEditBug" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    <div class="mt-5 flex space-x-3 ml-20">
+                        <button type="button" id="cancelEditBug" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
                             Cancel
                         </button>
                         <button type="submit" class="px-6 py-2.5 bg-[#13A7FD] text-white rounded-full hover:bg-[#0090e0] focus:outline-none transition-all duration-200">
@@ -237,8 +238,8 @@
                     <!-- Edit Button -->
                     <div class="flex space-x-3 flex items-end ">
 
-                    <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center h-8 w-8 edit-backlog-task">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                    <button type="button" class="text-[#985E00] bg-[#FFC7B2] hover:bg-[#FFA954] focus:outline-none font-medium rounded-full px-2 py-2 text-center h-8 w-8 ">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class=" bi bi-pencil-square" viewBox="0 0 16 16 ">
                             <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                             <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
                         </svg>
@@ -590,6 +591,7 @@
         form.querySelector('#bugName').value = bugCard.querySelector('a').textContent;
         form.querySelector('#bugTeam').value = bugCard.getAttribute('data-team') || 'all';
         form.querySelector('#bugPoints').value = bugCard.querySelector('.w-8.h-8.rounded-full').textContent.trim();
+        form.querySelector('#bugAssigned').value = bugCard.querySelector('.ml-2.px-2.py-1.text-xs.font-medium.rounded-full:last-child').textContent.trim();
         form.querySelector('#bugDescription').value = bugCard.querySelector('.col-span-8').textContent.trim();
 
         // Show modal
@@ -601,10 +603,21 @@
     }
 
     // Edit form submission
-    document.addEventListener('DOMContentLoaded', function() {
-        const editModal = document.getElementById('editBugModal');
-        const editForm = document.getElementById('editBugForm');
-        const cancelEditBtn = document.getElementById('cancelEditBug');
+    document.getElementById('editBugForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const bugId = this.querySelector('#bugId').value;
+        const formData = new FormData(this);
+
+        try {
+            const response = await fetch(`/backlog/${bugId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            });
 
         // Function to close modal
         function closeModal() {
@@ -612,31 +625,25 @@
             editForm.reset();
         }
 
-        // Handle edit button clicks
-        document.addEventListener('click', function(e) {
-            const editButton = e.target.closest('.edit-backlog-task');
-            if (editButton) {
-                const bugCard = editButton.closest('.bug-card');
-                if (!bugCard) return;
+            if (response.ok) {
+                // Close modal
+                closeEditModal();
 
-                const bugId = bugCard.dataset.id;
-                const bugName = bugCard.querySelector('a').textContent.trim();
-                const bugTeam = bugCard.dataset.team;
-                const bugPoints = bugCard.querySelector('.rounded-full').textContent.trim();
-                const bugDescription = bugCard.querySelector('.col-span-8')?.textContent.trim() || '';
+                // Update the bug card in the UI
+                const bugCard = document.querySelector(`.bug-card[data-id="${bugId}"]`);
+                bugCard.querySelector('a').textContent = formData.get('name');
+                bugCard.setAttribute('data-team', formData.get('team'));
+                bugCard.querySelector('.rounded-full').textContent = formData.get('points');
+                bugCard.querySelector('.ml-2.px-2.py-1.text-xs.font-medium.rounded-full:last-child').textContent = formData.get('assigned') || 'Unassigned';
+                bugCard.querySelector('.col-span-8').textContent = formData.get('description');
 
-                // Set form action with Laravel route helper
-                editForm.action = "{{ route('backlog.update', ['id' => '_ID_']) }}".replace('_ID_', bugId);
+                // Show success message
+                alert('Bug updated successfully');
 
-                // Fill form fields
-                document.getElementById('bugId').value = bugId;
-                document.getElementById('bugName').value = bugName;
-                document.getElementById('bugTeam').value = bugTeam;
-                document.getElementById('bugPoints').value = bugPoints;
-                document.getElementById('bugDescription').value = bugDescription;
-
-                // Show modal
-                editModal.classList.remove('hidden');
+                // Refresh the page to update all data
+                window.location.reload();
+            } else {
+                throw new Error(data.error || 'Failed to update bug');
             }
         });
 

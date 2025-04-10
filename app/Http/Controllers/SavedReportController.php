@@ -1095,46 +1095,4 @@ class SavedReportController extends Controller
 
         return $backlog;
     }
-
-    /**
-     * Print a report using the template layout
-     * 
-     * @param int $reportId
-     * @return \Illuminate\View\View
-     */
-    public function printReport($reportId)
-    {
-        try {
-            // First try to find in SprintReport model
-            $report = \App\Models\SprintReport::find($reportId);
-            $isSprintReport = true;
-            
-            // If not found in SprintReport, try in SavedReport
-            if (!$report) {
-                $report = SavedReport::find($reportId);
-                $isSprintReport = false;
-            }
-            
-            // If report still not found, return 404
-            if (!$report) {
-                abort(404, 'Report not found');
-            }
-
-            // Instead of formatting the data here, we'll pass the raw report data to the template view
-            // so that it can directly use and calculate values in the same way as the source view
-            
-            // Pass autoprint=true to automatically trigger print dialog
-            return view('saved-reports.template', [
-                'report' => $report,
-                'autoprint' => true
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Error printing report: ' . $e->getMessage(), [
-                'exception' => $e,
-                'reportId' => $reportId
-            ]);
-            
-            abort(500, 'Error loading report for printing');
-        }
-    }
 }

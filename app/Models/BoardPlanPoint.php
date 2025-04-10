@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class BoardPlanPoint extends Model
 {
     use HasFactory;
-
+    
     /**
      * The attributes that are mass assignable.
      *
@@ -19,7 +19,7 @@ class BoardPlanPoint extends Model
         'board_name',
         'plan_point',
     ];
-
+    
     /**
      * The attributes that should be cast.
      *
@@ -27,5 +27,5 @@ class BoardPlanPoint extends Model
      */
     protected $casts = [
         'plan_point' => 'float',
-    ];  
+    ];
 }
