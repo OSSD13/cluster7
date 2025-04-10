@@ -215,24 +215,24 @@
     @php
         // Extract sprint number if it's not already numeric
         $sprintNumber = $report->sprint ?? 'N/A';
-        
+
         // Check if this is a SprintReport or SavedReport and extract data accordingly
         $isSprintReport = $report instanceof \App\Models\SprintReport;
-        
+
         if ($isSprintReport) {
             // For SprintReport, get values directly from the object
             $reportName = $report->report_name;
             $teamName = $report->team_name;
             $developers = $report->report_data['developers'] ?? [];
             $extraPoints = $report->report_data['extra_points'] ?? [];
-            
+
             // Calculate sums
             $sumPointPersonal = 0;
             $sumTestPass = 0;
             $sumBug = 0;
             $sumCancel = 0;
             $sumFinal = 0;
-            
+
             // Calculate sums from developers
             foreach ($developers as $dev) {
                 $sumPointPersonal += $dev->point_personal ?? 0;
@@ -241,44 +241,44 @@
                 $sumCancel += $dev->cancel ?? 0;
                 $sumFinal += $dev->sum_final ?? 0;
             }
-            
+
             // Calculate percentages
             $planPoint = isset($report->plan_point) && is_numeric($report->plan_point) ? $report->plan_point : $sumPointPersonal;
             $actualPoint = $sumTestPass;
-            
+
             // Add extra points to actual points
             foreach ($extraPoints as $extraPoint) {
                 $actualPoint += $extraPoint->points ?? $extraPoint->extra_point ?? 0;
             }
-            
+
             // Calculate percentages
             $sumFinalPassPoint = $sumPointPersonal > 0 ? round(($sumTestPass / $sumPointPersonal) * 100) : 0;
-            
+
         } else {
             // For SavedReport, extract from report_data
             $reportName = $report->name ?? $report->report_data['report_name'] ?? 'Report';
             $teamName = $report->report_data['team_name'] ?? null;
             $developers = $report->report_data['developers'] ?? [];
             $extraPoints = $report->report_data['extra_points'] ?? [];
-            
+
             // Get calculated values from report_data if available
             $sumPointPersonal = $report->report_data['sum_point_personal'] ?? 0;
             $sumTestPass = $report->report_data['sum_test_pass'] ?? 0;
-            $sumBug = $report->report_data['sum_bug'] ?? 0; 
+            $sumBug = $report->report_data['sum_bug'] ?? 0;
             $sumCancel = $report->report_data['sum_cancel'] ?? 0;
             $sumFinal = $report->report_data['sum_final'] ?? 0;
             $sumFinalPassPoint = $report->report_data['sum_final_pass_point'] ?? 0;
-            
+
             // Calculate plan and actual points
             $planPoint = $report->report_data['plan_point'] ?? $sumPointPersonal;
             $actualPoint = $sumTestPass;
-            
+
             // Add extra points to actual points
             foreach ($extraPoints as $extraPoint) {
                 $actualPoint += $extraPoint->points ?? $extraPoint->extra_point ?? 0;
             }
         }
-        
+
         // Get the sprint object
         $sprintObj = \App\Models\Sprint::getCurrentSprint();
 
@@ -315,12 +315,12 @@
         // Extract backlog data using BacklogController's method
         $backlogData = [];
         $groupedBacklogData = [];
-        
+
         try {
             // Get backlog data from the BacklogController
             $backlogController = new \App\Http\Controllers\BacklogController(app(\App\Services\TrelloService::class));
             $backlogDataResult = $backlogController->getBacklogData();
-            
+
             // Use backlog data from the report first if it exists (prefer direct source)
             if (isset($report->backlog_data) && !empty($report->backlog_data)) {
                 if (is_array($report->backlog_data)) {
@@ -328,7 +328,7 @@
                 } else {
                     $backlogItems = json_decode($report->backlog_data, true);
                 }
-                
+
                 if (!empty($backlogItems)) {
                     foreach ($backlogItems as $key => $item) {
                         $backlogData[] = (object)[
@@ -342,7 +342,7 @@
                         ];
                     }
                 }
-            } 
+            }
             // Otherwise, use the controller's data
             else if (isset($backlogDataResult['allBugs']) && !empty($backlogDataResult['allBugs'])) {
                 foreach ($backlogDataResult['allBugs'] as $bug) {
@@ -356,7 +356,7 @@
                         'team' => $bug['team'] ?? null
                     ];
                 }
-            } 
+            }
             // Finally, check report_data
             else if (isset($report->report_data['backlog'])) {
                 // New format where backlog data is stored directly in report_data
@@ -584,7 +584,7 @@
                     <td class="text-right" style="font-size: 10pt;">{{ $developer->cancel }}</td>
                     <td class="text-right" style="font-size: 10pt;">{{ $developer->sum_final }}</td>
                     <td class="text-left" style="font-size: 10pt;">{{ $developer->remark }}</td>
-                    <td class="text-center" style="font-size: 10pt; background-color:;"></td>
+                    <td class="text-center" style="font-size: 10pt; background-color: {{ $developer->day_off == 'Not Test' ? '#e74c3c' : 'white' }}; color: {{ $developer->day_off == 'Not Test' ? 'white' : 'black' }};">{{ $developer->day_off }}</td>
                 </tr>
                 @endforeach
                 <tr>
@@ -655,17 +655,17 @@
         <!-- Minor Case Section -->
         <table class="w-full border-collapse mt-2">
             <tr>
-                <td class="points-header" style="background-color: #9e9e9e; font-size: 10pt; border: 1px solid black;" colspan="5">Minor Case</td>
+                <td class="points-header" style="background-color: #9e9e9e; font-size: 10pt; border: 1px solid black;" colspan="10">Minor Case</td>
             </tr>
             <tr>
-                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Sprint</td>
-                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Card Detail</td>
-                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Defect Detail</td>
-                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Personal</td>
-                <td class="points-header" style="background-color: #b3c6e7; font-size: 10pt; border: 1px solid black;">Point</td>
+                <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Sprint</td>
+                <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Card Detail</td>
+                <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Defect Detail</td>
+                <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Personal</td>
+                <td class="points-header" style="background-color: white; font-size: 10pt; border: 1px solid black;">Point</td>
             </tr>
             @php
-                // ดึงข้อมูล Minor Cases จากฐานข้อมูลโดยตรง
+                // Get minor cases from the database
                 $minorCases = [];
                 $teamName = $report->team_name ?? null;
 
@@ -696,37 +696,15 @@
                         $filteredBySprint = \Illuminate\Support\Facades\DB::table('minor_cases')
                             ->where('sprint', $sprintNumber)
                             ->orderBy('created_at', 'desc')
-                            ->limit(15)
                             ->get();
-
-                        // ถ้ากรองด้วย sprint แล้วได้ข้อมูล
-                        if (count($filteredBySprint) > 0) {
-                            $minorCases = $filteredBySprint;
-                        }
-                    }
-
-                    // ถ้าต้องการกรองตามทีม และมีสมาชิกในทีม
-                    if (!empty($teamMembers) && count($minorCases) > 0) {
-                        // เก็บข้อมูลไว้ก่อนกรอง
-                        $beforeFilter = $minorCases;
-
-                        // กรองตามรายชื่อสมาชิกในทีม
-                        $minorCases = $minorCases->filter(function($case) use ($teamMembers) {
-                            return in_array($case->member, $teamMembers);
-                        })->values();
-
-                        // หากกรองแล้วไม่มีข้อมูลใดๆ ให้ใช้ข้อมูลก่อนกรอง
-                        if (count($minorCases) == 0) {
-                            $minorCases = $beforeFilter;
-                        }
+                    } else {
+                        // If no sprint information is available, get all minor cases
+                        $minorCases = \App\Models\MinorCase::orderBy('created_at', 'desc')
+                            ->limit(15) // Limit to a reasonable number
+                            ->get();
                     }
                 } catch (\Exception $e) {
-                    // บันทึกข้อผิดพลาด
-                    \Illuminate\Support\Facades\Log::error('ไม่สามารถดึงข้อมูล Minor Case ได้: ' . $e->getMessage());
-
-                    // ถ้าไม่สามารถดึงข้อมูลได้ให้ใช้ array ว่าง
-                    $minorCases = [];
-                    $totalMinorCases = 0;
+                    // If MinorCase model doesn't exist or any other error occurs, keep empty array
                 }
             @endphp
 
@@ -740,21 +718,9 @@
             </tr>
             @empty
             <tr>
-                <td class="text-center" colspan="5" style="font-size: 10pt; border: 1px solid black;">not found Minor Case </td>
+                <td class="text-center" colspan="5" style="font-size: 10pt; border: 1px solid black;">ไม่พบ Minor Cases สำหรับทีมนี้</td>
             </tr>
             @endforelse
-
-            @php
-                // คำนวณผลรวมคะแนน Minor Case
-                $totalMinorPoints = collect($minorCases)->sum('points');
-            @endphp
-
-            @if(count($minorCases) > 0)
-            <tr>
-                <td class="text-right font-bold" colspan="4" style="font-size: 10pt; border: 1px solid black; background-color: #f8f9fa;">Total Minor Case:</td>
-                <td class="text-right font-bold" style="font-size: 10pt; border: 1px solid black; background-color: #f8f9fa;">{{ $totalMinorPoints }}</td>
-            </tr>
-            @endif
         </table>
 
         <!-- Signature Section -->
