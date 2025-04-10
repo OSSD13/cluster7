@@ -4405,7 +4405,7 @@
 
                         // Use a specific delete endpoint that uses POST instead of DELETE
                         // This is more compatible with server configurations that restrict HTTP methods
-                        const apiUrl = `${window.location.origin}/backlog/remove/${numericId}`;
+                        const apiUrl = `${window.location.origin}/cluster7/remove/${numericId}`;
 
                         console.log('Deleting bug with ID:', numericId, 'at URL:', apiUrl);
 
