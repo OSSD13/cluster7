@@ -58,6 +58,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckApproved::class])->group(fu
     Route::post('/save-report', [SavedReportController::class, 'store'])->name('report.save');
     Route::get('/saved-reports/{savedReport}/export-template', [SavedReportController::class, 'exportTemplate'])->name('saved-reports.export-template');
     Route::post('/export-to-csv', [SavedReportController::class, 'exportToCsv'])->name('export.to.csv');
+    Route::get('/reports/print/{report}', [SavedReportController::class, 'printReport'])->name('reports.print');
 
     // Minor Cases Routes
     Route::prefix('minor-cases')->name('minor-cases.')->group(function () {
